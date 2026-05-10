@@ -1,0 +1,157 @@
+version: 2
+project_name: "premake"
+phase: 1
+overview: "病院内の空きスペース・空き病室を、アートメイク施術を行う看護師がスポット利用できるようにする予約マッチングプラットフォーム（Web 先行・手数料モデル・将来モバイル対応）"
+status: in_progress  # PHASE 0-3 完了、PHASE 4 進行中
+
+users:
+  - id: U-01
+    title: 施術看護師
+    type: human
+    auth_required: true
+  - id: U-02
+    title: 施設管理者
+    type: human
+    auth_required: true
+    tenant_scoped: true
+  - id: U-03
+    title: 指示医
+    type: human
+    auth_required: true
+    tenant_scoped: true
+    capabilities: [electronic_signature]
+  - id: U-04
+    title: 運営
+    type: human
+    auth_required: true
+    capabilities: [audit, refund, kyc_review, managed_onboarding]
+  - id: U-05
+    title: 利用客（被施術者）
+    type: guest
+    auth_required: false
+    note: "ゲスト予約。メール + 電話番号 + SMS 認証のみ（DEC-12）"
+  - id: U-06
+    title: 法人管理者
+    type: human
+    auth_required: true
+    org_scoped: true
+    capabilities: [manage_facilities, invite_admin_doctor, org_dashboard]
+    note: "多店舗を持つ医療法人の本部管理者（DEC-16）"
+  - id: U-AI
+    title: AI Coding Agent
+    type: agent
+
+features:
+  # A. 認証・本人確認
+  - { id: FR-01, file: features/FR-01_nurse-signup.md, title: "看護師サインアップ", priority: P0, status: defined, related_users: [U-01], category: A }
+  - { id: FR-02, file: features/FR-02_facility-admin-invite-signup.md, title: "施設管理者招待型サインアップ", priority: P0, status: defined, related_users: [U-02], category: A }
+  - { id: FR-03, file: features/FR-03_doctor-invite-signup.md, title: "指示医招待型サインアップ", priority: P0, status: defined, related_users: [U-03], category: A }
+  - { id: FR-04, file: features/FR-04_login.md, title: "ログイン", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04, U-06], category: A }
+  - { id: FR-05, file: features/FR-05_password-reset.md, title: "パスワードリセット", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04, U-06], category: A }
+  - { id: FR-06, file: features/FR-06_email-verification.md, title: "メール確認", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04, U-06], category: A }
+  - { id: FR-07, file: features/FR-07_mfa.md, title: "MFA（TOTP / SMS）", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04, U-06], category: A }
+  - { id: FR-08, file: features/FR-08_nurse-license-review.md, title: "看護師免許審査", priority: P0, status: defined, related_users: [U-01, U-04], category: A }
+  - { id: FR-09, file: features/FR-09_facility-license-review.md, title: "医療機関開設届審査", priority: P0, status: defined, related_users: [U-02, U-04], category: A }
+  - { id: FR-10, file: features/FR-10_doctor-license-review.md, title: "医師免許審査", priority: P0, status: defined, related_users: [U-03, U-04], category: A }
+  - { id: FR-11, file: features/FR-11_account-suspend.md, title: "アカウント凍結・復活", priority: P0, status: defined, related_users: [U-04], category: A }
+  - { id: FR-12, file: features/FR-12_logout.md, title: "ログアウト・セッション管理", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04, U-06], category: A }
+  - { id: FR-81, file: features/FR-81_google-oauth.md, title: "Google OAuth サインアップ・ログイン", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04, U-06], category: A }
+
+  # B. 法人・施設・スペース管理
+  - { id: FR-13, file: features/FR-13_facility-profile.md, title: "医療機関プロフィール", priority: P0, status: defined, related_users: [U-02], category: B }
+  - { id: FR-14, file: features/FR-14_space-create.md, title: "スペース登録", priority: P0, status: defined, related_users: [U-02], category: B }
+  - { id: FR-15, file: features/FR-15_space-pricing.md, title: "スペース料金設定", priority: P0, status: defined, related_users: [U-02], category: B }
+  - { id: FR-16, file: features/FR-16_space-availability.md, title: "空き枠カレンダー編集", priority: P0, status: defined, related_users: [U-02], category: B }
+  - { id: FR-17, file: features/FR-17_space-publish.md, title: "スペース公開・非公開切替", priority: P0, status: defined, related_users: [U-02], category: B }
+  - { id: FR-18, file: features/FR-18_facility-doctor-assign.md, title: "施設の指示医割当", priority: P0, status: defined, related_users: [U-02], category: B }
+  - { id: FR-82, file: features/FR-82_org-profile.md, title: "法人プロフィール", priority: P0, status: defined, related_users: [U-06], category: B }
+  - { id: FR-83, file: features/FR-83_org-facility-management.md, title: "配下施設の追加・編集・閉鎖", priority: P0, status: defined, related_users: [U-06], category: B }
+  - { id: FR-84, file: features/FR-84_org-admin-invite.md, title: "施設管理者・指示医の招待（法人から）", priority: P0, status: defined, related_users: [U-06], category: B }
+
+  # C. 検索・予約
+  - { id: FR-19, file: features/FR-19_space-search.md, title: "スペース検索", priority: P0, status: defined, related_users: [U-01], category: C }
+  - { id: FR-20, file: features/FR-20_space-detail.md, title: "スペース詳細閲覧", priority: P0, status: defined, related_users: [U-01], category: C }
+  - { id: FR-21, file: features/FR-21_booking-request.md, title: "予約申込", priority: P0, status: defined, related_users: [U-01], category: C }
+  - { id: FR-22, file: features/FR-22_booking-approval.md, title: "予約承認・拒否", priority: P0, status: defined, related_users: [U-02], category: C }
+  - { id: FR-23, file: features/FR-23_booking-modify.md, title: "予約変更", priority: P0, status: defined, related_users: [U-01, U-02], category: C }
+  - { id: FR-24, file: features/FR-24_booking-cancel.md, title: "予約キャンセル", priority: P0, status: defined, related_users: [U-01, U-02, U-04], category: C }
+  - { id: FR-25, file: features/FR-25_nurse-booking-list.md, title: "予約一覧（看護師）", priority: P0, status: defined, related_users: [U-01], category: C }
+  - { id: FR-26, file: features/FR-26_facility-booking-list.md, title: "予約一覧（施設）", priority: P0, status: defined, related_users: [U-02], category: C }
+  - { id: FR-27, file: features/FR-27_booking-detail.md, title: "予約詳細", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04], category: C }
+  - { id: FR-88, file: features/FR-88_booking-sessions.md, title: "予約セッション管理（カウンセリング+施術）", priority: P0, status: defined, related_users: [U-01, U-02, U-05], category: C }
+
+  # D. 医師指示・施術記録
+  - { id: FR-28, file: features/FR-28_doctor-notification.md, title: "指示医通知", priority: P0, status: defined, related_users: [U-03], category: D }
+  - { id: FR-29, file: features/FR-29_prescription-issue.md, title: "電子指示書発行・電子署名", priority: P0, status: defined, related_users: [U-03], category: D }
+  - { id: FR-30, file: features/FR-30_prescription-pdf.md, title: "電子指示書 PDF 生成・保管", priority: P0, status: defined, related_users: [], category: D }
+  - { id: FR-31, file: features/FR-31_consent-template.md, title: "同意書テンプレート編集", priority: P0, status: defined, related_users: [U-01, U-02], category: D }
+  - { id: FR-32, file: features/FR-32_consent-fill.md, title: "利用客の同意書記入", priority: P0, status: defined, related_users: [U-05], category: D }
+  - { id: FR-33, file: features/FR-33_treatment-record.md, title: "施術記録投入", priority: P0, status: defined, related_users: [U-01], category: D }
+  - { id: FR-34, file: features/FR-34_treatment-record-approval.md, title: "施術記録の確認・承認", priority: P0, status: defined, related_users: [U-03], category: D }
+  - { id: FR-35, file: features/FR-35_treatment-record-search.md, title: "施術記録の検索・閲覧", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04], category: D }
+
+  # E. 決済
+  - { id: FR-36, file: features/FR-36_nurse-card-register.md, title: "看護師のカード登録", priority: P0, status: defined, related_users: [U-01], category: E }
+  - { id: FR-37, file: features/FR-37_facility-stripe-connect.md, title: "Stripe Connect 連携", priority: P0, status: defined, related_users: [U-02, U-06], category: E }
+  - { id: FR-38, file: features/FR-38_space-fee-payment.md, title: "スペース利用料の決済", priority: P0, status: defined, related_users: [], category: E }
+  - { id: FR-39, file: features/FR-39_customer-prepayment.md, title: "利用客の事前決済", priority: P0, status: defined, related_users: [U-05], category: E }
+  - { id: FR-40, file: features/FR-40_refund.md, title: "返金処理", priority: P0, status: defined, related_users: [U-04], category: E }
+  - { id: FR-41, file: features/FR-41_cancel-policy.md, title: "キャンセルポリシー（共通）", priority: P0, status: defined, related_users: [], category: E }
+  - { id: FR-42, file: features/FR-42_stripe-webhook.md, title: "Stripe Webhook", priority: P0, status: defined, related_users: [], category: E }
+  - { id: FR-43, file: features/FR-43_fee-statement.md, title: "手数料明細", priority: P0, status: defined, related_users: [U-01, U-02, U-06], category: E }
+  - { id: FR-44, file: features/FR-44_payout-schedule.md, title: "入金スケジュール", priority: P0, status: defined, related_users: [U-02, U-06], category: E }
+  - { id: FR-86, file: features/FR-86_facility-cancel-policy-override.md, title: "施設別キャンセルポリシー上書き", priority: P1, status: defined, related_users: [U-02, U-06], category: E }
+
+  # F. メッセージ・通知
+  - { id: FR-45, file: features/FR-45_chat.md, title: "チャット（β）", priority: P0, status: defined, related_users: [U-01, U-02], category: F, beta: true }
+  - { id: FR-46, file: features/FR-46_email-notification.md, title: "メール通知", priority: P0, status: defined, related_users: [], category: F }
+  - { id: FR-47, file: features/FR-47_sms-notification.md, title: "SMS 通知", priority: P0, status: defined, related_users: [U-05], category: F }
+  - { id: FR-48, file: features/FR-48_notification-settings.md, title: "通知設定", priority: P0, status: defined, related_users: [U-01, U-02, U-03, U-04, U-06], category: F }
+
+  # G. レビュー
+  - { id: FR-49, file: features/FR-49_nurse-to-facility-review.md, title: "看護師→施設レビュー（β）", priority: P0, status: defined, related_users: [U-01], category: G, beta: true }
+  - { id: FR-50, file: features/FR-50_facility-to-nurse-review.md, title: "施設→看護師レビュー（β）", priority: P0, status: defined, related_users: [U-02], category: G, beta: true }
+  - { id: FR-51, file: features/FR-51_review-list.md, title: "レビュー一覧（β）", priority: P0, status: defined, related_users: [U-01, U-02], category: G, beta: true }
+  - { id: FR-52, file: features/FR-52_review-moderation.md, title: "レビュー公開・通報・モデレーション（β）", priority: P0, status: defined, related_users: [U-01, U-02, U-04], category: G, beta: true }
+
+  # H. 運営管理
+  - { id: FR-53, file: features/FR-53_ops-user-list.md, title: "運営: ユーザー一覧・検索", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-54, file: features/FR-54_ops-user-review.md, title: "運営: ユーザー審査", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-55, file: features/FR-55_ops-transaction-monitor.md, title: "運営: 取引監視", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-56, file: features/FR-56_ops-violation-action.md, title: "運営: 違反検知・対応", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-57, file: features/FR-57_ops-refund.md, title: "運営: 返金処理", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-58, file: features/FR-58_ops-csv-export.md, title: "運営: CSV エクスポート", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-59, file: features/FR-59_ops-audit-log.md, title: "運営: 監査ログ閲覧", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-87, file: features/FR-87_ops-managed-onboarding.md, title: "運営代理オンボーディング", priority: P0, status: defined, related_users: [U-04], category: H }
+  - { id: FR-60, file: features/FR-60_ops-announcement.md, title: "運営: お知らせ配信", priority: P1, status: defined, related_users: [U-04], category: H }
+
+  # I. 公開導線
+  - { id: FR-61, file: features/FR-61_terms-of-service.md, title: "利用規約", priority: P0, status: defined, related_users: [], category: I }
+  - { id: FR-62, file: features/FR-62_privacy-policy.md, title: "プライバシーポリシー", priority: P0, status: defined, related_users: [], category: I }
+  - { id: FR-63, file: features/FR-63_commerce-disclosure.md, title: "特商法表記", priority: P0, status: defined, related_users: [], category: I }
+  - { id: FR-64, file: features/FR-64_contact-form.md, title: "お問い合わせフォーム", priority: P0, status: defined, related_users: [], category: I }
+
+  # J. ダッシュボード
+  - { id: FR-65, file: features/FR-65_nurse-dashboard.md, title: "看護師ダッシュボード", priority: P0, status: defined, related_users: [U-01], category: J }
+  - { id: FR-66, file: features/FR-66_facility-dashboard.md, title: "施設ダッシュボード", priority: P0, status: defined, related_users: [U-02], category: J }
+  - { id: FR-67, file: features/FR-67_doctor-dashboard.md, title: "指示医ダッシュボード", priority: P0, status: defined, related_users: [U-03], category: J }
+  - { id: FR-68, file: features/FR-68_ops-dashboard.md, title: "運営 KPI ダッシュボード", priority: P0, status: defined, related_users: [U-04], category: J }
+  - { id: FR-85, file: features/FR-85_org-dashboard.md, title: "法人レベルダッシュボード", priority: P0, status: defined, related_users: [U-06], category: J }
+
+  # K. 顧客予約ページ
+  - { id: FR-69, file: features/FR-69_nurse-public-booking-page.md, title: "看護師の公開ブッキングページ", priority: P0, status: defined, related_users: [U-01], category: K }
+  - { id: FR-70, file: features/FR-70_customer-guest-booking.md, title: "利用客のゲスト予約", priority: P0, status: defined, related_users: [U-05], category: K }
+  - { id: FR-71, file: features/FR-71_questionnaire-template.md, title: "問診票テンプレート", priority: P0, status: defined, related_users: [U-01], category: K }
+  - { id: FR-72, file: features/FR-72_questionnaire-fill.md, title: "問診票記入", priority: P0, status: defined, related_users: [U-05], category: K }
+  - { id: FR-73, file: features/FR-73_customer-confirmation.md, title: "確認メール / SMS", priority: P0, status: defined, related_users: [U-05], category: K }
+  - { id: FR-74, file: features/FR-74_customer-booking-lookup.md, title: "予約照会（メール+番号）", priority: P0, status: defined, related_users: [U-05], category: K }
+  - { id: FR-75, file: features/FR-75_customer-booking-modify.md, title: "予約変更・キャンセル（利用客）", priority: P0, status: defined, related_users: [U-05], category: K }
+
+  # 横断・運用基盤
+  - { id: FR-76, file: features/FR-76_audit-log-infra.md, title: "監査ログ収集基盤", priority: P0, status: defined, related_users: [], category: cross }
+  - { id: FR-77, file: features/FR-77_background-job-infra.md, title: "バックグラウンドジョブ基盤", priority: P0, status: defined, related_users: [], category: cross }
+  - { id: FR-78, file: features/FR-78_pii-masking.md, title: "個人情報マスキング", priority: P0, status: defined, related_users: [], category: cross }
+  - { id: FR-79, file: features/FR-79_feature-flag.md, title: "フィーチャーフラグ", priority: P1, status: defined, related_users: [U-04], category: cross }
+  - { id: FR-80, file: features/FR-80_health-status.md, title: "ヘルスチェック・ステータスページ", priority: P1, status: defined, related_users: [U-04], category: cross }
+
+screens: []  # Phase 1 / PHASE 4 で追加
