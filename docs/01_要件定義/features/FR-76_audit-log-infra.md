@@ -2,7 +2,7 @@
 id: FR-76
 title: 監査ログ収集基盤
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: []
 related_features: [FR-59, FR-77, FR-78]

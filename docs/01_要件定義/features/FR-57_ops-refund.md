@@ -2,7 +2,7 @@
 id: FR-57
 title: 運営: 返金処理画面
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-94-ops-refund]
 related_features: [FR-40, FR-42, FR-76]

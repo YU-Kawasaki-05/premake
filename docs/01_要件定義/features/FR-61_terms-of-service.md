@@ -2,7 +2,7 @@
 id: FR-61
 title: 利用規約ページ
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: [SCR-100-tos]
 related_features: [FR-01, FR-60]

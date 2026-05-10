@@ -2,7 +2,7 @@
 id: FR-10
 title: 医師免許審査
 priority: P0
-status: defined
+status: designed
 related_users: [U-03, U-04]
 related_screens: [SCR-14-doctor-license-upload, SCR-12-ops-review]
 related_features: [FR-03, FR-29, FR-54, FR-78]

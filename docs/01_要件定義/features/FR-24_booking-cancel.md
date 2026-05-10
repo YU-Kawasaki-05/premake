@@ -2,7 +2,7 @@
 id: FR-24
 title: 予約キャンセル
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-04]
 related_screens: [SCR-45-booking-cancel]
 related_features: [FR-21, FR-22, FR-40, FR-41, FR-86]

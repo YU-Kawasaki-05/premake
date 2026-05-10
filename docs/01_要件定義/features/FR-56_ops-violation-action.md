@@ -2,7 +2,7 @@
 id: FR-56
 title: 運営: 違反検知・対応
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-93-ops-violations]
 related_features: [FR-11, FR-24, FR-40, FR-52, FR-55, FR-76]

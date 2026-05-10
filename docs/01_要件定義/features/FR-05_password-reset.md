@@ -2,7 +2,7 @@
 id: FR-05
 title: パスワードリセット
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-06-password-reset-request, SCR-07-password-reset-confirm]
 related_features: [FR-04, FR-46, FR-76]

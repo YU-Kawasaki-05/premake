@@ -2,7 +2,7 @@
 id: FR-15
 title: スペース料金設定
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-22-space-pricing]
 related_features: [FR-14, FR-38, FR-43]

@@ -2,7 +2,7 @@
 id: FR-03
 title: 指示医招待型サインアップ（4経路）
 priority: P0
-status: defined
+status: designed
 related_users: [U-03]
 related_screens: [SCR-03-invite-accept]
 related_features: [FR-02, FR-04, FR-10, FR-29, FR-81, FR-87]

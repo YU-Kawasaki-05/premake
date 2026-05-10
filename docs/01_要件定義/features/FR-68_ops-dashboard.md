@@ -2,7 +2,7 @@
 id: FR-68
 title: 運営 KPI ダッシュボード
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-113-ops-dashboard]
 related_features: [FR-54, FR-55, FR-56, FR-58]

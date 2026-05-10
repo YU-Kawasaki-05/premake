@@ -2,7 +2,7 @@
 id: FR-44
 title: 入金スケジュール表示
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-66-payout-schedule]
 related_features: [FR-37, FR-38, FR-43]

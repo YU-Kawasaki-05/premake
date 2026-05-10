@@ -2,7 +2,7 @@
 id: FR-36
 title: 看護師のカード登録
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-60-card-register]
 related_features: [FR-21, FR-38, FR-42]

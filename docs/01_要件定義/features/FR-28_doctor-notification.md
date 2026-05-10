@@ -2,7 +2,7 @@
 id: FR-28
 title: 予約発生時の指示医通知
 priority: P0
-status: defined
+status: designed
 related_users: [U-03]
 related_screens: [SCR-50-doctor-inbox]
 related_features: [FR-18, FR-22, FR-29, FR-46, FR-47]

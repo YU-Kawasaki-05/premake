@@ -2,7 +2,7 @@
 id: FR-08
 title: 看護師免許アップロード・審査
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-04]
 related_screens: [SCR-11-license-upload, SCR-12-ops-review]
 related_features: [FR-01, FR-21, FR-54, FR-78]

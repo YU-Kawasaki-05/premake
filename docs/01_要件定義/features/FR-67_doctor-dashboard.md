@@ -2,7 +2,7 @@
 id: FR-67
 title: 指示医ダッシュボード
 priority: P0
-status: defined
+status: designed
 related_users: [U-03]
 related_screens: [SCR-112-doctor-dashboard]
 related_features: [FR-28, FR-29, FR-34, FR-35]

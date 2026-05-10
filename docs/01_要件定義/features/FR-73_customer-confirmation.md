@@ -2,7 +2,7 @@
 id: FR-73
 title: 確認メール / SMS（利用客）
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: []
 related_features: [FR-46, FR-47, FR-70]

@@ -2,7 +2,7 @@
 id: FR-48
 title: 通知設定
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-71-notification-settings]
 related_features: [FR-46, FR-47]

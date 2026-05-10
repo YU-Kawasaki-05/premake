@@ -2,7 +2,7 @@
 id: FR-72
 title: 問診票記入
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: [SCR-123-questionnaire-fill]
 related_features: [FR-29, FR-70, FR-71, FR-78]

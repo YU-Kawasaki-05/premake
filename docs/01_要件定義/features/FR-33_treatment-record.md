@@ -2,7 +2,7 @@
 id: FR-33
 title: 施術記録投入
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-55-treatment-record]
 related_features: [FR-29, FR-32, FR-34, FR-78, FR-88]

@@ -2,7 +2,7 @@
 id: FR-78
 title: 個人情報マスキング・閲覧ログ
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: []
 related_features: [FR-08, FR-27, FR-30, FR-33, FR-35, FR-53, FR-72, FR-76]

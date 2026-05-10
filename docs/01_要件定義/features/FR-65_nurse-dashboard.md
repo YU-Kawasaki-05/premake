@@ -2,7 +2,7 @@
 id: FR-65
 title: 看護師ダッシュボード
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-110-nurse-dashboard]
 related_features: [FR-25, FR-29, FR-33, FR-43, FR-69]

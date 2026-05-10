@@ -2,7 +2,7 @@
 id: FR-84
 title: 施設管理者・指示医の招待（法人から）
 priority: P0
-status: defined
+status: designed
 related_users: [U-06]
 related_screens: [SCR-32-org-invite]
 related_features: [FR-02, FR-03, FR-87]

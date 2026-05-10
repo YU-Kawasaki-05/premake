@@ -2,7 +2,7 @@
 id: FR-06
 title: メールアドレス確認
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-08-email-verify]
 related_features: [FR-01, FR-04, FR-46]

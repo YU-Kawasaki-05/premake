@@ -2,7 +2,7 @@
 id: FR-21
 title: 予約申込
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-42-booking-request]
 related_features: [FR-08, FR-15, FR-16, FR-22, FR-28, FR-36, FR-38, FR-88]

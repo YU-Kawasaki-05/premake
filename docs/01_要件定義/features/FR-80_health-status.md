@@ -2,7 +2,7 @@
 id: FR-80
 title: ヘルスチェック・ステータスページ
 priority: P1
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-131-status]
 related_features: [FR-77]

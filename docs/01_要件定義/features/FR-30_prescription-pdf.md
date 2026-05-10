@@ -2,7 +2,7 @@
 id: FR-30
 title: 電子指示書 PDF 生成・保管
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: [SCR-52-prescription-view]
 related_features: [FR-29, FR-77, FR-78]

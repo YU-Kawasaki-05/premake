@@ -2,7 +2,7 @@
 id: FR-47
 title: SMS 通知
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: []
 related_features: [FR-28, FR-46, FR-70, FR-73, FR-74, FR-77]

@@ -1,0 +1,130 @@
+version: 2
+project_name: "premake"
+phase: 2
+status: completed
+
+stack:
+  framework: "Next.js 15 (App Router)"
+  language: "TypeScript"
+  hosting: "Vercel"
+  database: "Supabase (PostgreSQL 15+)"
+  auth: "Supabase Auth + Google OAuth"
+  storage: "Supabase Storage"
+  payments: "Stripe Connect Express"
+  email: "Resend + React Email"
+  sms: "Twilio Programmable Messaging"
+  monitoring: "Sentry + Axiom"
+  ui: "Tailwind CSS + shadcn/ui + Lucide"
+  forms: "react-hook-form + zod"
+  query: "TanStack Query (client) + RSC (server)"
+  jobs: "Vercel Cron + pg_cron + worker_jobs (β); Inngest is migration-ready (DEC-26)"
+
+# DB tables (60 tables, see 01_DB設計/)
+tables:
+  # A. 認証・組織・ユーザー
+  - { id: TBL-organizations, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-82, FR-83, FR-84, FR-85] }
+  - { id: TBL-facilities, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-09, FR-13, FR-83] }
+  - { id: TBL-users, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-01, FR-02, FR-03, FR-04, FR-11, FR-81] }
+  - { id: TBL-doctor_profiles, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-03, FR-10] }
+  - { id: TBL-nurse_profiles, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-08, FR-69] }
+  - { id: TBL-doctor_facility_assignments, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-03, FR-18] }
+  - { id: TBL-invitations, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-02, FR-03, FR-84, FR-87] }
+  - { id: TBL-mfa_settings, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-07] }
+  - { id: TBL-mfa_backup_codes, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-07] }
+  - { id: TBL-user_sessions, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-04, FR-12] }
+  - { id: TBL-nurse_license_applications, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-08] }
+  - { id: TBL-doctor_license_applications, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-10] }
+  - { id: TBL-facility_license_applications, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-09] }
+  - { id: TBL-organization_applications, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-82] }
+  - { id: TBL-user_term_consents, file: 01_DB設計/03_tables_A_認証組織ユーザー.md, related_features: [FR-61, FR-62] }
+
+  # B. スペース
+  - { id: TBL-spaces, file: 01_DB設計/04_tables_B_スペース.md, related_features: [FR-14, FR-17, FR-19] }
+  - { id: TBL-space_images, file: 01_DB設計/04_tables_B_スペース.md, related_features: [FR-14] }
+  - { id: TBL-space_pricing, file: 01_DB設計/04_tables_B_スペース.md, related_features: [FR-15] }
+  - { id: TBL-space_availability_rules, file: 01_DB設計/04_tables_B_スペース.md, related_features: [FR-16] }
+  - { id: TBL-space_availability_overrides, file: 01_DB設計/04_tables_B_スペース.md, related_features: [FR-16] }
+
+  # C. 予約・顧客予約
+  - { id: TBL-bookings, file: 01_DB設計/05_tables_C_予約顧客.md, related_features: [FR-21, FR-22, FR-23, FR-24, FR-27] }
+  - { id: TBL-booking_sessions, file: 01_DB設計/05_tables_C_予約顧客.md, related_features: [FR-88] }
+  - { id: TBL-booking_change_requests, file: 01_DB設計/05_tables_C_予約顧客.md, related_features: [FR-23] }
+  - { id: TBL-cancel_policy_overrides, file: 01_DB設計/05_tables_C_予約顧客.md, related_features: [FR-86] }
+  - { id: TBL-nurse_pages, file: 01_DB設計/05_tables_C_予約顧客.md, related_features: [FR-69] }
+  - { id: TBL-customer_bookings, file: 01_DB設計/05_tables_C_予約顧客.md, related_features: [FR-70, FR-74, FR-75] }
+
+  # D. 指示書・施術記録
+  - { id: TBL-prescriptions, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-29] }
+  - { id: TBL-prescription_pdfs, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-30] }
+  - { id: TBL-consent_templates, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-31] }
+  - { id: TBL-customer_consents, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-32] }
+  - { id: TBL-questionnaire_templates, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-71] }
+  - { id: TBL-customer_questionnaire_responses, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-72] }
+  - { id: TBL-treatment_records, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-33, FR-34] }
+  - { id: TBL-treatment_record_addenda, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-34] }
+  - { id: TBL-treatment_record_images, file: 01_DB設計/06_tables_D_指示書施術記録.md, related_features: [FR-33] }
+
+  # E. 決済
+  - { id: TBL-payments, file: 01_DB設計/07_tables_E_決済.md, related_features: [FR-38] }
+  - { id: TBL-customer_payments, file: 01_DB設計/07_tables_E_決済.md, related_features: [FR-39] }
+  - { id: TBL-refunds, file: 01_DB設計/07_tables_E_決済.md, related_features: [FR-40] }
+  - { id: TBL-platform_revenue, file: 01_DB設計/07_tables_E_決済.md, related_features: [FR-43, FR-68] }
+  - { id: TBL-stripe_events, file: 01_DB設計/07_tables_E_決済.md, related_features: [FR-42] }
+  - { id: TBL-stripe_connect_accounts, file: 01_DB設計/07_tables_E_決済.md, related_features: [FR-37] }
+
+  # F. 通知・レビュー
+  - { id: TBL-chat_threads, file: 01_DB設計/08_tables_F_通知レビュー.md, related_features: [FR-45] }
+  - { id: TBL-chat_messages, file: 01_DB設計/08_tables_F_通知レビュー.md, related_features: [FR-45] }
+  - { id: TBL-chat_message_attachments, file: 01_DB設計/08_tables_F_通知レビュー.md, related_features: [FR-45] }
+  - { id: TBL-notifications, file: 01_DB設計/08_tables_F_通知レビュー.md, related_features: [FR-46, FR-47] }
+  - { id: TBL-notification_preferences, file: 01_DB設計/08_tables_F_通知レビュー.md, related_features: [FR-48] }
+  - { id: TBL-reviews, file: 01_DB設計/08_tables_F_通知レビュー.md, related_features: [FR-49, FR-50, FR-51] }
+  - { id: TBL-review_reports, file: 01_DB設計/08_tables_F_通知レビュー.md, related_features: [FR-52] }
+
+  # G. 運営・監査
+  - { id: TBL-applications, file: 01_DB設計/09_tables_G_運営監査.md, related_features: [FR-02, FR-54] }
+  - { id: TBL-violations, file: 01_DB設計/09_tables_G_運営監査.md, related_features: [FR-56] }
+  - { id: TBL-audit_log, file: 01_DB設計/09_tables_G_運営監査.md, related_features: [FR-76] }
+  - { id: TBL-export_logs, file: 01_DB設計/09_tables_G_運営監査.md, related_features: [FR-58] }
+  - { id: TBL-inquiries, file: 01_DB設計/09_tables_G_運営監査.md, related_features: [FR-64] }
+  - { id: TBL-announcements, file: 01_DB設計/09_tables_G_運営監査.md, related_features: [FR-60] }
+  - { id: TBL-term_versions, file: 01_DB設計/09_tables_G_運営監査.md, related_features: [FR-61, FR-62, FR-63] }
+
+  # H. 横断
+  - { id: TBL-worker_jobs, file: 01_DB設計/10_tables_H_横断基盤.md, related_features: [FR-77] }
+  - { id: TBL-feature_flags, file: 01_DB設計/10_tables_H_横断基盤.md, related_features: [FR-79] }
+  - { id: TBL-system_health_events, file: 01_DB設計/10_tables_H_横断基盤.md, related_features: [FR-80] }
+
+# Endpoints (188 endpoints, see 02_API仕様/)
+# 詳細は 02_API仕様/15_quickref_エンドポイント一覧.md
+endpoints_count: 188
+endpoints_file: "02_API仕様/15_quickref_エンドポイント一覧.md"
+
+# Screens (100+ SCRs, see 04_画面設計/)
+# Phase 1 04_画面遷移図.md と双方向リンク
+screens_count: 110
+screens_files: "04_画面設計/03_認証画面.md 〜 14_横断画面.md"
+
+# AC → Test mapping (主要のみ抜粋、Phase 4 で全件管理)
+# 詳細は 06_テスト戦略.md および features/FR-XX_*.md
+ac_test_mapping_summary:
+  total_ac_count: 200  # 概算
+  test_files_planned: 195
+  current_status: "all_pending"
+  format_rule: "// @verifies AC-XX-YY をテスト冒頭に必須"
+
+# Non-functional requirements
+nfr_categories:
+  - { prefix: NFR-PERF, items: 11 }
+  - { prefix: NFR-SEC, items: 15 }
+  - { prefix: NFR-AVL, items: 7 }
+  - { prefix: NFR-SCL, items: 5 }
+  - { prefix: NFR-MNT, items: 11 }
+  - { prefix: NFR-USB, items: 11 }
+  - { prefix: NFR-CMPL, items: 7 }
+  - { prefix: NFR-OBS, items: 8 }
+  - { prefix: NFR-I18N, items: 4 }
+
+# Phase 1 機能のレイヤー カバレッジ（FR ↔ DB / API / 権限 / 画面 / テスト）
+fr_layer_coverage_status: "all_88_features_covered"
+fr_coverage_file: "00_サマリー.md"

@@ -2,7 +2,7 @@
 id: FR-25
 title: 予約一覧（看護師）
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-46-nurse-bookings]
 related_features: [FR-21, FR-22, FR-23, FR-24, FR-27, FR-65]

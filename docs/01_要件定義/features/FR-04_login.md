@@ -2,7 +2,7 @@
 id: FR-04
 title: ログイン
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-05-login]
 related_features: [FR-05, FR-07, FR-11, FR-12, FR-81]

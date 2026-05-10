@@ -2,7 +2,7 @@
 id: FR-71
 title: 問診票テンプレート編集
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-122-questionnaire-template]
 related_features: [FR-29, FR-31, FR-72]

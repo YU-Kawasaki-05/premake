@@ -2,7 +2,7 @@
 id: FR-83
 title: 配下施設の追加・編集・閉鎖
 priority: P0
-status: defined
+status: designed
 related_users: [U-06, U-04]
 related_screens: [SCR-31-org-facilities]
 related_features: [FR-09, FR-13, FR-82, FR-84]

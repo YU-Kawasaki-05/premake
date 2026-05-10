@@ -2,7 +2,7 @@
 id: FR-29
 title: 電子指示書発行・電子署名
 priority: P0
-status: defined
+status: designed
 related_users: [U-03]
 related_screens: [SCR-51-prescription-issue]
 related_features: [FR-10, FR-28, FR-30, FR-33, FR-67, FR-88]

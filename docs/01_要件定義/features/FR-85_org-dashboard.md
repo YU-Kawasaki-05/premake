@@ -2,7 +2,7 @@
 id: FR-85
 title: 法人レベルダッシュボード
 priority: P0
-status: defined
+status: designed
 related_users: [U-06]
 related_screens: [SCR-114-org-dashboard]
 related_features: [FR-43, FR-66, FR-83, FR-84]

@@ -2,7 +2,7 @@
 id: FR-32
 title: 利用客の同意書記入
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: [SCR-54-consent-fill]
 related_features: [FR-29, FR-31, FR-70, FR-72]

@@ -2,7 +2,7 @@
 id: FR-79
 title: フィーチャーフラグ
 priority: P1
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-130-feature-flags]
 related_features: []

@@ -2,7 +2,7 @@
 id: FR-50
 title: 施設→看護師レビュー（β）
 priority: P0
-status: defined
+status: designed
 beta: true
 related_users: [U-02]
 related_screens: [SCR-81-review-form]

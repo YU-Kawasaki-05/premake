@@ -2,7 +2,7 @@
 id: FR-66
 title: 施設ダッシュボード
 priority: P0
-status: defined
+status: designed
 related_users: [U-02]
 related_screens: [SCR-111-facility-dashboard]
 related_features: [FR-22, FR-26, FR-43, FR-44]

@@ -2,7 +2,7 @@
 id: FR-17
 title: スペース公開・非公開切替
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-21-space-create, SCR-24-space-list]
 related_features: [FR-14, FR-19]

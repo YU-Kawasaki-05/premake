@@ -2,7 +2,7 @@
 id: FR-31
 title: 同意書テンプレート編集
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02]
 related_screens: [SCR-53-consent-template]
 related_features: [FR-13, FR-32, FR-69]

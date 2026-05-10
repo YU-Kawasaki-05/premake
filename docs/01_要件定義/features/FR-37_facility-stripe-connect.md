@@ -2,7 +2,7 @@
 id: FR-37
 title: 施設の Stripe Connect 連携
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-61-stripe-connect]
 related_features: [FR-09, FR-38, FR-44]

@@ -2,7 +2,7 @@
 id: FR-51
 title: レビュー一覧（β）
 priority: P0
-status: defined
+status: designed
 beta: true
 related_users: [U-01, U-02]
 related_screens: [SCR-82-review-list]

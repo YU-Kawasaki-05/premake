@@ -2,7 +2,7 @@
 id: FR-41
 title: キャンセルポリシー（共通）
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: [SCR-64-cancel-policy]
 related_features: [FR-24, FR-40, FR-86]

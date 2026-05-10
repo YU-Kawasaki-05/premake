@@ -2,7 +2,7 @@
 id: FR-43
 title: 手数料明細表示
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-06]
 related_screens: [SCR-65-fee-statement]
 related_features: [FR-38, FR-44, FR-58]

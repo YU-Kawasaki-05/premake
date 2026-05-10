@@ -2,7 +2,7 @@
 id: FR-60
 title: 運営: お知らせ配信
 priority: P1
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-98-ops-announcement]
 related_features: [FR-46]

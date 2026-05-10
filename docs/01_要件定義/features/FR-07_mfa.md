@@ -2,7 +2,7 @@
 id: FR-07
 title: MFA（TOTP / SMS）
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-09-mfa-setup, SCR-10-mfa-verify]
 related_features: [FR-04, FR-12, FR-76]

@@ -2,7 +2,7 @@
 id: FR-40
 title: 返金処理
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-63-ops-refund]
 related_features: [FR-24, FR-38, FR-39, FR-41, FR-42, FR-57, FR-76]

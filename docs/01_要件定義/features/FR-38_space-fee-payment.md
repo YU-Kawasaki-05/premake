@@ -2,7 +2,7 @@
 id: FR-38
 title: スペース利用料の決済（按分）
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: []
 related_features: [FR-15, FR-22, FR-34, FR-37, FR-42, FR-44]

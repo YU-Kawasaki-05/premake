@@ -2,7 +2,7 @@
 id: FR-55
 title: 運営: 取引監視
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-92-ops-transactions]
 related_features: [FR-22, FR-38, FR-40, FR-42, FR-56, FR-68, FR-76]

@@ -2,7 +2,7 @@
 id: FR-39
 title: 利用客の事前決済
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: [SCR-62-customer-prepayment]
 related_features: [FR-70, FR-72, FR-42]

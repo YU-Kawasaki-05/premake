@@ -2,7 +2,7 @@
 id: FR-42
 title: Stripe Webhook 受信・整合性確認
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: []
 related_features: [FR-38, FR-39, FR-40, FR-77]

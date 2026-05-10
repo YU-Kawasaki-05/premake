@@ -2,7 +2,7 @@
 id: FR-02
 title: 施設管理者招待型サインアップ（4経路）
 priority: P0
-status: defined
+status: designed
 related_users: [U-02]
 related_screens: [SCR-03-invite-accept, SCR-04-application-form]
 related_features: [FR-04, FR-06, FR-09, FR-81, FR-84, FR-87]

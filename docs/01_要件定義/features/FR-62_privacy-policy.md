@@ -2,7 +2,7 @@
 id: FR-62
 title: プライバシーポリシーページ
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: [SCR-101-privacy]
 related_features: [FR-01, FR-78]

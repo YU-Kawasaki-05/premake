@@ -2,7 +2,7 @@
 id: FR-11
 title: アカウント凍結・復活
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-15-ops-suspend]
 related_features: [FR-04, FR-46, FR-56, FR-76]

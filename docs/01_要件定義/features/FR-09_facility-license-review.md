@@ -2,7 +2,7 @@
 id: FR-09
 title: 医療機関開設届審査
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-04]
 related_screens: [SCR-13-facility-license-upload, SCR-12-ops-review]
 related_features: [FR-02, FR-13, FR-54, FR-78]

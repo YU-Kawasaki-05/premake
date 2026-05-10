@@ -2,7 +2,7 @@
 id: FR-27
 title: 予約詳細
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-48-booking-detail]
 related_features: [FR-21, FR-22, FR-23, FR-24, FR-29, FR-32, FR-33, FR-43, FR-88]

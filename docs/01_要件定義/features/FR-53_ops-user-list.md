@@ -2,7 +2,7 @@
 id: FR-53
 title: 運営: ユーザー一覧・検索
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-90-ops-user-list]
 related_features: [FR-08, FR-11, FR-54, FR-78]

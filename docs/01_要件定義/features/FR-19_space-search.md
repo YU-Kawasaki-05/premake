@@ -2,7 +2,7 @@
 id: FR-19
 title: スペース検索
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-40-search]
 related_features: [FR-14, FR-15, FR-16, FR-17, FR-20]

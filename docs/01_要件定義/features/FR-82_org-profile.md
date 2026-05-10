@@ -2,7 +2,7 @@
 id: FR-82
 title: 法人プロフィール登録・編集
 priority: P0
-status: defined
+status: designed
 related_users: [U-06, U-04]
 related_screens: [SCR-30-org-profile]
 related_features: [FR-09, FR-83, FR-84, FR-85]

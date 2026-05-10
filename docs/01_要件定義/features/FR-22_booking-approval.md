@@ -2,7 +2,7 @@
 id: FR-22
 title: 予約承認・拒否
 priority: P0
-status: defined
+status: designed
 related_users: [U-02]
 related_screens: [SCR-43-booking-approval]
 related_features: [FR-21, FR-26, FR-28, FR-46]

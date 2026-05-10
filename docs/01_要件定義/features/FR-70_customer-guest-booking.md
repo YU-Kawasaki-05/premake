@@ -2,7 +2,7 @@
 id: FR-70
 title: 利用客のゲスト予約
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: [SCR-121-customer-booking]
 related_features: [FR-32, FR-39, FR-69, FR-72, FR-73, FR-74, FR-75, FR-88]

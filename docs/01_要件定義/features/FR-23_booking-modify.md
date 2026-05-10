@@ -2,7 +2,7 @@
 id: FR-23
 title: 予約変更
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02]
 related_screens: [SCR-44-booking-modify]
 related_features: [FR-21, FR-22, FR-24, FR-41, FR-88]

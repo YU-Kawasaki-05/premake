@@ -2,7 +2,7 @@
 id: FR-34
 title: 施術記録の確認・承認
 priority: P0
-status: defined
+status: designed
 related_users: [U-03]
 related_screens: [SCR-56-record-review]
 related_features: [FR-33, FR-38, FR-67, FR-77]

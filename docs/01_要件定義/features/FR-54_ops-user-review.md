@@ -2,7 +2,7 @@
 id: FR-54
 title: 運営: ユーザー審査
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-91-ops-review]
 related_features: [FR-08, FR-09, FR-10, FR-78, FR-87]

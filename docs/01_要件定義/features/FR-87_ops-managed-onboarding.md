@@ -2,7 +2,7 @@
 id: FR-87
 title: 運営代理オンボーディング
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-97-managed-onboarding]
 related_features: [FR-02, FR-03, FR-13, FR-14, FR-82, FR-83]

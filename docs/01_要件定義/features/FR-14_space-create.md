@@ -2,7 +2,7 @@
 id: FR-14
 title: スペース登録
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-21-space-create]
 related_features: [FR-09, FR-15, FR-16, FR-17]

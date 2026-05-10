@@ -2,7 +2,7 @@
 id: FR-35
 title: 施術記録の検索・閲覧
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04]
 related_screens: [SCR-57-record-search]
 related_features: [FR-33, FR-34, FR-76, FR-78]

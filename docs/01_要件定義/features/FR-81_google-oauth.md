@@ -2,7 +2,7 @@
 id: FR-81
 title: Google OAuth サインアップ・ログイン
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-01-signup, SCR-05-login]
 related_features: [FR-01, FR-02, FR-03, FR-04, FR-06, FR-07]

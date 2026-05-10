@@ -2,7 +2,7 @@
 id: FR-12
 title: ログアウト・セッション管理
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-04, U-06]
 related_screens: [SCR-16-session-management]
 related_features: [FR-04, FR-05, FR-07, FR-76]

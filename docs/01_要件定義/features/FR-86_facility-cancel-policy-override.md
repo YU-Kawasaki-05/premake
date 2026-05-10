@@ -2,7 +2,7 @@
 id: FR-86
 title: 施設別キャンセルポリシー上書き
 priority: P1
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-67-cancel-policy-override]
 related_features: [FR-24, FR-41]

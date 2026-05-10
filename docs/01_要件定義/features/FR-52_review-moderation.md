@@ -2,7 +2,7 @@
 id: FR-52
 title: レビュー公開・通報・モデレーション（β）
 priority: P0
-status: defined
+status: designed
 beta: true
 related_users: [U-01, U-02, U-04]
 related_screens: [SCR-83-review-moderation]

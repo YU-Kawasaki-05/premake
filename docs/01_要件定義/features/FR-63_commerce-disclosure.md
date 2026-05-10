@@ -2,7 +2,7 @@
 id: FR-63
 title: 特商法表記
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: [SCR-102-commerce]
 related_features: []

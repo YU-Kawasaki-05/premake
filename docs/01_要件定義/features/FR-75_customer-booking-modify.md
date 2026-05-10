@@ -2,7 +2,7 @@
 id: FR-75
 title: 予約変更・キャンセル（利用客）
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: [SCR-125-customer-modify]
 related_features: [FR-24, FR-39, FR-41, FR-70, FR-74]

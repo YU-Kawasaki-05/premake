@@ -2,7 +2,7 @@
 id: FR-46
 title: メール通知（全イベント）
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: []
 related_features: [FR-22, FR-24, FR-28, FR-29, FR-34, FR-38, FR-40, FR-48, FR-77]

@@ -2,7 +2,7 @@
 id: FR-16
 title: 空き枠カレンダー編集
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-23-space-calendar]
 related_features: [FR-14, FR-19, FR-21, FR-77]

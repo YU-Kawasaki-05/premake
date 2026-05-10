@@ -2,7 +2,7 @@
 id: FR-45
 title: 看護師⇄施設のチャット（β）
 priority: P0
-status: defined
+status: designed
 beta: true
 related_users: [U-01, U-02]
 related_screens: [SCR-70-chat]

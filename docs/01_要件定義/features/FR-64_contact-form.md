@@ -2,7 +2,7 @@
 id: FR-64
 title: お問い合わせフォーム
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: [SCR-103-contact]
 related_features: [FR-46, FR-77]

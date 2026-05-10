@@ -2,7 +2,7 @@
 id: FR-88
 title: 予約セッション管理（カウンセリング+施術）
 priority: P0
-status: defined
+status: designed
 related_users: [U-01, U-02, U-03, U-05]
 related_screens: [SCR-49-session-detail]
 related_features: [FR-21, FR-23, FR-29, FR-33, FR-70]

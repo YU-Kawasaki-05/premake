@@ -2,7 +2,7 @@
 id: FR-18
 title: 施設の指示医割当
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-25-doctor-assignment]
 related_features: [FR-03, FR-14, FR-22, FR-28, FR-29]

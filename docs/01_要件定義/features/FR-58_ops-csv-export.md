@@ -2,7 +2,7 @@
 id: FR-58
 title: 運営: CSV エクスポート
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-95-ops-export]
 related_features: [FR-43, FR-55, FR-76, FR-77]

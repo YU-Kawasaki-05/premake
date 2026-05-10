@@ -2,7 +2,7 @@
 id: FR-69
 title: 看護師の公開ブッキングページ
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-120-public-booking-page]
 related_features: [FR-39, FR-65, FR-70, FR-71, FR-88]

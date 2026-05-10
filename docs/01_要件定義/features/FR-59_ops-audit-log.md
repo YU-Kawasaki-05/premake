@@ -2,7 +2,7 @@
 id: FR-59
 title: 運営: 監査ログ閲覧
 priority: P0
-status: defined
+status: designed
 related_users: [U-04]
 related_screens: [SCR-96-ops-audit]
 related_features: [FR-76, FR-78]

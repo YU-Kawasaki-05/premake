@@ -2,7 +2,7 @@
 id: FR-77
 title: バックグラウンドジョブ基盤
 priority: P0
-status: defined
+status: designed
 related_users: []
 related_screens: []
 related_features: [FR-21, FR-28, FR-30, FR-38, FR-42, FR-46, FR-58, FR-80]

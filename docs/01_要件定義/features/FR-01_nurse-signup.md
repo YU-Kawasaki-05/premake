@@ -2,7 +2,7 @@
 id: FR-01
 title: 看護師サインアップ
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-01-signup, SCR-02-signup-confirm]
 related_features: [FR-04, FR-06, FR-07, FR-08, FR-81]

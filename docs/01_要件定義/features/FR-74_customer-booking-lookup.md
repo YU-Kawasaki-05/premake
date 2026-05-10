@@ -2,7 +2,7 @@
 id: FR-74
 title: 予約照会（メール+番号）
 priority: P0
-status: defined
+status: designed
 related_users: [U-05]
 related_screens: [SCR-124-customer-lookup]
 related_features: [FR-47, FR-70, FR-75]

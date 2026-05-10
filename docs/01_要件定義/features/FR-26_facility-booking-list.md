@@ -2,7 +2,7 @@
 id: FR-26
 title: 予約一覧（施設）
 priority: P0
-status: defined
+status: designed
 related_users: [U-02, U-06]
 related_screens: [SCR-47-facility-bookings]
 related_features: [FR-22, FR-23, FR-24, FR-66]

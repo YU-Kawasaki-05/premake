@@ -2,7 +2,7 @@
 id: FR-20
 title: スペース詳細閲覧
 priority: P0
-status: defined
+status: designed
 related_users: [U-01]
 related_screens: [SCR-41-space-detail]
 related_features: [FR-13, FR-14, FR-15, FR-16, FR-21, FR-51]
