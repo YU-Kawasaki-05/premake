@@ -1,0 +1,195 @@
+version: 2
+project_name: "premake"
+phase: 3
+status: completed
+
+stack:
+  framework: "Next.js 15 (App Router)"
+  language: "TypeScript strict"
+  node: "22 LTS"
+  package_manager: "pnpm 9"
+  ui: "Tailwind CSS v4 + shadcn/ui + Lucide React"
+  forms: "react-hook-form + zod"
+  data: "TanStack Query (client) + RSC (server)"
+  lint: "Biome 1.9"
+  test_unit: "Vitest"
+  test_integration: "Vitest + Supabase local"
+  test_e2e: "Playwright"
+  test_a11y: "axe-core + axe-playwright"
+  bundler: "next.js default (turbo)"
+  env_validation: "@t3-oss/env-nextjs"
+
+baas:
+  db: "Supabase PostgreSQL 15+ with RLS"
+  auth: "Supabase Auth + MFA + Google OAuth"
+  storage: "Supabase Storage (encrypted buckets)"
+  realtime: "Supabase Realtime"
+  cron: "pg_cron + Vercel Cron"
+
+hosting: "Vercel Pro"
+
+external:
+  payments: "Stripe Connect Express"
+  email: "Resend + React Email"
+  sms: "Twilio Programmable Messaging"
+  monitoring: "Sentry"
+  logs: "Axiom (Vercel native)"
+  rate_limit: "Vercel KV (Upstash Redis)"
+  recaptcha: "Google reCAPTCHA v3"
+  tsa: "freeTSA.org (provisional)"
+
+sprints:
+  - id: S0
+    week: 0
+    goal: "プロジェクト基盤"
+    tasks_count: 12
+    fr: []
+  - id: S1
+    week: 1
+    goal: "認証・登録"
+    tasks_count: 15
+    fr: [FR-01, FR-02, FR-03, FR-04, FR-05, FR-06, FR-07, FR-08, FR-09, FR-10, FR-11, FR-12, FR-54, FR-81, FR-82]
+  - id: S2
+    week: 2
+    goal: "施設・スペース"
+    tasks_count: 12
+    fr: [FR-13, FR-14, FR-15, FR-16, FR-17, FR-18, FR-82, FR-83, FR-84]
+  - id: S3
+    week: 3
+    goal: "検索・予約"
+    tasks_count: 14
+    fr: [FR-19, FR-20, FR-21, FR-22, FR-25, FR-26, FR-27, FR-88]
+  - id: S4
+    week: 4
+    goal: "変更・キャンセル・決済"
+    tasks_count: 13
+    fr: [FR-23, FR-24, FR-36, FR-37, FR-38, FR-41, FR-42, FR-43, FR-44, FR-86]
+  - id: S5
+    week: 5
+    goal: "指示書・同意書・問診票"
+    tasks_count: 14
+    fr: [FR-28, FR-29, FR-30, FR-31, FR-32, FR-71, FR-72]
+  - id: S6
+    week: 6
+    goal: "施術記録・決済確定"
+    tasks_count: 10
+    fr: [FR-33, FR-34, FR-35, FR-38, FR-40]
+  - id: S7
+    week: 7
+    goal: "顧客予約・ゲスト"
+    tasks_count: 14
+    fr: [FR-39, FR-69, FR-70, FR-73, FR-74, FR-75]
+  - id: S8
+    week: 8
+    goal: "メッセージ・通知・レビュー"
+    tasks_count: 10
+    fr: [FR-45, FR-46, FR-47, FR-48, FR-49, FR-50, FR-51, FR-52]
+  - id: S9
+    week: 9
+    goal: "運営機能"
+    tasks_count: 16
+    fr: [FR-53, FR-54, FR-55, FR-56, FR-57, FR-58, FR-59, FR-68, FR-79, FR-87]
+  - id: S10
+    week: 10
+    goal: "ダッシュ・公開・横断"
+    tasks_count: 14
+    fr: [FR-60, FR-61, FR-62, FR-63, FR-64, FR-65, FR-66, FR-67, FR-80, FR-85]
+  - id: S11
+    week: 11
+    goal: "テスト完成・ペネトレ準備"
+    tasks_count: 10
+    fr: []
+  - id: S12
+    week: 12
+    goal: "クローズドα + 安定化"
+    tasks_count: -
+    fr: []
+
+monitoring:
+  - id: MON-01
+    metric: error_rate
+    threshold: "> 1% / 5min"
+    alert: "Slack #alerts"
+  - id: MON-02
+    metric: p95_latency
+    threshold: "> 1s / 5min"
+    alert: "Slack"
+  - id: MON-03
+    metric: stripe_webhook_failure
+    threshold: "> 0.5%"
+    alert: "Slack + PagerDuty"
+  - id: MON-04
+    metric: audit_log_write_failure
+    threshold: "> 0"
+    alert: "PagerDuty"
+  - id: MON-05
+    metric: notification_delivery_delay
+    threshold: "> 5min"
+    alert: "Slack"
+
+cost_kill_switches:
+  - service: "Twilio SMS"
+    monthly_budget_usd: 30
+    warn_threshold_usd: 25
+    auto_stop_threshold_usd: 40
+    stop_method: "feature_flags.sms_enabled = false"
+  - service: "Resend"
+    monthly_budget_emails: 2900
+    warn_threshold_emails: 2500
+    auto_stop_threshold_emails: 2900
+    stop_method: "feature_flags.email_enabled = degraded"
+
+launch:
+  strategy: "phased + feature flags"
+  phases:
+    - name: "alpha_internal"
+      target_users: "運営 + テストユーザー数名"
+      duration: "Sprint 11-12"
+    - name: "closed_alpha"
+      target_users: "1 施設 × 1 看護師"
+      duration: "Week 12-13"
+    - name: "closed_beta"
+      target_users: "20 施設 × 100 看護師"
+      duration: "Week 14-19 (~6 weeks)"
+    - name: "limited_release"
+      target_users: "+100 施設"
+      duration: "Beta + 4 weeks"
+    - name: "general_release"
+      target_users: "全員 + LP"
+      duration: "limited 後"
+
+provisional_decisions:
+  - id: PD-01
+    item: "プラットフォーム手数料率"
+    value: "15%"
+    confirm_by: "クローズドβ前"
+  - id: PD-02
+    item: "TSA"
+    value: "freeTSA.org"
+    confirm_by: "Sprint 5"
+  - id: PD-03
+    item: "PDF 生成"
+    value: "react-pdf or pdfkit"
+    confirm_by: "Sprint 5"
+  - id: PD-04
+    item: "Lint/Format"
+    value: "Biome"
+    confirm_by: "Sprint 0"
+  - id: PD-05
+    item: "プラットフォーム手数料 課税"
+    value: "内税"
+    confirm_by: "クローズドβ前"
+  - id: PD-06
+    item: "看護師都合キャンセル時の補償"
+    value: "5,000 円クーポン"
+    confirm_by: "クローズドβ前"
+
+provisional_implementation:
+  approach: "推奨値で仮確定、実装中に扱う"
+  rationale: "Phase 1-2 で代期した 16 項目を Phase 3 推奨値で運用、β中にチューニング"
+
+ai_workflow:
+  rule_implements_tag: "全ファイル冒頭に @implements FR-XX, AC-XX-YY 必須"
+  rule_verifies_tag: "全テストに @verifies AC-XX-YY 必須"
+  drift_detection_command: "pnpm drift:check"
+  drift_detection_ci: "weekly"
