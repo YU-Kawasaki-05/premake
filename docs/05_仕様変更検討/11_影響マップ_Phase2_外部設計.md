@@ -59,11 +59,17 @@
 #### TBL-payments
 - `recipient_type` 列削除（clinic 固定）
 - `nurse_share_amount`, `clinic_share_amount`, `platform_fee_amount` を明示
-- `stripe_connect_account_id` は clinic の Connect ID のみ
+- `stripe_connect_account_id` は clinic の Connect ID のみ、**NULL 許容**（Stripe 以外の決済時は NULL）
+- **`payment_method` 列追加**: enum 'stripe' / 'cash' / 'qr_paypay' / 'qr_other' / 'bank_transfer' / 'other' [DEC-42]
+- **`payment_status` 列追加**: 'pending' / 'received'（クリニックの手動マーク or Stripe Webhook で自動更新）
+- **`min_amount_adjustment_applied BOOLEAN` 列追加**: クリニック最低取り分が適用され看護師取り分が縮減された場合 true [DEC-41]
+- **`menu_price_charged` 列追加**: 実際に患者から徴収した施術料金（リタッチや割引適用後の額）
+- **`menu_price_list` 列追加**: メニュー定価（割引前の参照値）
 
 #### TBL-customer_payments
 - `recipient_clinic_id UUID NOT NULL` カラム追加
 - `stripe_connect_account_id` は clinic のみ
+- **事前決済は Stripe 必須**（オンライン決済代行のため）、現金・QR は対面決済のみ
 
 #### TBL-consent_templates
 - `owner_type` enum から `'nurse'` を削除（**`'platform' / 'facility'` のみ**）
