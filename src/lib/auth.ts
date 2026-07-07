@@ -2,8 +2,8 @@ import "server-only";
 
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/supabase/database.types";
+import { createClient } from "@/lib/supabase/server";
 
 export type ClinicRole = "owner" | "doctor" | "staff";
 
@@ -20,11 +20,7 @@ export const isOps = cache(async (): Promise<boolean> => {
   const user = await getUser();
   if (!user) return false;
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("profiles")
-    .select("is_ops")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { data } = await supabase.from("profiles").select("is_ops").eq("id", user.id).maybeSingle();
   return data?.is_ops ?? false;
 });
 
@@ -72,9 +68,7 @@ export const requireMemberBase = cache(async (clinicSlug: string) => {
 
   if (!clinic) notFound();
 
-  const member = clinic.clinic_members.find(
-    (m) => m.user_id === user.id && m.status === "active",
-  );
+  const member = clinic.clinic_members.find((m) => m.user_id === user.id && m.status === "active");
 
   if (member) {
     const { clinic_members: _omit, ...clinicRow } = clinic;

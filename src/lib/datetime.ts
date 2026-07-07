@@ -1,7 +1,12 @@
-import { format, toZonedTime } from "date-fns-tz";
 import { ja } from "date-fns/locale";
+import { format, toZonedTime } from "date-fns-tz";
 
 export const TIME_ZONE = "Asia/Tokyo";
+
+/** JST の日付(yyyy-mm-dd)+時刻(HH:mm)を UTC の ISO 文字列に変換(tstzrange 用) */
+export function jstDateTimeToUtcISO(date: string, time: string): string {
+  return new Date(`${date}T${time}:00+09:00`).toISOString();
+}
 
 /** 日付のみ: 2026/7/12(金) */
 export function formatDate(value: string | Date): string {
@@ -20,7 +25,8 @@ export function formatTimeRange(startISO: string, endISO: string): string {
   const start = toZonedTime(new Date(startISO), TIME_ZONE);
   const end = toZonedTime(new Date(endISO), TIME_ZONE);
   const startStr = format(start, "M/d(EEE) HH:mm", { timeZone: TIME_ZONE, locale: ja });
-  const sameDay = format(start, "yyyyMMdd", { timeZone: TIME_ZONE }) ===
+  const sameDay =
+    format(start, "yyyyMMdd", { timeZone: TIME_ZONE }) ===
     format(end, "yyyyMMdd", { timeZone: TIME_ZONE });
   const endStr = format(end, sameDay ? "HH:mm" : "M/d(EEE) HH:mm", {
     timeZone: TIME_ZONE,
