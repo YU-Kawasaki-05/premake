@@ -4,6 +4,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { enqueueNotification } from "@/features/notifications/enqueue";
 import type { SessionStep } from "@/features/services/session-template";
 import { recordAudit } from "@/lib/audit";
 import { requireMember } from "@/lib/auth";
@@ -228,6 +229,23 @@ export async function createBooking(
     targetId: booking.id,
     diff: { service_id: d.serviceId, sessions: laid.length },
   });
+
+  // 患者にメールがあれば確認通知をキューへ
+  if (patientId) {
+    const { data: pt } = await supabase
+      .from("patients")
+      .select("email")
+      .eq("id", patientId)
+      .maybeSingle();
+    await enqueueNotification({
+      clinicId: clinic.id,
+      bookingId: booking.id,
+      recipientEmail: pt?.email ?? null,
+      recipientType: "patient",
+      kind: "booking_confirmed",
+    });
+  }
+
   revalidatePath(`/${slug}`);
   return { bookingId: booking.id };
 }
@@ -338,6 +356,22 @@ export async function cancelBooking(
     targetId: parsed.data.bookingId,
     diff: { reason: parsed.data.reason },
   });
+
+  // キャンセル通知(患者/ゲストのメールがあれば)
+  const { data: bk } = await supabase
+    .from("bookings")
+    .select("guest_email, patient:patients(email)")
+    .eq("id", parsed.data.bookingId)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  await enqueueNotification({
+    clinicId: clinic.id,
+    bookingId: parsed.data.bookingId,
+    recipientEmail: bk?.guest_email ?? bk?.patient?.email ?? null,
+    recipientType: "patient",
+    kind: "booking_cancelled",
+  });
+
   revalidatePath(`/${slug}`);
   return { ok: true };
 }
