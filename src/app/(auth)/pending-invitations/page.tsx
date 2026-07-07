@@ -3,9 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/features/auth/actions";
+import { generateInviteToken } from "@/features/invitations/token";
 import { getUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generateInviteToken } from "@/features/invitations/token";
 
 export const metadata: Metadata = { title: "招待の確認" };
 
