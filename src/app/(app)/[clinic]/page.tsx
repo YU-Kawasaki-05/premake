@@ -1,77 +1,101 @@
+import { formatInTimeZone } from "date-fns-tz";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { DayLedger } from "@/features/bookings/components/day-ledger";
 import { requireMember } from "@/lib/auth";
+import { TIME_ZONE } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "ホーム" };
+export const metadata: Metadata = { title: "予約台帳" };
 
-// S1 時点の仮ホーム。S3 で予約台帳(v2-09)に置き換わる
-export default async function ClinicHomePage(props: PageProps<"/[clinic]">) {
+type BusinessHour = { dow: number; open: string; close: string };
+
+// @implements v2-09 予約台帳(日ビュー)
+export default async function LedgerPage(props: PageProps<"/[clinic]">) {
   const { clinic: slug } = await props.params;
+  const sp = await props.searchParams;
   const { clinic, member } = await requireMember(slug);
   const supabase = await createClient();
 
-  const [{ count: serviceCount }, { count: roomCount }, { count: memberCount }] = await Promise.all(
-    [
-      supabase
-        .from("services")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinic.id)
-        .eq("status", "active"),
-      supabase
-        .from("rooms")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinic.id)
-        .eq("status", "active"),
-      supabase
-        .from("clinic_members")
-        .select("id", { count: "exact", head: true })
-        .eq("clinic_id", clinic.id)
-        .eq("status", "active"),
-    ],
-  );
+  const todayJst = formatInTimeZone(new Date(), TIME_ZONE, "yyyy-MM-dd");
+  const date = typeof sp.d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(sp.d) ? sp.d : todayJst;
 
-  const isOwner = member.roles.includes("owner");
+  // その日の営業時間(曜日)→ 表示レンジ。なければ 9:00-19:00
+  const dow = Number(formatInTimeZone(new Date(`${date}T00:00:00+09:00`), TIME_ZONE, "i")) % 7;
+  const hours = (clinic.business_hours as BusinessHour[] | null) ?? [];
+  const todayHours = hours.find((h) => h.dow === dow);
+  const openMin = todayHours ? toMin(todayHours.open) : 9 * 60;
+  const closeMin = todayHours ? toMin(todayHours.close) : 19 * 60;
 
-  const setup = [
-    { label: "スタッフの登録", count: memberCount ?? 0, href: `/${slug}/staff`, min: 2 },
-    { label: "メニューの登録", count: serviceCount ?? 0, href: `/${slug}`, min: 1 },
-    { label: "施術室の登録", count: roomCount ?? 0, href: `/${slug}`, min: 1 },
-  ];
+  const dayStart = new Date(`${date}T00:00:00+09:00`).toISOString();
+  const dayEnd = new Date(`${date}T23:59:59+09:00`).toISOString();
+  const rangeLit = `[${dayStart},${dayEnd})`;
+
+  const [
+    { data: sessions },
+    { data: blocks },
+    { data: rooms },
+    { data: members },
+    { data: services },
+  ] = await Promise.all([
+    supabase
+      .from("booking_sessions")
+      .select(
+        "id, seq, kind, label, member_id, room_id, time_range, status, booking:bookings(id, status, booking_no, notes, patient:patients(name), service:services(name))",
+      )
+      .eq("clinic_id", clinic.id)
+      .overlaps("time_range", rangeLit)
+      .order("time_range"),
+    supabase
+      .from("schedule_blocks")
+      .select("id, member_id, room_id, block_type, time_range")
+      .eq("clinic_id", clinic.id)
+      .overlaps("time_range", rangeLit),
+    supabase
+      .from("rooms")
+      .select("id, name")
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active")
+      .order("sort_order"),
+    supabase
+      .from("clinic_members")
+      .select("id, display_name, is_bookable, profiles(full_name)")
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active"),
+    supabase
+      .from("services")
+      .select("id, name, session_template")
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active")
+      .order("sort_order"),
+  ]);
+
+  const memberOptions = (members ?? []).map((m) => ({
+    id: m.id,
+    name: m.display_name || m.profiles?.full_name || "(未設定)",
+    bookable: m.is_bookable,
+  }));
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-base font-semibold">{clinic.name}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        予約台帳は Sprint 3 で追加されます。まずは基本情報の整備からどうぞ。
-      </p>
-
-      {isOwner && (
-        <section className="mt-6 rounded-lg border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold">セットアップ状況</h2>
-          <ul className="mt-3 space-y-2">
-            {setup.map((item) => (
-              <li key={item.label} className="flex items-center justify-between text-sm">
-                <span
-                  className={
-                    item.count >= item.min ? "text-muted-foreground line-through" : undefined
-                  }
-                >
-                  {item.label}
-                </span>
-                <span className="tabular-nums text-muted-foreground">{item.count} 件</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-[12.5px] leading-5 text-muted-foreground">
-            メニュー・施術室の管理画面は Sprint 2 で追加されます。
-            <Link href={`/${slug}/settings`} className="underline underline-offset-4">
-              クリニック設定
-            </Link>
-            は先に整備できます。
-          </p>
-        </section>
-      )}
-    </div>
+    <DayLedger
+      slug={slug}
+      date={date}
+      todayJst={todayJst}
+      openMin={openMin}
+      closeMin={closeMin}
+      rooms={(rooms ?? []).map((r) => ({ id: r.id, name: r.name }))}
+      members={memberOptions}
+      // biome-ignore lint/suspicious/noExplicitAny: supabase のネスト select 型は any 扱い(表示専用)
+      sessions={(sessions ?? []) as any[]}
+      // biome-ignore lint/suspicious/noExplicitAny: 同上
+      blocks={(blocks ?? []) as any[]}
+      // biome-ignore lint/suspicious/noExplicitAny: session_template を JSON として渡す
+      services={(services ?? []) as any[]}
+      currentMemberId={member.id}
+    />
   );
+}
+
+function toMin(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
 }
