@@ -1,0 +1,58 @@
+import type { Metadata } from "next";
+import { BusinessHoursForm } from "@/features/clinic-settings/components/business-hours-form";
+import { ClinicProfileForm } from "@/features/clinic-settings/components/clinic-profile-form";
+import { PublicSettingsForm } from "@/features/clinic-settings/components/public-settings-form";
+import type { BusinessHour } from "@/features/clinic-settings/types";
+import { requireMember } from "@/lib/auth";
+
+export const metadata: Metadata = { title: "クリニック設定" };
+
+// @implements v2-03
+export default async function SettingsPage(props: PageProps<"/[clinic]/settings">) {
+  const { clinic: slug } = await props.params;
+  const { clinic } = await requireMember(slug, "owner");
+
+  return (
+    <div className="max-w-2xl space-y-8">
+      <h1 className="text-base font-semibold">クリニック設定</h1>
+
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-sm font-semibold">基本情報</h2>
+        <p className="mt-1 text-[12.5px] text-muted-foreground">
+          公開ページでは医療提供主体として、クリニック名・院長名・所在地が表示されます。
+        </p>
+        <ClinicProfileForm
+          slug={slug}
+          defaults={{
+            name: clinic.name,
+            director_name: clinic.director_name ?? "",
+            postal_code: clinic.postal_code ?? "",
+            address: clinic.address ?? "",
+            phone: clinic.phone ?? "",
+            email: clinic.email ?? "",
+          }}
+        />
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-sm font-semibold">営業時間</h2>
+        <BusinessHoursForm slug={slug} defaults={clinic.business_hours as BusinessHour[]} />
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-sm font-semibold">オンライン予約</h2>
+        <p className="mt-1 text-[12.5px] text-muted-foreground">
+          オフの間、患者向け公開ページは表示されません(院内管理のみで運用できます)。
+        </p>
+        <PublicSettingsForm
+          slug={slug}
+          defaults={{
+            public_booking_enabled: clinic.public_booking_enabled,
+            booking_approval_mode: clinic.booking_approval_mode as "auto" | "manual",
+            cancel_deadline_hours: clinic.cancel_deadline_hours,
+          }}
+        />
+      </section>
+    </div>
+  );
+}
