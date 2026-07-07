@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import { layoutSessions, rangeLiteral } from "@/features/bookings/session-layout";
+import { enqueueNotification } from "@/features/notifications/enqueue";
 import type { SessionStep } from "@/features/services/session-template";
 import { recordAudit } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -155,7 +156,15 @@ export async function createGuestBooking(
     diff: { auto: autoConfirm },
   });
 
-  // TODO(S6): 確認メール(Resend)。現状は完了画面に予約番号と管理リンクを表示。
+  // 受付/確定メールをキューへ(Cron が送信)
+  await enqueueNotification({
+    clinicId: clinic.id,
+    bookingId: booking.id,
+    recipientEmail: d.email,
+    recipientType: "patient",
+    kind: autoConfirm ? "booking_confirmed" : "booking_requested",
+  });
+
   return { done: { bookingNo: booking.booking_no, manageToken: token, pending: !autoConfirm } };
 }
 

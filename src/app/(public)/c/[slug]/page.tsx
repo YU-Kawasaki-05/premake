@@ -108,6 +108,14 @@ export default async function PublicClinicPage(props: PageProps<"/c/[slug]">) {
             予約の確認・変更・キャンセルはこちら
           </Link>
         </p>
+        <p className="mt-2 flex gap-3">
+          <Link href="/privacy" className="underline underline-offset-2">
+            プライバシーポリシー
+          </Link>
+          <Link href="/terms" className="underline underline-offset-2">
+            利用規約
+          </Link>
+        </p>
       </footer>
     </main>
   );
