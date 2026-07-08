@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>premake — プロジェクト全体像(チーム共有)</title>
+<style>
+  :root {
+    --paper:#fafaf8; --surface:#ffffff; --surface-2:#f5f4f1;
+    --ink:#1c1917; --ink-soft:#57534e; --ink-faint:#a8a29e;
+    --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#eaf2ef;
+    --bronze:#8a6d43; --bronze-soft:#f3ecdf;
+    --line:#e7e5e4; --line-soft:#f0efed;
+    --ok:#1d5c4d; --ok-bg:#eaf2ef; --warn:#8a5a00; --warn-bg:#fbf1dc;
+    --crit:#a5342a; --crit-bg:#f8e9e6; --info:#1e5a8a; --info-bg:#e9f1f7;
+    --shadow:0 1px 2px rgba(28,25,23,.05), 0 1px 1px rgba(28,25,23,.04);
+    --serif:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+    --sans:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){ :root{
+    --paper:#14120f; --surface:#1c1917; --surface-2:#211e1a;
+    --ink:#f5f3ef; --ink-soft:#b3ada5; --ink-faint:#78716c;
+    --primary:#5aa48c; --primary-strong:#7bbda8; --primary-soft:#1a2e28;
+    --bronze:#c0a06d; --bronze-soft:#241d12;
+    --line:#2c2925; --line-soft:#241f1b;
+    --ok:#5aa48c; --ok-bg:#17271f; --warn:#d9a441; --warn-bg:#2c2411;
+    --crit:#e08477; --crit-bg:#2e1b17; --info:#7fb4dc; --info-bg:#152532;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }}
+  :root[data-theme="dark"]{
+    --paper:#14120f; --surface:#1c1917; --surface-2:#211e1a;
+    --ink:#f5f3ef; --ink-soft:#b3ada5; --ink-faint:#78716c;
+    --primary:#5aa48c; --primary-strong:#7bbda8; --primary-soft:#1a2e28;
+    --bronze:#c0a06d; --bronze-soft:#241d12;
+    --line:#2c2925; --line-soft:#241f1b;
+    --ok:#5aa48c; --ok-bg:#17271f; --warn:#d9a441; --warn-bg:#2c2411;
+    --crit:#e08477; --crit-bg:#2e1b17; --info:#7fb4dc; --info-bg:#152532;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"]{
+    --paper:#fafaf8; --surface:#ffffff; --surface-2:#f5f4f1;
+    --ink:#1c1917; --ink-soft:#57534e; --ink-faint:#a8a29e;
+    --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#eaf2ef;
+    --bronze:#8a6d43; --bronze-soft:#f3ecdf;
+    --line:#e7e5e4; --line-soft:#f0efed;
+    --ok:#1d5c4d; --ok-bg:#eaf2ef; --warn:#8a5a00; --warn-bg:#fbf1dc;
+    --crit:#a5342a; --crit-bg:#f8e9e6; --info:#1e5a8a; --info-bg:#e9f1f7;
+    --shadow:0 1px 2px rgba(28,25,23,.05), 0 1px 1px rgba(28,25,23,.04);
+  }
+
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.8; font-size:16px; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:920px; margin:0 auto; padding:0 24px; }
+
+  header.top { position:sticky; top:0; z-index:20; background:color-mix(in srgb,var(--paper) 88%,transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  header.top .bar { display:flex; align-items:center; justify-content:space-between; height:56px; gap:12px; }
+  .brand { font-weight:600; letter-spacing:.02em; display:flex; align-items:center; gap:9px; font-size:15px; }
+  .brand .dot { width:10px; height:10px; border-radius:50%; background:var(--primary); }
+  nav.toc { display:none; gap:2px; }
+  nav.toc a { font-size:12.5px; color:var(--ink-soft); text-decoration:none; padding:5px 9px; border-radius:7px; }
+  nav.toc a:hover { background:var(--surface-2); color:var(--primary); }
+  @media (min-width:1040px){ nav.toc{ display:flex; } }
+  .toggle { appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:8px; height:34px; padding:0 12px; font:inherit; font-size:13px; cursor:pointer; }
+  .toggle:hover { border-color:var(--primary); color:var(--primary); }
+  .toggle:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+
+  .hero { padding:66px 0 44px; border-bottom:1px solid var(--line-soft); }
+  .eyebrow { font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--bronze); font-weight:600; margin:0 0 14px; }
+  h1 { font-family:var(--serif); font-weight:600; font-size:clamp(30px,5.5vw,46px); line-height:1.22; margin:0 0 18px; text-wrap:balance; letter-spacing:.01em; }
+  .thesis { font-size:19px; color:var(--ink); max-width:34ch; font-family:var(--serif); line-height:1.6; border-left:3px solid var(--primary); padding-left:18px; margin:0 0 20px; }
+  .lede { font-size:16.5px; color:var(--ink-soft); max-width:62ch; margin:0; }
+  .meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
+  .chip { font-size:12.5px; padding:5px 11px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft); border:1px solid var(--line); }
+  .chip.on { background:var(--ok-bg); color:var(--ok); border-color:transparent; font-weight:600; }
+
+  section { padding:46px 0; border-bottom:1px solid var(--line-soft); }
+  .sec-num { font-family:var(--mono); font-size:12px; color:var(--bronze); letter-spacing:.1em; }
+  h2 { font-family:var(--serif); font-weight:600; font-size:25px; margin:6px 0 6px; letter-spacing:.01em; text-wrap:balance; }
+  .sec-sub { color:var(--ink-soft); font-size:14.5px; margin:0 0 22px; max-width:64ch; }
+  h3 { font-size:15.5px; font-weight:600; margin:24px 0 8px; }
+  p { margin:0 0 14px; } p:last-child{ margin-bottom:0; }
+  a { color:var(--primary); text-underline-offset:3px; }
+  strong { color:var(--ink); }
+
+  figure { margin:22px 0; }
+  figure svg { width:100%; height:auto; display:block; }
+  figcaption { font-size:12px; color:var(--ink-faint); margin-top:8px; text-align:center; }
+  .diagram { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; box-shadow:var(--shadow); overflow-x:auto; }
+
+  .grid2 { display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:720px){ .grid2 { grid-template-columns:1fr 1fr; } }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow); }
+  .card h4 { margin:0 0 6px; font-size:15px; }
+  .card p { font-size:13.5px; color:var(--ink-soft); }
+  .card .tag { display:inline-block; font-size:11px; font-weight:600; letter-spacing:.05em; padding:3px 8px; border-radius:6px; background:var(--primary-soft); color:var(--primary-strong); margin-bottom:8px; }
+  .card .tag.bronze { background:var(--bronze-soft); color:var(--bronze); }
+
+  .table-scroll { overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:10px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; min-width:560px; }
+  th,td { text-align:left; padding:11px 14px; border-bottom:1px solid var(--line-soft); vertical-align:top; }
+  th { background:var(--surface-2); font-size:12px; letter-spacing:.04em; color:var(--ink-soft); font-weight:600; }
+  tr:last-child td { border-bottom:none; }
+  td b { color:var(--ink); }
+
+  .callout { border-radius:10px; padding:14px 16px; margin:16px 0; font-size:14px; border:1px solid; }
+  .callout .lab { font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:5px; }
+  .callout.warn { background:var(--warn-bg); border-color:color-mix(in srgb,var(--warn) 30%,transparent); color:var(--warn); }
+  .callout.info { background:var(--info-bg); border-color:color-mix(in srgb,var(--info) 30%,transparent); color:var(--info); }
+  .callout.ok { background:var(--ok-bg); border-color:color-mix(in srgb,var(--ok) 30%,transparent); color:var(--ok); }
+  code { font-family:var(--mono); font-size:.87em; background:var(--surface-2); padding:1px 5px; border-radius:4px; border:1px solid var(--line); }
+
+  ul.clean { margin:12px 0; padding-left:20px; }
+  ul.clean li { margin:6px 0; font-size:14.5px; }
+  .kill { display:grid; grid-template-columns:1fr; gap:12px; margin-top:8px; }
+  @media(min-width:640px){ .kill{ grid-template-columns:1fr 1fr; } }
+  .kill .box { border-radius:12px; padding:16px 18px; border:1px solid; }
+  .kill .box.stop { background:var(--crit-bg); border-color:color-mix(in srgb,var(--crit) 30%,transparent); }
+  .kill .box.go { background:var(--ok-bg); border-color:color-mix(in srgb,var(--ok) 30%,transparent); }
+  .kill .box h4 { margin:0 0 6px; font-size:14px; letter-spacing:.03em; }
+  .kill .box.stop h4 { color:var(--crit); } .kill .box.go h4 { color:var(--ok); }
+  .kill .box p { margin:0; font-size:13.5px; color:var(--ink); }
+
+  .status-legend { display:flex; flex-wrap:wrap; gap:14px; margin:10px 0 0; font-size:12.5px; color:var(--ink-soft); }
+  .status-legend span { display:inline-flex; align-items:center; gap:6px; }
+  .sw { width:11px; height:11px; border-radius:3px; display:inline-block; }
+
+  .repo { display:grid; grid-template-columns:1fr; gap:14px; }
+  @media(min-width:720px){ .repo{ grid-template-columns:1fr 1fr; } }
+  .repo .col { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .repo h4 { margin:0 0 10px; font-size:14px; }
+  .tree { font-family:var(--mono); font-size:12.5px; line-height:1.9; color:var(--ink-soft); }
+  .tree a { color:var(--ink); text-decoration:none; border-bottom:1px dotted var(--ink-faint); }
+  .tree a:hover { color:var(--primary); border-color:var(--primary); }
+  .tree .d { color:var(--bronze); }
+
+  .road { position:relative; padding-left:24px; margin-top:10px; }
+  .road::before { content:""; position:absolute; left:6px; top:6px; bottom:6px; width:2px; background:var(--line); }
+  .road .item { position:relative; margin:0 0 18px; }
+  .road .item::before { content:""; position:absolute; left:-22px; top:5px; width:12px; height:12px; border-radius:50%; background:var(--surface); border:2px solid var(--ink-faint); }
+  .road .item.done::before { background:var(--ok); border-color:var(--ok); }
+  .road .item.now::before { background:var(--warn); border-color:var(--warn); box-shadow:0 0 0 4px var(--warn-bg); }
+  .road .item h4 { margin:0 0 3px; font-size:15px; }
+  .road .item .st { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+  .road .item.done .st { color:var(--ok); } .road .item.now .st { color:var(--warn); } .road .item.next .st { color:var(--ink-faint); }
+  .road .item p { font-size:13.5px; color:var(--ink-soft); margin:2px 0 0; }
+
+  footer { padding:44px 0 90px; color:var(--ink-faint); font-size:13px; }
+  footer a { color:var(--primary); }
+  .linkrow { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 0; }
+  .linkrow a { font-size:13px; padding:8px 14px; border:1px solid var(--line); border-radius:8px; background:var(--surface); text-decoration:none; color:var(--ink); }
+  .linkrow a:hover { border-color:var(--primary); color:var(--primary); }
+  @media (prefers-reduced-motion:reduce){ * { transition:none !important; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+  <span class="brand"><span class="dot"></span>premake · プロジェクト全体像</span>
+  <nav class="toc">
+    <a href="#why">経緯</a><a href="#bet">戦略</a><a href="#decisions">方針</a>
+    <a href="#validate">検証</a><a href="#product">機能</a><a href="#arch">技術</a>
+    <a href="#repo">地図</a><a href="#road">現在地</a>
+  </nav>
+  <button class="toggle" id="tg" aria-label="表示テーマを切り替え">◐ テーマ</button>
+</div></header>
+
+<div class="wrap">
+  <div class="hero">
+    <p class="eyebrow">Team Brief · チーム共有用</p>
+    <h1>premake とは何で、いま何を賭け、どう確かめるのか</h1>
+    <p class="thesis">クリニックの自由診療予約を、規制対応込みで一気通貫に管理する院内 SaaS。第一弾はアートメイク、器は業種非依存。</p>
+    <p class="lede">このページは、もう一人の仲間がプロジェクトの<strong>事業の狙い・意思決定の経緯・検証の進め方・技術構成・見るべき場所</strong>を一気に掴むためのブリーフです。実装は MVP(S0〜S6)が完了し main にマージ済み。ここからは「本番投入」と「事業としての検証」に入ります。</p>
+    <div class="meta">
+      <span class="chip on">MVP 実装完了(v2-01〜26)</span>
+      <span class="chip">検証フェーズへ移行</span>
+      <span class="chip">対象: 実在クリニック1院 → 紹介で2〜3院</span>
+    </div>
+  </div>
+
+  <!-- WHY -->
+  <section id="why">
+    <span class="sec-num">01 — 経緯</span>
+    <h2>なぜ「単院向け」に舵を切ったか</h2>
+    <p class="sec-sub">当初は別の構想だった。2つの転機(弁護士見解と事業レビュー)を経て、いまの形に着地している。ここを共有しておかないと「なぜこの設計なのか」が伝わらない。</p>
+    <figure class="diagram">
+      <svg viewBox="0 0 860 220" role="img" aria-label="構想の変遷: マッチングPF → 業務委託モデル → 単院向け">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--ink-faint)"/>
+          </marker>
+        </defs>
+        <!-- phase 1 -->
+        <rect x="10" y="70" width="220" height="80" rx="10" fill="var(--surface-2)" stroke="var(--line)"/>
+        <text x="120" y="98" text-anchor="middle" font-family="var(--sans)" font-size="14" font-weight="600" fill="var(--ink)">① マッチングPF</text>
+        <text x="120" y="120" text-anchor="middle" font-family="var(--sans)" font-size="11.5" fill="var(--ink-soft)">空きスペース × 看護師</text>
+        <text x="120" y="137" text-anchor="middle" font-family="var(--sans)" font-size="11.5" fill="var(--ink-soft)">手数料・ツーサイド</text>
+        <!-- arrow 1 -->
+        <line x1="234" y1="110" x2="304" y2="110" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="269" y="55" text-anchor="middle" font-size="10.5" fill="var(--crit)" font-family="var(--sans)">弁護士見解</text>
+        <text x="269" y="70" text-anchor="middle" font-size="10.5" fill="var(--crit)" font-family="var(--sans)">2026-06-07</text>
+        <!-- phase 2 -->
+        <rect x="312" y="70" width="220" height="80" rx="10" fill="var(--surface-2)" stroke="var(--line)"/>
+        <text x="422" y="98" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)" font-family="var(--sans)">② 業務委託モデル</text>
+        <text x="422" y="120" text-anchor="middle" font-size="11.5" fill="var(--ink-soft)" font-family="var(--sans)">クリニックが主体</text>
+        <text x="422" y="137" text-anchor="middle" font-size="11.5" fill="var(--ink-soft)" font-family="var(--sans)">→ これも凍結</text>
+        <!-- arrow 2 -->
+        <line x1="536" y1="110" x2="606" y2="110" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <text x="571" y="55" text-anchor="middle" font-size="10.5" fill="var(--bronze)" font-family="var(--sans)">6/28 事業</text>
+        <text x="571" y="70" text-anchor="middle" font-size="10.5" fill="var(--bronze)" font-family="var(--sans)">レビュー</text>
+        <!-- phase 3 -->
+        <rect x="614" y="64" width="236" height="92" rx="10" fill="var(--primary-soft)" stroke="var(--primary)"/>
+        <text x="732" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="var(--primary-strong)" font-family="var(--sans)">③ 単院向け予約SaaS</text>
+        <text x="732" y="114" text-anchor="middle" font-size="11.5" fill="var(--primary-strong)" font-family="var(--sans)">院内ツールに徹する</text>
+        <text x="732" y="131" text-anchor="middle" font-size="11.5" fill="var(--primary-strong)" font-family="var(--sans)">器は業種非依存(現在地)</text>
+      </svg>
+      <figcaption>構想の変遷 — 詳細は docs/06_単院MVP転換</figcaption>
+    </figure>
+    <div class="grid2">
+      <div class="card"><span class="tag bronze">弁護士見解(6/7)</span>
+        <p>「Webプラットフォーム経由の業務委託看護師の派遣」はスキーム自体が禁止される可能性を内包。患者→premake の支払いフローも職安法上むずかしい。→ <strong>マッチング/派遣型は断念</strong>。</p></div>
+      <div class="card"><span class="tag">6/28 の結論</span>
+        <p>賭けるべきは「空き部屋」ではなく<strong>医師の信頼・時間と既存の美容顧客</strong>。アートメイクは“売り物”でなく“入口”。純粋な予約SaaS単体は競合が密で勝てない。</p></div>
+    </div>
+    <div class="callout ok"><span class="lab">いまの立ち位置</span>
+      premake は<strong>医療提供主体にならない院内業務ツール</strong>。マッチングも決済代理受領も施術者斡旋もしない。この整理により、旧構想で問題になった法的リスク(職業紹介・派遣・募集情報等提供)が発生しない。
+    </div>
+  </section>
+
+  <!-- BET -->
+  <section id="bet">
+    <span class="sec-num">02 — 戦略</span>
+    <h2>何に賭け、器をどこへ伸ばすか</h2>
+    <p class="sec-sub">アートメイクは第一弾であって目的ではない。予約・患者・メニューの「器」を業種非依存に作り、信頼のある医師ネットワークを足がかりに用途を広げる。</p>
+    <figure class="diagram">
+      <svg viewBox="0 0 860 210" role="img" aria-label="戦略: 資産→入口→器→マネタイズ">
+        <defs><marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--primary)"/></marker></defs>
+        <rect x="10" y="70" width="180" height="70" rx="10" fill="var(--bronze-soft)" stroke="var(--bronze)"/>
+        <text x="100" y="98" text-anchor="middle" font-size="13" font-weight="600" fill="var(--bronze)" font-family="var(--sans)">賭ける資産</text>
+        <text x="100" y="118" text-anchor="middle" font-size="11" fill="var(--ink-soft)" font-family="var(--sans)">医師の信頼・時間</text>
+        <text x="100" y="133" text-anchor="middle" font-size="11" fill="var(--ink-soft)" font-family="var(--sans)">既存の美容顧客</text>
+        <line x1="194" y1="105" x2="244" y2="105" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="250" y="70" width="150" height="70" rx="10" fill="var(--surface-2)" stroke="var(--line)"/>
+        <text x="325" y="100" text-anchor="middle" font-size="13" font-weight="600" fill="var(--ink)" font-family="var(--sans)">入口</text>
+        <text x="325" y="120" text-anchor="middle" font-size="11" fill="var(--ink-soft)" font-family="var(--sans)">アートメイク予約</text>
+        <line x1="404" y1="105" x2="454" y2="105" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="460" y="66" width="160" height="78" rx="10" fill="var(--primary-soft)" stroke="var(--primary)"/>
+        <text x="540" y="94" text-anchor="middle" font-size="13" font-weight="700" fill="var(--primary-strong)" font-family="var(--sans)">器(いま作った)</text>
+        <text x="540" y="114" text-anchor="middle" font-size="10.5" fill="var(--primary-strong)" font-family="var(--sans)">予約・患者・メニュー</text>
+        <text x="540" y="129" text-anchor="middle" font-size="10.5" fill="var(--primary-strong)" font-family="var(--sans)">マルチテナント基盤</text>
+        <line x1="624" y1="105" x2="674" y2="105" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#ar2)"/>
+        <rect x="680" y="52" width="170" height="48" rx="9" fill="var(--surface)" stroke="var(--primary)"/>
+        <text x="765" y="72" text-anchor="middle" font-size="12" font-weight="600" fill="var(--primary)" font-family="var(--sans)">B: メーカー試験</text>
+        <text x="765" y="89" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)" font-family="var(--sans)">会場提供(本命)</text>
+        <rect x="680" y="110" width="170" height="48" rx="9" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="765" y="130" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)" font-family="var(--sans)">M: クロスセル</text>
+        <text x="765" y="147" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)" font-family="var(--sans)">既存客へ予防医療等</text>
+      </svg>
+      <figcaption>アートメイク=入口、器=業種非依存、出口=メーカー試験(B)が本命 / クロスセル(M)</figcaption>
+    </figure>
+    <div class="callout info"><span class="lab">これから改めて調べたいこと</span>
+      マネタイズ本命の <strong>B(化粧品・美容機器メーカーの臨床評価/モニター試験の会場提供)</strong> は、需要・支払額・規制(GCP該当性)・競合を<strong>別途しっかりリサーチ</strong>して詰める予定。器の拡張は過剰設計せず、リサーチ結果を待って判断する。
+    </div>
+  </section>
+
+  <!-- DECISIONS -->
+  <section id="decisions">
+    <span class="sec-num">03 — 事業方針</span>
+    <h2>合意済みの事業方針</h2>
+    <p class="sec-sub">これまでの検討で決まった/同意したこと。チームの共通前提として突き合わせたい。</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>論点</th><th>決めたこと</th></tr></thead>
+      <tbody>
+        <tr><td><b>商業条件</b></td><td>無償提供は避ける(支払意思の検証を放棄しないため)。<b>実際に使って売上・価値が出たら有償化</b>。</td></tr>
+        <tr><td><b>マネタイズ本命</b></td><td><b>メーカー試験の会場提供(B)</b>。他候補も継続探索(要リサーチ)。</td></tr>
+        <tr><td><b>撤退/全振り判断</b></td><td>導入後 <b>4週</b>で判断(下の「検証」参照)。</td></tr>
+        <tr><td><b>展開</b></td><td>紹介で <b>2〜3院</b>。運営手動もありつつ、オンボーディング UI を作り込む。</td></tr>
+        <tr><td><b>公開ページ</b></td><td>症例写真・スタッフ指名まで出す想定 → <b>医療広告の限定解除対応が必須</b>。</td></tr>
+        <tr><td><b>電子カルテ</b></td><td>GMO 等競合が強く<b>本格参入しない</b>。指示書に絞り、記録はログとして残す。</td></tr>
+        <tr><td><b>患者連絡</b></td><td>LINE + メール(<b>LINE の優先度を上げる</b>)。MVP はメール、LINE は早期 Phase 2。</td></tr>
+        <tr><td><b>弁護士</b></td><td>顧問でなく<b>論点を絞ったスポット相談</b>。</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- VALIDATE -->
+  <section id="validate">
+    <span class="sec-num">04 — 検証</span>
+    <h2>どう確かめるか(ここが本題)</h2>
+    <p class="sec-sub">「作ったから成功」ではない。1院で実運用に載せ、<strong>本当に使われるか・お金が出るか・器が伸びるか</strong>を測る。KPI は運営画面(ops/metrics)に実装済み。</p>
+    <h3>検証したい仮説</h3>
+    <div class="table-scroll"><table>
+      <thead><tr><th>仮説</th><th>測り方(システムに実装済み)</th></tr></thead>
+      <tbody>
+        <tr><td><b>H1</b> 予約管理は実ペイン(あれば嬉しい、でなく無いと困る)</td><td>週次アクティブ日数、システム外(電話→手入力)の残存</td></tr>
+        <tr><td><b>H2</b> 患者はオンライン予約を使う</td><td>公開ページ経由の予約比率</td></tr>
+        <tr><td><b>H3</b> 有償でも使い続ける(WTP)</td><td>継続利用 + 商業条件の合意</td></tr>
+        <tr><td><b>H4</b> 器は他用途へ伸びる</td><td>クリニックからの拡張要望(B/M 方向)</td></tr>
+      </tbody>
+    </table></div>
+    <h3>4週間後の判断ライン</h3>
+    <div class="kill">
+      <div class="box stop"><h4>▼ Kill(撤退を検討)</h4><p>4週たっても週次利用が定着しない(受付が紙/既存運用に戻る)。医師がどの拡張にも乗らない。</p></div>
+      <div class="box go"><h4>▲ Double-down(全振り)</h4><p>日次利用が定着し、クリニックから拡張要望(スタッフ追加・他メニュー・集客系)が自発的に出て、有償化に合意。</p></div>
+    </div>
+    <div class="callout info"><span class="lab">運営ダッシュボード</span>
+      <code>/ops/metrics</code> に、クリニック別の<strong>アクティブ日数・予約数(Web/電話別)・キャンセル率</strong>を直近7日で表示。アクティブ日数が週2日未満なら赤=撤退シグナルとして出る。
+    </div>
+  </section>
+
+  <!-- PRODUCT -->
+  <section id="product">
+    <span class="sec-num">05 — 機能</span>
+    <h2>プロダクトの全体像</h2>
+    <p class="sec-sub">院内スタッフが使う管理面と、患者が使う公開面の2層。決済は MVP では扱わず(料金表示のみ)、無断キャンセル対策のデポジットは Phase 2 でリスクベース導入。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">院内(スタッフ)</span>
+        <h4>予約台帳・オペレーション</h4>
+        <p>予約台帳(部屋×時間グリッド)/ 施術枠の確保(看護師が自分の枠を作る)/ 予約作成・ステータス(来院・完了・無断)・キャンセル / 患者マスタ・履歴・名寄せ / メニュー・部屋・担当・問診テンプレ / スタッフ・クリニック設定。</p></div>
+      <div class="card"><span class="tag">公開(患者)</span>
+        <h4>オンライン予約</h4>
+        <p>クリニック公開ページ(医療広告に配慮した最小構成)/ 空き枠から予約 / 予約番号+メールで照会・キャンセル(ログイン不要・トークン)/ 問診記入。テナント設定でオン/オフでき、オフでも院内管理として完結。</p></div>
+    </div>
+    <h3>予約のステータスと枠の考え方</h3>
+    <figure class="diagram">
+      <svg viewBox="0 0 860 150" role="img" aria-label="予約フロー: 施術枠→予約→ステータス遷移">
+        <rect x="10" y="55" width="150" height="46" rx="9" fill="var(--primary-soft)" stroke="var(--primary)"/>
+        <text x="85" y="76" text-anchor="middle" font-size="12" font-weight="600" fill="var(--primary-strong)" font-family="var(--sans)">施術枠(open)</text>
+        <text x="85" y="92" text-anchor="middle" font-size="10" fill="var(--primary-strong)" font-family="var(--sans)">部屋×時間を確保</text>
+        <line x1="164" y1="78" x2="206" y2="78" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <rect x="212" y="55" width="120" height="46" rx="9" fill="var(--warn-bg)" stroke="var(--warn)"/>
+        <text x="272" y="76" text-anchor="middle" font-size="12" font-weight="600" fill="var(--warn)" font-family="var(--sans)">承認待ち</text>
+        <text x="272" y="92" text-anchor="middle" font-size="10" fill="var(--warn)" font-family="var(--sans)">requested</text>
+        <line x1="336" y1="78" x2="378" y2="78" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <rect x="384" y="55" width="120" height="46" rx="9" fill="var(--ok-bg)" stroke="var(--ok)"/>
+        <text x="444" y="76" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ok)" font-family="var(--sans)">確定</text>
+        <text x="444" y="92" text-anchor="middle" font-size="10" fill="var(--ok)" font-family="var(--sans)">confirmed</text>
+        <line x1="508" y1="78" x2="550" y2="78" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <rect x="556" y="55" width="120" height="46" rx="9" fill="var(--info-bg)" stroke="var(--info)"/>
+        <text x="616" y="76" text-anchor="middle" font-size="12" font-weight="600" fill="var(--info)" font-family="var(--sans)">来院</text>
+        <text x="616" y="92" text-anchor="middle" font-size="10" fill="var(--info)" font-family="var(--sans)">checked in</text>
+        <line x1="680" y1="78" x2="722" y2="78" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <rect x="728" y="55" width="122" height="46" rx="9" fill="var(--surface-2)" stroke="var(--line)"/>
+        <text x="789" y="76" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)" font-family="var(--sans)">完了</text>
+        <text x="789" y="92" text-anchor="middle" font-size="10" fill="var(--ink-soft)" font-family="var(--sans)">done</text>
+        <text x="272" y="130" text-anchor="middle" font-size="10.5" fill="var(--crit)" font-family="var(--sans)">↓ キャンセル / 無断(no-show)はどの段階からも記録</text>
+      </svg>
+      <figcaption>二重予約は DB の排他制約で原子的に防止(同室・同担当・同時間帯は入らない)</figcaption>
+    </figure>
+  </section>
+
+  <!-- ARCH -->
+  <section id="arch">
+    <span class="sec-num">06 — 技術</span>
+    <h2>技術構成とセキュリティ</h2>
+    <p class="sec-sub">医療情報を扱うため、認可を3層で重ねる。患者データはクリニック単位(マルチテナント)で厳密に分離する。</p>
+    <figure class="diagram">
+      <svg viewBox="0 0 860 250" role="img" aria-label="アーキテクチャ: 三層防御">
+        <rect x="10" y="20" width="840" height="52" rx="9" fill="var(--surface-2)" stroke="var(--line)"/>
+        <text x="30" y="42" font-size="12.5" font-weight="600" fill="var(--ink)" font-family="var(--sans)">利用者</text>
+        <text x="30" y="60" font-size="11" fill="var(--ink-soft)" font-family="var(--sans)">院内スタッフ(ログイン) / 患者(ログイン不要・トークン)</text>
+        <line x1="430" y1="72" x2="430" y2="92" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <rect x="10" y="96" width="840" height="74" rx="9" fill="var(--primary-soft)" stroke="var(--primary)"/>
+        <text x="30" y="118" font-size="12.5" font-weight="700" fill="var(--primary-strong)" font-family="var(--sans)">Next.js 16(Vercel)— 三層防御</text>
+        <rect x="30" y="128" width="250" height="32" rx="7" fill="var(--surface)" stroke="var(--primary)"/>
+        <text x="155" y="149" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="var(--sans)">① proxy: セッション更新</text>
+        <rect x="300" y="128" width="270" height="32" rx="7" fill="var(--surface)" stroke="var(--primary)"/>
+        <text x="435" y="149" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="var(--sans)">② requireMember/Ops: 認可</text>
+        <rect x="590" y="128" width="240" height="32" rx="7" fill="var(--surface)" stroke="var(--primary)"/>
+        <text x="710" y="149" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="var(--sans)">③ Server Actions + zod</text>
+        <line x1="430" y1="170" x2="430" y2="190" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <rect x="10" y="194" width="840" height="46" rx="9" fill="var(--surface)" stroke="var(--primary)" stroke-dasharray="4 3"/>
+        <text x="30" y="216" font-size="12.5" font-weight="700" fill="var(--primary)" font-family="var(--sans)">Supabase(PostgreSQL)— RLS default-deny(第4の壁)</text>
+        <text x="30" y="232" font-size="11" fill="var(--ink-soft)" font-family="var(--sans)">全業務テーブルに clinic_id + 行レベルセキュリティ。未ログイン導線はサーバー経由のみ。</text>
+      </svg>
+      <figcaption>proxy → アプリ層認可 → 入力検証 → RLS。どの層が破られても次で止まる多層防御。</figcaption>
+    </figure>
+    <div class="grid2">
+      <div class="card"><span class="tag">スタック</span>
+        <p>Next.js 16(App Router)/ TypeScript / Supabase(Postgres・Auth・RLS)/ Tailwind v4 + shadcn/ui / Biome / Vitest / Resend(メール)/ Vercel Cron(リマインダー)。<b>Node 22 必須</b>。</p></div>
+      <div class="card"><span class="tag">堅牢性の要点</span>
+        <p>予約二重取りは DB の排他制約で防止。ステータス遷移はサーバーで状態機械として強制。患者情報・問診の閲覧は監査ログ化。検索インジェクション対策済み。トークンはハッシュ保存。</p></div>
+    </div>
+    <p style="margin-top:14px; font-size:13px; color:var(--ink-faint)">※ 品質は各スプリントで typecheck / lint / build / DB制約テストを実測。S1・S3 は敵対的レビューを実施し重大指摘を修正済み(docs/25_品質記録)。ブラウザE2Eのみローカルでの実施が残タスク。</p>
+  </section>
+
+  <!-- REPO MAP -->
+  <section id="repo">
+    <span class="sec-num">07 — 地図</span>
+    <h2>どこを見ればいいか</h2>
+    <p class="sec-sub">リポジトリの歩き方。まず docs、次に src。リンクは GitHub(main)に飛ぶ。</p>
+    <div class="repo">
+      <div class="col">
+        <h4>ドキュメント(docs/)</h4>
+        <div class="tree">
+<span class="d">06_単院MVP転換/</span> 経緯・確認事項<br>
+<span class="d">10_v2_仕様/</span> <a href="https://github.com/YU-Kawasaki-05/premake/tree/main/docs/10_v2_%E4%BB%95%E6%A7%98">要件・データモデル・設計論点</a><br>
+<span class="d">20_実装ガイド/</span> 実装の型・規約<br>
+<span class="d">25_品質記録/</span> レビュー所見と対応<br>
+<span class="d">30_申し送り/</span> <a href="https://github.com/YU-Kawasaki-05/premake/tree/main/docs/30_%E7%94%B3%E3%81%97%E9%80%81%E3%82%8A">本番前TODO・Phase2</a><br>
+<span class="d">90_作業ログ/</span> 日次の作業記録<br>
+<span class="d">onboarding/</span> このページ + 立ち上げ手順
+        </div>
+      </div>
+      <div class="col">
+        <h4>実装(src/)</h4>
+        <div class="tree">
+<span class="d">app/(app)/[clinic]/</span> 院内画面<br>
+<span class="d">app/(public)/c/[slug]/</span> 公開・ゲスト予約<br>
+<span class="d">app/(auth)/</span> ログイン・招待<br>
+<span class="d">app/ops/</span> 運営・利用計測<br>
+<span class="d">features/</span> 機能単位(bookings, schedule,<br>&nbsp;&nbsp;patients, services, public-booking …)<br>
+<span class="d">lib/</span> supabase / auth / audit / email<br>
+<span class="d">supabase/migrations/</span> スキーマ(RLS込)
+        </div>
+      </div>
+    </div>
+    <div class="callout info"><span class="lab">最初の30分でおすすめの読み順</span>
+      ① このページ → ② <code>docs/10_v2_仕様/00_要件定義.md</code>(何を作ったか)→ ③ <code>docs/30_申し送り/</code>(次に何をするか)→ ④ ローカルで <code>pnpm dev</code> して実物を触る(手順は <a href="./setup-guide.html">立ち上げ手順</a>)。
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="road">
+    <span class="sec-num">08 — 現在地</span>
+    <h2>ここまでと、これから</h2>
+    <p class="sec-sub">MVP は完了。次は本番投入と、1院での実地検証。並行して事業側(特に B のリサーチ)を詰める。</p>
+    <div class="road">
+      <div class="item done"><span class="st">Done</span><h4>MVP 実装(S0〜S6)</h4><p>基盤・認証・メニュー/枠・予約台帳・患者・公開予約・通知/計測。main マージ済み・全検証 green。</p></div>
+      <div class="item now"><span class="st">Now</span><h4>本番投入の準備</h4><p>ローカルでのブラウザ E2E / 手動 QA、本番インフラ(Supabase/Vercel/Resend)、レート制限、owner不在ガードの DB 化、弁護士スポット確認。</p></div>
+      <div class="item next"><span class="st">Next</span><h4>1院で実地検証(4週)</h4><p>実運用に載せ、KPI(アクティブ日数・予約経路・キャンセル率)で Kill/Double-down を判断。</p></div>
+      <div class="item next"><span class="st">Then</span><h4>Phase 2 / 事業拡張</h4><p>LINE連携・症例ギャラリー・指示書電子化・デポジット決済・2院目オンボ。<b>B(メーカー試験)のリサーチ</b>を別途走らせ器の拡張を判断。</p></div>
+    </div>
+    <h3>まだ詰めきれていない論点(突き合わせたい)</h3>
+    <ul class="clean">
+      <li><b>導入クリニックの実態</b> — 規模(スタッフ/施術室数・月間件数)、実際のメニュー構成。シードを実データに差し替える。</li>
+      <li><b>LINE 連携の要否と優先度</b> — 患者連絡の主力になるなら早期に。</li>
+      <li><b>商業条件の具体</b> — 何をもって「価値が出た」とし、いくらでどう課金するか。</li>
+      <li><b>B のリサーチ設計</b> — 需要・支払額・規制・競合。別途しっかり調査。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>premake プロジェクト全体像 · 2026-07-08 時点。事業判断の一次情報は <code>docs/06_単院MVP転換</code> と <code>docs/10_v2_仕様/05_主要設計論点.md</code>、本番前タスクは <code>docs/30_申し送り</code>。</p>
+    <div class="linkrow">
+      <a href="./setup-guide.html">→ 立ち上げ手順(あなたがやること)</a>
+      <a href="https://github.com/YU-Kawasaki-05/premake">→ GitHub リポジトリ</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+  (function(){
+    var root=document.documentElement, btn=document.getElementById("tg");
+    function cur(){ return root.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"); }
+    btn.addEventListener("click", function(){ root.setAttribute("data-theme", cur()==="dark"?"light":"dark"); });
+  })();
+</script>
+</body>
+</html>

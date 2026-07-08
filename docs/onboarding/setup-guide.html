@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>premake — 立ち上げ手順(あなたがやること)</title>
+<style>
+  :root {
+    --paper:#fafaf8; --surface:#ffffff; --surface-2:#f5f4f1;
+    --ink:#1c1917; --ink-soft:#57534e; --ink-faint:#a8a29e;
+    --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#eaf2ef;
+    --bronze:#8a6d43;
+    --line:#e7e5e4; --line-soft:#f0efed;
+    --ok:#1d5c4d; --ok-bg:#eaf2ef;
+    --warn:#8a5a00; --warn-bg:#fbf1dc;
+    --crit:#a5342a; --crit-bg:#f8e9e6;
+    --info:#1e5a8a; --info-bg:#e9f1f7;
+    --shadow:0 1px 2px rgba(28,25,23,.05), 0 1px 1px rgba(28,25,23,.04);
+    --serif:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+    --sans:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#14120f; --surface:#1c1917; --surface-2:#211e1a;
+      --ink:#f5f3ef; --ink-soft:#b3ada5; --ink-faint:#78716c;
+      --primary:#5aa48c; --primary-strong:#7bbda8; --primary-soft:#1a2e28;
+      --bronze:#c0a06d;
+      --line:#2c2925; --line-soft:#241f1b;
+      --ok:#5aa48c; --ok-bg:#17271f;
+      --warn:#d9a441; --warn-bg:#2c2411;
+      --crit:#e08477; --crit-bg:#2e1b17;
+      --info:#7fb4dc; --info-bg:#152532;
+      --shadow:0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#14120f; --surface:#1c1917; --surface-2:#211e1a;
+    --ink:#f5f3ef; --ink-soft:#b3ada5; --ink-faint:#78716c;
+    --primary:#5aa48c; --primary-strong:#7bbda8; --primary-soft:#1a2e28;
+    --bronze:#c0a06d;
+    --line:#2c2925; --line-soft:#241f1b;
+    --ok:#5aa48c; --ok-bg:#17271f;
+    --warn:#d9a441; --warn-bg:#2c2411;
+    --crit:#e08477; --crit-bg:#2e1b17;
+    --info:#7fb4dc; --info-bg:#152532;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  :root[data-theme="light"] {
+    --paper:#fafaf8; --surface:#ffffff; --surface-2:#f5f4f1;
+    --ink:#1c1917; --ink-soft:#57534e; --ink-faint:#a8a29e;
+    --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#eaf2ef;
+    --bronze:#8a6d43;
+    --line:#e7e5e4; --line-soft:#f0efed;
+    --ok:#1d5c4d; --ok-bg:#eaf2ef; --warn:#8a5a00; --warn-bg:#fbf1dc;
+    --crit:#a5342a; --crit-bg:#f8e9e6; --info:#1e5a8a; --info-bg:#e9f1f7;
+    --shadow:0 1px 2px rgba(28,25,23,.05), 0 1px 1px rgba(28,25,23,.04);
+  }
+
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); line-height:1.8; font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:880px; margin:0 auto; padding:0 24px; }
+
+  header.top {
+    position:sticky; top:0; z-index:10;
+    background:color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  header.top .bar { display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .brand { font-weight:600; letter-spacing:.02em; display:flex; align-items:center; gap:9px; font-size:15px;}
+  .brand .dot { width:10px; height:10px; border-radius:50%; background:var(--primary); }
+  .toggle {
+    appearance:none; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+    border-radius:8px; height:34px; padding:0 12px; font:inherit; font-size:13px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .toggle:hover { border-color:var(--primary); color:var(--primary); }
+  .toggle:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+
+  .hero { padding:64px 0 40px; border-bottom:1px solid var(--line-soft); }
+  .eyebrow { font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--bronze); font-weight:600; margin:0 0 14px; }
+  h1 { font-family:var(--serif); font-weight:600; font-size:clamp(28px,5vw,40px); line-height:1.25; margin:0 0 16px; text-wrap:balance; letter-spacing:.01em; }
+  .lede { font-size:17px; color:var(--ink-soft); max-width:60ch; margin:0; }
+
+  .meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
+  .chip { font-size:12.5px; padding:5px 11px; border-radius:999px; background:var(--surface-2); color:var(--ink-soft); border:1px solid var(--line); }
+  .chip.on { background:var(--ok-bg); color:var(--ok); border-color:transparent; font-weight:600;}
+
+  section { padding:40px 0; border-bottom:1px solid var(--line-soft); }
+  h2 { font-family:var(--serif); font-weight:600; font-size:23px; margin:0 0 4px; letter-spacing:.01em; }
+  .sec-sub { color:var(--ink-soft); font-size:14.5px; margin:0 0 24px; }
+  h3 { font-size:16px; font-weight:600; margin:28px 0 8px; }
+  p { margin:0 0 14px; }
+  a { color:var(--primary); text-underline-offset:3px; }
+
+  /* step */
+  ol.steps { list-style:none; counter-reset:step; margin:0; padding:0; display:flex; flex-direction:column; gap:18px; }
+  ol.steps > li {
+    counter-increment:step; position:relative;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:22px 22px 22px 66px;
+    box-shadow:var(--shadow);
+  }
+  ol.steps > li::before {
+    content:counter(step); position:absolute; left:18px; top:20px;
+    width:32px; height:32px; border-radius:50%;
+    background:var(--primary); color:#fff; font-family:var(--mono); font-size:15px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step-title { font-size:17px; font-weight:600; margin:0 0 4px; }
+  .step-time { font-size:12px; color:var(--ink-faint); font-family:var(--mono); }
+  .why { font-size:13.5px; color:var(--ink-soft); background:var(--surface-2); border-radius:8px; padding:8px 12px; margin:12px 0; }
+  .why b { color:var(--ink); }
+
+  pre {
+    margin:12px 0; background:var(--surface-2); border:1px solid var(--line); border-radius:8px;
+    padding:14px 16px; overflow-x:auto; font-family:var(--mono); font-size:13px; line-height:1.7; color:var(--ink);
+  }
+  pre .c { color:var(--ink-faint); } /* comment */
+  code { font-family:var(--mono); font-size:.88em; background:var(--surface-2); padding:1px 5px; border-radius:4px; border:1px solid var(--line); }
+  pre code { background:none; border:none; padding:0; }
+
+  .callout { border-radius:10px; padding:14px 16px; margin:16px 0; font-size:14px; border:1px solid; }
+  .callout .lab { font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:5px; }
+  .callout.warn { background:var(--warn-bg); border-color:color-mix(in srgb, var(--warn) 30%, transparent); color:var(--warn); }
+  .callout.crit { background:var(--crit-bg); border-color:color-mix(in srgb, var(--crit) 30%, transparent); color:var(--crit); }
+  .callout.info { background:var(--info-bg); border-color:color-mix(in srgb, var(--info) 30%, transparent); color:var(--info); }
+  .callout b, .callout code { color:inherit; }
+
+  .table-scroll { overflow-x:auto; margin:14px 0; border:1px solid var(--line); border-radius:10px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; min-width:520px; }
+  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--line-soft); vertical-align:top; }
+  th { background:var(--surface-2); font-size:12px; letter-spacing:.04em; color:var(--ink-soft); font-weight:600; }
+  tr:last-child td { border-bottom:none; }
+  td code { white-space:nowrap; }
+  .req { color:var(--crit); font-weight:600; font-size:11px; }
+  .opt { color:var(--ink-faint); font-size:11px; }
+
+  ul.check { list-style:none; margin:14px 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  ul.check li { position:relative; padding-left:28px; font-size:14.5px; }
+  ul.check li::before {
+    content:""; position:absolute; left:0; top:4px; width:16px; height:16px; border-radius:4px;
+    border:1.5px solid var(--primary);
+  }
+  footer { padding:40px 0 80px; color:var(--ink-faint); font-size:13px; }
+  .kbd { font-family:var(--mono); font-size:12px; background:var(--surface-2); border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:1px 6px; }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+  <span class="brand"><span class="dot"></span>premake · 立ち上げ手順</span>
+  <button class="toggle" id="tg" aria-label="表示テーマを切り替え">◐ テーマ</button>
+</div></header>
+
+<div class="wrap">
+  <div class="hero">
+    <p class="eyebrow">Setup Guide · あなたがやること</p>
+    <h1>premake を動かす・公開するための手順</h1>
+    <p class="lede">コードは実装済みです。ここでは「あなたの手で」やる必要がある設定だけを、順番どおりに並べました。① まず手元で動かす → ② 本番サービスを用意 → ③ Vercel に公開、の3段階です。</p>
+    <div class="meta">
+      <span class="chip on">実装 S0〜S6 完了・main マージ済み</span>
+      <span class="chip">所要: ローカル 20分 / 本番 1〜2時間</span>
+      <span class="chip">要 GitHub アクセス権</span>
+    </div>
+  </div>
+
+  <!-- 0 -->
+  <section>
+    <h2>はじめに — 全体像</h2>
+    <p class="sec-sub">3つのステージ。まず 1 だけで「動くものを自分の目で確認」できます。本番公開(2〜3)は落ち着いてからで大丈夫です。</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>ステージ</th><th>やること</th><th>これが終わると</th></tr></thead>
+      <tbody>
+        <tr><td><b>① ローカル</b></td><td>手元の PC で起動して触る</td><td>全機能を自分で動作確認できる</td></tr>
+        <tr><td><b>② 本番サービス</b></td><td>Supabase / Resend を用意</td><td>本番のデータベース・メール基盤ができる</td></tr>
+        <tr><td><b>③ 公開</b></td><td>Vercel にデプロイ</td><td>URL でアクセスできる本番サイトになる</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout info"><span class="lab">前提ツール(ローカル用)</span>
+      <b>Node.js 22</b>(必須・22 未満だと起動しません)、<b>pnpm</b>、<b>Docker Desktop</b>(ローカル DB 用)。macOS なら <code>brew install node@22 pnpm</code> と Docker Desktop アプリ。
+    </div>
+  </section>
+
+  <!-- STAGE 1 -->
+  <section>
+    <h2>ステージ①　ローカルで動かす</h2>
+    <p class="sec-sub">まずは手元で。ここまでで全機能(予約台帳・公開予約など)を触って確認できます。</p>
+    <ol class="steps">
+      <li>
+        <div class="step-title">リポジトリを取得して依存をインストール</div>
+        <span class="step-time">~5 min</span>
+        <pre><code><span class="c"># リポジトリを clone(すでにあればスキップ)</span>
+git clone https://github.com/YU-Kawasaki-05/premake.git
+cd premake
+
+<span class="c"># Node 22 に切り替え(.nvmrc があるので nvm use でOK)</span>
+nvm use          <span class="c"># 22 が無ければ: nvm install 22</span>
+pnpm install</code></pre>
+      </li>
+      <li>
+        <div class="step-title">ローカルの Supabase(DB)を起動</div>
+        <span class="step-time">~5 min(初回はイメージ取得で長め)</span>
+        <div class="why"><b>なぜ:</b> 予約・患者などのデータを保存する PostgreSQL を、Docker で手元に立てます。</div>
+        <pre><code>pnpm db:start</code></pre>
+        <p>起動すると <code>API URL</code> と各キーが表示されます。その値を <code>.env.local</code> に書きます:</p>
+        <pre><code><span class="c"># .env.example をコピーして編集</span>
+cp .env.example .env.local
+<span class="c"># db:start の出力から下記3つを転記</span>
+<span class="c">#  NEXT_PUBLIC_SUPABASE_URL      = API URL</span>
+<span class="c">#  NEXT_PUBLIC_SUPABASE_ANON_KEY = anon key</span>
+<span class="c">#  SUPABASE_SERVICE_ROLE_KEY     = service_role key</span></code></pre>
+      </li>
+      <li>
+        <div class="step-title">スキーマとサンプルデータを投入</div>
+        <span class="step-time">~1 min</span>
+        <div class="why"><b>なぜ:</b> テーブル・権限(RLS)・デモクリニックのサンプルを一括で作ります。</div>
+        <pre><code>pnpm db:reset</code></pre>
+      </li>
+      <li>
+        <div class="step-title">開発サーバーを起動して触る</div>
+        <span class="step-time">~1 min</span>
+        <pre><code>pnpm dev
+<span class="c"># ブラウザで http://localhost:3000 を開く</span></code></pre>
+        <p>デモ用のログイン(パスワードはすべて <code>premake-dev</code>):</p>
+        <div class="table-scroll"><table>
+          <thead><tr><th>役割</th><th>メール</th><th>入口</th></tr></thead>
+          <tbody>
+            <tr><td>運営(ops)</td><td><code>ops@premake.local</code></td><td>/ops でクリニック作成</td></tr>
+            <tr><td>院長(owner)</td><td><code>owner@demo.local</code></td><td>/demo で全機能</td></tr>
+            <tr><td>看護師(staff)</td><td><code>nurse1@demo.local</code></td><td>施術枠・予約台帳</td></tr>
+          </tbody>
+        </table></div>
+        <div class="callout info"><span class="lab">確認するとよい流れ</span>
+          owner でログイン → メニュー/部屋/施術枠を確認 → <b>予約台帳</b>で新規予約 → クリニック設定で「オンライン予約」をオンに → <code>/c/demo</code>(公開ページ)から患者として予約 → 予約番号の管理リンクでキャンセル。
+        </div>
+      </li>
+    </ol>
+    <div class="callout warn"><span class="lab">補足</span>
+      メール(確認・リマインダー)はローカルでは実送信されず、サーバーのログに出るだけです(<code>RESEND_API_KEY</code> 未設定のため)。本番では送信されます。
+    </div>
+  </section>
+
+  <!-- STAGE 2 -->
+  <section>
+    <h2>ステージ②　本番サービスを用意</h2>
+    <p class="sec-sub">公開に必要な外部サービスを作り、キーを控えます。ここで集めた値を次のステージ③で Vercel に登録します。</p>
+    <ol class="steps">
+      <li>
+        <div class="step-title">本番用 Supabase プロジェクトを作成</div>
+        <span class="step-time">~20 min</span>
+        <div class="why"><b>なぜ:</b> 本番のデータベース・ログイン基盤です。<b>Region は Tokyo (ap-northeast-1)</b> を選んでください(患者データを国内に)。</div>
+        <p>手順:</p>
+        <ul class="check">
+          <li><a href="https://supabase.com">supabase.com</a> で新規プロジェクト作成(Region: Northeast Asia / Tokyo)</li>
+          <li>Project Settings → API から <b>Project URL</b> / <b>anon key</b> / <b>service_role key</b> を控える</li>
+          <li>手元からスキーマを反映(CLI):</li>
+        </ul>
+        <pre><code><span class="c"># 本番プロジェクトに接続してマイグレーションを反映</span>
+npx supabase link --project-ref &lt;あなたのプロジェクトref&gt;
+npx supabase db push</code></pre>
+        <div class="callout crit"><span class="lab">重要</span>
+          <code>service_role key</code> は全データにアクセスできる<b>最重要の秘密鍵</b>です。ソースコードや Slack に貼らないでください。登録先は Vercel の環境変数(サーバー側)だけです。
+        </div>
+      </li>
+      <li>
+        <div class="step-title">Resend(メール送信)を用意</div>
+        <span class="step-time">~15 min(DNS 反映待ち含む)</span>
+        <div class="why"><b>なぜ:</b> 予約確認・前日リマインダーのメール送信に使います。未設定でもアプリは動きますが、メールは飛びません。</div>
+        <ul class="check">
+          <li><a href="https://resend.com">resend.com</a> でアカウント作成</li>
+          <li>送信元にするドメインを追加し、表示される DNS レコードを登録して認証</li>
+          <li>API Key を発行して控える(<code>RESEND_API_KEY</code>)</li>
+        </ul>
+        <div class="callout warn"><span class="lab">後まわし可</span>
+          ドメイン認証は時間がかかることがあります。メール無しでまず公開し、あとから設定を足しても構いません。その場合はコード内の送信元アドレス(<code>src/lib/email.ts</code> の <code>FROM</code>)を認証済みドメインに変更してください。
+        </div>
+      </li>
+      <li>
+        <div class="step-title">Cron 用の秘密文字列を生成</div>
+        <span class="step-time">~1 min</span>
+        <div class="why"><b>なぜ:</b> リマインダーを自動送信する定期実行(Cron)を、外部から叩かれないよう保護するための合言葉です。</div>
+        <pre><code>openssl rand -hex 32
+<span class="c"># 出た文字列を CRON_SECRET として控える</span></code></pre>
+      </li>
+    </ol>
+  </section>
+
+  <!-- STAGE 3 -->
+  <section>
+    <h2>ステージ③　Vercel に公開</h2>
+    <p class="sec-sub">GitHub リポジトリを Vercel に繋ぎ、環境変数を登録すればデプロイされます。Cron は <code>vercel.json</code> で自動設定されます。</p>
+    <ol class="steps">
+      <li>
+        <div class="step-title">Vercel にリポジトリをインポート</div>
+        <span class="step-time">~10 min</span>
+        <ul class="check">
+          <li><a href="https://vercel.com/new">vercel.com/new</a> で <code>YU-Kawasaki-05/premake</code> をインポート</li>
+          <li>Framework は Next.js が自動検出される(そのまま)</li>
+        </ul>
+      </li>
+      <li>
+        <div class="step-title">環境変数を登録</div>
+        <span class="step-time">~5 min</span>
+        <div class="why"><b>なぜ:</b> アプリが本番 DB・メールに接続するための設定です。ステージ②で控えた値を入れます。</div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>変数名</th><th>値</th><th>必須</th></tr></thead>
+          <tbody>
+            <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>本番 Supabase の Project URL</td><td class="req">必須</td></tr>
+            <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>本番の anon key</td><td class="req">必須</td></tr>
+            <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>本番の service_role key(秘密)</td><td class="req">必須</td></tr>
+            <tr><td><code>APP_URL</code></td><td>公開 URL(例 <code>https://premake.vercel.app</code>)</td><td class="req">必須</td></tr>
+            <tr><td><code>RESEND_API_KEY</code></td><td>Resend の API キー</td><td class="opt">任意(メール送信時)</td></tr>
+            <tr><td><code>CRON_SECRET</code></td><td>生成した秘密文字列</td><td class="opt">任意(推奨)</td></tr>
+          </tbody>
+        </table></div>
+      </li>
+      <li>
+        <div class="step-title">デプロイして動作確認</div>
+        <span class="step-time">~10 min</span>
+        <p>Deploy を実行 → 発行された URL を開く。運営アカウントを作って(下記メモ参照)、クリニックを作成し、招待リンクを院長へ渡します。</p>
+        <div class="callout warn"><span class="lab">運営アカウントの作り方</span>
+          本番にはデモの ops アカウントはありません。① 通常サインアップでアカウントを作る → ② Supabase の Table Editor で <code>profiles</code> の自分の行の <code>is_ops</code> を <code>true</code> にする、で運営になれます。
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- LEGAL -->
+  <section>
+    <h2>公開前に確認したいこと</h2>
+    <p class="sec-sub">技術ではなく運用・法務の観点。特に患者向け公開ページを本格運用する前に。</p>
+    <ul class="check">
+      <li><b>弁護士スポット相談</b> — 公開ページの医療広告(症例写真を出す場合の「限定解除」要件)と、premake が診療情報を預かる立場の契約条項。</li>
+      <li><b>公開ページの内容</b> — 現状は症例写真なし・自由診療の注意書きありの最小構成。症例やスタッフ指名を出す場合は上記確認後に。</li>
+      <li><b>クリニックとの利用契約</b> — 個人情報・診療情報の取扱いを含む簡易な契約書。</li>
+    </ul>
+    <div class="callout info"><span class="lab">詳しくは</span>
+      本番投入前の残タスク一式は <code>docs/30_申し送り/S2以降_申し送り.md</code> に、法務の論点は <code>docs/10_v2_仕様/05_主要設計論点.md</code> にまとまっています。
+    </div>
+  </section>
+
+  <!-- QUICK REF -->
+  <section>
+    <h2>よく使うコマンド</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>コマンド</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>pnpm dev</code></td><td>開発サーバー起動(localhost:3000)</td></tr>
+        <tr><td><code>pnpm db:start</code> / <code>db:stop</code></td><td>ローカル DB の起動 / 停止</td></tr>
+        <tr><td><code>pnpm db:reset</code></td><td>ローカル DB を初期化(スキーマ+サンプル)</td></tr>
+        <tr><td><code>pnpm typecheck</code> / <code>lint</code> / <code>build</code></td><td>型 / 整形 / 本番ビルド確認</td></tr>
+        <tr><td><code>pnpm test:db</code></td><td>DB 制約テスト(要ローカル DB)</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin-top:16px; font-size:14px; color:var(--ink-soft)">困ったら <span class="kbd">Node が 22 か</span> <span class="kbd">Docker が起動しているか</span> <span class="kbd">.env.local を書いたか</span> の3つをまず確認してください。</p>
+  </section>
+
+  <footer>
+    premake セットアップ手順 · 2026-07-08 時点 ·
+    実装の全体像は <a href="./project-overview.html">プロジェクト概要</a> を参照。
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement, btn = document.getElementById("tg");
+    function cur(){ return root.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light"); }
+    btn.addEventListener("click", function(){
+      root.setAttribute("data-theme", cur()==="dark" ? "light":"dark");
+    });
+  })();
+</script>
+</body>
+</html>
