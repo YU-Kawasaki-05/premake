@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STEP 4 メール設定 — premake 本番移行手順</title>
+<style>
+*{box-sizing:border-box;}
+:root{
+  --paper:#fbfaf8; --surface:#ffffff; --surface-2:#f4f2ee;
+  --ink:#1b201e; --ink-soft:#4c534f; --ink-faint:#8a8f8b;
+  --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#e9f2ee;
+  --bronze:#8a6d43;
+  --line:#e5e3de; --line-soft:#efedE8;
+  --ok:#1d5c4d; --ok-bg:#e7f2ec; --ok-line:#bfe0d1;
+  --warn:#8a5a00; --warn-bg:#fbf0d6; --warn-line:#e6cf94;
+  --crit:#a5342a; --crit-bg:#fae9e6; --crit-line:#eab6ad;
+  --info:#1e5a8a; --info-bg:#e7f0f8; --info-line:#b6d2ea;
+  --tip:#5a3d8a; --tip-bg:#f0ebf8; --tip-line:#cabce6;
+  --sans:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  line-height:1.85;font-size:16.5px;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px;}
+
+/* ヘッダ */
+header.top{background:var(--primary-strong);color:#fff;}
+header.top .bar{display:flex;align-items:center;justify-content:space-between;
+  min-height:52px;padding:8px 0;gap:12px;flex-wrap:wrap;}
+header.top a{color:#eaf2ef;text-decoration:none;font-size:14px;}
+header.top a:hover{text-decoration:underline;}
+.brand{font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:9px;font-size:15px;}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:#7bbda8;flex:none;}
+
+/* ヒーロー */
+.hero{padding:44px 0 30px;border-bottom:1px solid var(--line);}
+.stepno{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);
+  font-weight:700;margin:0 0 12px;}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(25px,4.5vw,36px);line-height:1.3;
+  margin:0 0 14px;letter-spacing:.01em;}
+.lede{font-size:17px;color:var(--ink-soft);max-width:64ch;margin:0;}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px;}
+.chip{font-size:12.5px;padding:5px 12px;border-radius:999px;background:var(--surface-2);
+  color:var(--ink-soft);border:1px solid var(--line);}
+.chip.time{background:var(--primary-soft);color:var(--primary-strong);border-color:transparent;font-weight:600;}
+
+/* セクション */
+section{padding:30px 0;border-bottom:1px solid var(--line-soft);}
+h2{font-family:var(--serif);font-size:23px;font-weight:600;margin:6px 0 14px;line-height:1.35;
+  padding-top:4px;}
+h3{font-size:17.5px;font-weight:700;margin:26px 0 10px;color:var(--primary-strong);}
+p{margin:12px 0;}
+a{color:var(--primary);}
+strong{font-weight:700;}
+.muted{color:var(--ink-soft);}
+.small{font-size:14px;}
+
+/* バッジ(誰向けの手順か) */
+.badge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:6px;
+  vertical-align:middle;margin-left:6px;letter-spacing:.02em;}
+.badge.dev{background:#e7edf8;color:#274b86;border:1px solid #c3d3ee;}
+.badge.op{background:var(--primary-soft);color:var(--primary-strong);border:1px solid #c3e0d4;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 0;font-size:13.5px;color:var(--ink-soft);}
+
+/* 手順リスト */
+ol.steps{counter-reset:st;list-style:none;padding:0;margin:16px 0;}
+ol.steps>li{position:relative;padding:2px 0 16px 46px;margin:0;}
+ol.steps>li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:0;
+  width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-weight:700;
+  font-size:14px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);}
+ol.steps>li::after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:2px;
+  background:var(--line);}
+ol.steps>li:last-child::after{display:none;}
+ol.steps>li .st-title{font-weight:700;display:block;margin-bottom:2px;}
+
+/* 通常の箇条書き */
+ul.disc{margin:12px 0;padding-left:22px;}
+ul.disc li{margin:6px 0;}
+
+/* コールアウト */
+.callout{border:1px solid var(--line);border-left-width:5px;border-radius:10px;
+  padding:14px 16px;margin:18px 0;background:var(--surface);}
+.callout .ct{font-weight:700;display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:15px;}
+.callout p{margin:6px 0;}
+.callout .ic{font-size:17px;line-height:1;}
+.callout.crit{border-color:var(--crit-line);border-left-color:var(--crit);background:var(--crit-bg);}
+.callout.crit .ct{color:var(--crit);}
+.callout.warn{border-color:var(--warn-line);border-left-color:var(--warn);background:var(--warn-bg);}
+.callout.warn .ct{color:var(--warn);}
+.callout.info{border-color:var(--info-line);border-left-color:var(--info);background:var(--info-bg);}
+.callout.info .ct{color:var(--info);}
+.callout.ok{border-color:var(--ok-line);border-left-color:var(--ok);background:var(--ok-bg);}
+.callout.ok .ct{color:var(--ok);}
+.callout.tip{border-color:var(--tip-line);border-left-color:var(--tip);background:var(--tip-bg);}
+.callout.tip .ct{color:var(--tip);}
+
+/* コードブロック */
+figure.code{margin:16px 0;}
+figure.code pre{background:#151a18;color:#eef3f0;border-radius:10px 10px 0 0;margin:0;
+  padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:14px;line-height:1.7;}
+figure.code pre.single{border-radius:10px;}
+figure.code code{font-family:var(--mono);white-space:pre;}
+figure.code figcaption{background:var(--surface-2);border:1px solid var(--line);border-top:none;
+  border-radius:0 0 10px 10px;padding:9px 14px;font-size:13.5px;color:var(--ink-soft);}
+figure.code figcaption b{color:var(--ink);}
+code.inline{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;
+  padding:1px 6px;font-family:var(--mono);font-size:.88em;color:var(--primary-strong);
+  word-break:break-word;}
+
+/* テーブル */
+.tablewrap{overflow-x:auto;margin:16px 0;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--surface);}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+th{background:var(--surface-2);font-weight:700;font-size:13.5px;}
+td code{font-family:var(--mono);font-size:13px;}
+tr:nth-child(even) td{background:#fbfaf7;}
+
+/* チェックリスト */
+ul.check{list-style:none;padding:0;margin:14px 0;}
+ul.check li{margin:0;border-bottom:1px dashed var(--line);}
+ul.check li:last-child{border-bottom:none;}
+ul.check label{display:flex;gap:11px;align-items:flex-start;padding:11px 4px;cursor:pointer;}
+ul.check input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--primary);}
+ul.check .ck-body{flex:1;}
+ul.check .ck-id{font-family:var(--mono);font-size:12px;color:var(--bronze);font-weight:700;}
+ul.check .ck-t{font-weight:600;}
+ul.check .ck-d{font-size:13.5px;color:var(--ink-soft);}
+
+/* 用語集 */
+dl.glossary{margin:14px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+dl.glossary>div{padding:12px 16px;border-bottom:1px solid var(--line-soft);background:var(--surface);}
+dl.glossary>div:last-child{border-bottom:none;}
+dl.glossary dt{font-weight:700;color:var(--primary-strong);margin:0 0 3px;}
+dl.glossary dd{margin:0;color:var(--ink-soft);font-size:14.5px;}
+
+/* 目次カード */
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin:20px 0;}
+a.card{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+  border-radius:12px;padding:15px 17px;background:var(--surface);transition:border-color .12s;}
+a.card:hover{border-color:var(--primary);}
+a.card .cnum{font-family:var(--mono);font-size:12.5px;color:var(--bronze);font-weight:700;letter-spacing:.05em;}
+a.card .ctitle{font-weight:700;font-size:17px;margin:3px 0 4px;color:var(--primary-strong);}
+a.card .cdesc{font-size:14px;color:var(--ink-soft);margin:0;}
+a.card .ctime{font-size:12.5px;color:var(--ink-faint);margin-top:6px;display:block;}
+
+/* フッタ ナビ */
+nav.pager{display:flex;justify-content:space-between;gap:12px;margin:30px 0;flex-wrap:wrap;}
+nav.pager a{flex:1;min-width:210px;text-decoration:none;border:1px solid var(--line);border-radius:10px;
+  padding:13px 15px;background:var(--surface);color:var(--ink);}
+nav.pager a:hover{border-color:var(--primary);}
+nav.pager .dir{font-size:12px;color:var(--ink-faint);display:block;}
+nav.pager .nm{font-weight:700;color:var(--primary-strong);}
+nav.pager a.next{text-align:right;}
+footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align:center;}
+
+/* 印刷 */
+@media print{
+  body{background:#fff;color:#000;font-size:11.5pt;}
+  header.top,nav.pager{display:none;}
+  section{border-color:#ccc;page-break-inside:avoid;}
+  .callout{page-break-inside:avoid;}
+  figure.code pre{background:#f2f2f2;color:#000;border:1px solid #999;}
+  figure.code figcaption{background:#fff;}
+  a{color:#000;text-decoration:none;}
+  a.card,nav.pager a{border-color:#ccc;}
+  h1,h2{page-break-after:avoid;}
+}
+@media (max-width:560px){ body{font-size:16px;} .hero{padding:32px 0 22px;} }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="bar"><span class="brand"><span class="dot"></span>premake 本番移行手順書</span><a href="00_目次.html">&#9776; 目次へ戻る</a></div></div></header>
+<div class="hero"><div class="wrap"><p class="stepno">STEP 4 / 8</p><h1>STEP 4 メール設定</h1><p class="lede">予約確認や前日リマインダーのメールを送れるように、Resend の設定とドメイン認証、送信元をクリニック名にする作業を行います。</p><div class="meta"><span class="chip time">目安 約30分</span><span class="chip">一部 開発担当者</span></div></div></div>
+<div class="wrap"><section><h2>この STEP でやること</h2><p>予約確認・キャンセル・前日リマインダーの<strong>メールを実際に送れるように設定</strong>します。メール送信サービス Resend のアカウント作成、鍵の取得、ドメイン認証、そして<strong>送信元をクリニック名にする</strong>作業を行います。</p></section><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>メールを設定しないとどうなる?</p><p><code class="inline">RESEND_API_KEY</code> が未設定の間は、アプリは<strong>メールを実際には送りません</strong>(内部の記録に「送ったつもり」と残るだけ)。患者への予約確認やリマインダーを届けるには、この STEP が必要です。</p></div><section><h2>4-1. Resend アカウントと API キー <span class="badge op">クリニック担当者</span></h2><ol class="steps"><li><span class="st-title">Resend に登録</span><code class="inline">resend.com</code> でアカウントを作成します。</li><li><span class="st-title">API キーを作成</span>左メニュー「API Keys」→「Create API Key」。名前(例 <code class="inline">premake-honban</code>)を付けて作成し、表示された鍵をコピーします(<strong>この画面を閉じると二度と表示されません</strong>。パスワード管理ツールに保存)。</li><li><span class="st-title">Vercel に登録</span>STEP 3 の環境変数 <code class="inline">RESEND_API_KEY</code> にこの鍵を設定し、再デプロイします。</li></ol></section><section><h2>4-2. ドメイン認証(SPF / DKIM)<span class="badge op">クリニック担当者</span></h2><p>ドメイン認証とは、<strong>「このメールは本物のクリニックから送られた」と証明する設定</strong>です。これをすると、送信元をクリニックのドメインにでき、<strong>迷惑メール扱いされにくく</strong>なります。独自ドメインをお持ちの場合に行います。</p><ol class="steps"><li><span class="st-title">Resend にドメインを追加</span>「Domains」→「Add Domain」で、お持ちのドメイン(例 <code class="inline">your-clinic.jp</code>)を入力します。</li><li><span class="st-title">表示された DNS レコードをドメイン管理画面に貼る</span>SPF・DKIM という数行の設定値が表示されます。これを、ドメインを買った会社(お名前.com・Cloudflare 等)の「DNS 設定」画面に、表示どおりコピーして追加します。むずかしければ、この画面のスクリーンショットを開発担当者に渡してください。</li><li><span class="st-title">認証(Verify)を待つ</span>設定が反映されると Resend の画面が「Verified(認証済み)」になります(数分〜最大で数時間かかることがあります)。</li></ol><div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>SPF・DKIM をやさしく言うと</p><p><strong>SPF</strong>=「このドメインのメールは Resend が代理で送ってよい」という許可証。<strong>DKIM</strong>=メールに付ける「改ざんされていない」という電子印鑑。どちらもドメインの持ち主だけが設定でき、受信側が本物か確認するのに使われます。</p></div></section><section><h2>4-3. 送信元をクリニック名にする <span class="badge dev">開発担当者</span></h2><div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>現状は送信元が「premake」の仮アドレスのままです(要・コード修正)</p><p>今のアプリは、メールの送信元が <code class="inline">premake &lt;onboarding@resend.dev&gt;</code> という<strong>開発用の仮の値に固定</strong>されています(プログラム内 <code class="inline">src/lib/email.ts</code>)。このままでは、患者に届くメールの送信元がクリニック名にならず、迷惑メールにも入りやすくなります。</p><p><strong>本番前に開発担当者にお願いして、送信元を 4-2 で認証したクリニックのドメイン・クリニック名に書き換えてもらってください。</strong>例: <code class="inline">〇〇クリニック &lt;yoyaku@your-clinic.jp&gt;</code>。認証済みドメイン以外の送信元は Resend が拒否します。</p></div><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>開発担当者へのメモ</p><p><code class="inline">src/lib/email.ts</code> の <code class="inline">FROM</code> 定数を、認証済みドメインの差出人に変更(理想はクリニック名を環境変数化)。返信先(<code class="inline">replyTo</code>)にクリニックの問い合わせ先を入れる運用も検討してください。併せて、メール本文の差し込み値の HTML エスケープ(<a href="09_未対応事項と注意点.html">未対応事項</a>参照)も確認を推奨します。</p></div></section><section><h2>4-4. テスト送信の確認</h2><p>メールが実際に届くかは、次のように確認します(定期実行の仕組みは <a href="05_定期実行(リマインダー)の確認.html">STEP 5</a> で扱います)。</p><ol class="steps"><li><span class="st-title">自分宛の予約を1件作る</span>STEP 6 まで進んだ後、テスト用に<strong>自分のメールアドレスを登録した患者</strong>で予約を1件作成します。</li><li><span class="st-title">定期実行を1回動かす</span>メールは定期実行のタイミングで送られます(STEP 5)。手動で動かして確認する方法は STEP 5 に記載します。</li><li><span class="st-title">受信を確認 / Resend の記録を見る</span>自分の受信トレイに確認メールが届くか、また Resend 画面の「Logs」で送信結果(Delivered=配信済み)を確認します。</li></ol></section><section><h2>この STEP のチェックリスト</h2><ul class="check"><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">Resend の API キーを作成し、Vercel の RESEND_API_KEY に登録した</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">(ドメインがある場合)ドメイン認証を Verified にした</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">送信元をクリニック名・認証ドメインに変更した</span><div class="ck-d">開発担当者・本番前必須</div></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">テスト送信でメールが届くことを確認した</span><div class="ck-d">STEP 5・6 の後で実施</div></span></label></li></ul></section></div>
+<div class="wrap"><nav class="pager"><a class="prev" href="03_アプリのデプロイと環境変数.html"><span class="dir">&#8592; 前へ</span><span class="nm">STEP3 デプロイと環境変数</span></a><a class="next" href="05_定期実行(リマインダー)の確認.html"><span class="dir">次へ &#8594;</span><span class="nm">STEP5 定期実行の確認</span></a></nav></div>
+<footer class="foot"><div class="wrap">premake — クリニック予約・業務管理システム ／ 本番移行手順書。この手順書はブラウザで開いて読めます。順番に実行してください。</div></footer>
+</body>
+</html>
