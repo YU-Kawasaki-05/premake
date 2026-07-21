@@ -309,19 +309,14 @@ export async function cancelByToken(token: string): Promise<{ error?: string; ok
     }
   }
 
-  await admin
-    .from("bookings")
-    .update({
-      status: "cancelled",
-      cancelled_at: new Date().toISOString(),
-      cancel_reason: "患者キャンセル",
-    })
-    .eq("id", booking.id);
-  await admin
-    .from("booking_sessions")
-    .update({ status: "cancelled" })
-    .eq("booking_id", booking.id)
-    .eq("status", "scheduled");
+  // ヘッダの cancelled 更新とセッション解放を単一トランザクション(RPC)で原子的に行う。
+  // 分割すると片方失敗で枠(EXCLUDE)がロックされ再予約不能になる(BUG-03)。
+  const { error: cancelErr } = await admin.rpc("cancel_booking", {
+    p_booking_id: booking.id,
+    p_clinic_id: booking.clinic_id,
+    p_reason: "患者キャンセル",
+  });
+  if (cancelErr) return { error: "キャンセルに失敗しました。時間をおいてお試しください" };
 
   await recordAudit({
     clinicId: booking.clinic_id,

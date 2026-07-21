@@ -12,12 +12,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  // 認可: CRON_SECRET 設定時は Bearer 一致を要求(未設定=開発は許可)
-  if (env.CRON_SECRET) {
+  // 認可: 本番相当では CRON_SECRET を必須とし、未設定なら fail-closed で拒否する。
+  // 開発(next dev = NODE_ENV=development)でのみ未設定を許可する。
+  const secret = env.CRON_SECRET;
+  if (secret) {
     const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${env.CRON_SECRET}`) {
+    if (auth !== `Bearer ${secret}`) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
+  } else if (process.env.NODE_ENV !== "development") {
+    console.error("[cron] CRON_SECRET is not set; refusing request in non-development environment");
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const admin = createAdminClient();
@@ -96,11 +101,20 @@ export async function GET(request: Request) {
           .eq("id", n.id);
         continue;
       }
-      const { subject, html } = renderNotification(
-        n.kind as Parameters<typeof renderNotification>[0],
-        ctx,
-      );
-      const res = await sendEmail({ to: n.recipient_email, subject, html });
+      const rendered = renderNotification(n.kind as Parameters<typeof renderNotification>[0], ctx);
+      if (!rendered) {
+        // 未知 kind は failed にして隔離。次回以降に再取得されず、他の通知送信も止めない
+        await admin
+          .from("notifications")
+          .update({ status: "failed", error: `unknown notification kind: ${n.kind}` })
+          .eq("id", n.id);
+        continue;
+      }
+      const res = await sendEmail({
+        to: n.recipient_email,
+        subject: rendered.subject,
+        html: rendered.html,
+      });
       await admin
         .from("notifications")
         .update({
@@ -124,7 +138,7 @@ export async function GET(request: Request) {
       .eq("id", bookingId)
       .eq("clinic_id", clinicId)
       .maybeSingle();
-    if (!booking || !booking.clinic) return null;
+    if (!booking?.clinic) return null;
 
     const active = (booking.sessions ?? [])
       .filter((s) => s.status === "scheduled")

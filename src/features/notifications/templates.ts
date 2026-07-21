@@ -31,11 +31,11 @@ function when(ctx: Ctx): string {
   return ctx.startISO && ctx.endISO ? formatTimeRange(ctx.startISO, ctx.endISO) : "日時未定";
 }
 
-/** 通知種別 → 件名と本文 HTML */
+/** 通知種別 → 件名と本文 HTML。未知の kind は null(呼び出し側で隔離) */
 export function renderNotification(
   kind: NotificationKind,
   ctx: Ctx,
-): { subject: string; html: string } {
+): { subject: string; html: string } | null {
   switch (kind) {
     case "booking_confirmed":
       return {
@@ -77,5 +77,9 @@ export function renderNotification(
           ctx.manageUrl,
         ),
       };
+    default:
+      // 未知 kind は 1 件で cron 全体を止めないよう、例外を投げず null を返して隔離する
+      console.error(`[notifications] unknown kind: ${kind satisfies never}`);
+      return null;
   }
 }

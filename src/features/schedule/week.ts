@@ -1,5 +1,5 @@
 import { ja } from "date-fns/locale";
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+import { formatInTimeZone } from "date-fns-tz";
 import { TIME_ZONE } from "@/lib/datetime";
 
 export type WeekDay = { date: string; label: string; isToday: boolean };
@@ -29,7 +29,9 @@ export function shiftWeek(anchorDate: string, deltaWeeks: number): string {
 
 /** UTC ISO の時刻を JST の HH:mm で返す */
 export function jstTime(iso: string): string {
-  return formatInTimeZone(toZonedTime(new Date(iso), TIME_ZONE), TIME_ZONE, "HH:mm");
+  // formatInTimeZone は生の UTC インスタントを受けて TZ 変換するため、
+  // toZonedTime を通すと二重変換になる(本番 UTC ランタイムで +9h ずれる)
+  return formatInTimeZone(new Date(iso), TIME_ZONE, "HH:mm");
 }
 
 /** tstzrange 文字列 "[start,end)" から start/end の ISO を抽出 */

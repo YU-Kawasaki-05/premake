@@ -976,7 +976,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      cancel_booking: {
+        Args: { p_booking_id: string; p_clinic_id: string; p_reason?: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

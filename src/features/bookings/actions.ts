@@ -328,24 +328,14 @@ export async function cancelBooking(
   if (current.status === "done") return { error: "完了済みの予約はキャンセルできません" };
   if (current.status === "cancelled") return { ok: true };
 
-  // ヘッダを cancelled に、未実施セッションも cancelled にする(枠を解放)
-  const { error } = await supabase
-    .from("bookings")
-    .update({
-      status: "cancelled",
-      cancel_reason: parsed.data.reason || null,
-      cancelled_at: new Date().toISOString(),
-    })
-    .eq("id", parsed.data.bookingId)
-    .eq("clinic_id", clinic.id);
+  // ヘッダの cancelled 更新とセッション解放を単一トランザクション(RPC)で原子的に行う。
+  // 分割すると片方失敗で枠(EXCLUDE)がロックされ再予約不能になる(BUG-03)。
+  const { error } = await supabase.rpc("cancel_booking", {
+    p_booking_id: parsed.data.bookingId,
+    p_clinic_id: clinic.id,
+    p_reason: parsed.data.reason,
+  });
   if (error) return { error: "キャンセルに失敗しました" };
-
-  await supabase
-    .from("booking_sessions")
-    .update({ status: "cancelled" })
-    .eq("booking_id", parsed.data.bookingId)
-    .eq("clinic_id", clinic.id)
-    .eq("status", "scheduled");
 
   await recordAudit({
     clinicId: clinic.id,
