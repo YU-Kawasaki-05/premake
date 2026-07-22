@@ -1,10 +1,13 @@
+// @implements v2-23 通知(患者/院内双方へ)
+
 import { formatTimeRange } from "@/lib/datetime";
 
 export type NotificationKind =
   | "booking_confirmed"
   | "booking_requested"
   | "booking_cancelled"
-  | "reminder";
+  | "reminder"
+  | "booking_created_internal";
 
 type Ctx = {
   clinicName: string;
@@ -14,15 +17,18 @@ type Ctx = {
   endISO: string | null;
   bookingNo: string;
   manageUrl?: string;
+  // 院内向け(booking_created_internal)のみ使用。患者用 manage トークンは絶対に入れない
+  requiresApproval?: boolean;
+  dashboardUrl?: string;
 };
 
-const wrap = (title: string, body: string, manageUrl?: string) => `
+const wrap = (title: string, body: string, ctaUrl?: string, ctaLabel = "予約内容を確認する") => `
 <div style="font-family:sans-serif;max-width:480px;margin:0 auto;color:#1c1917">
   <h2 style="font-size:18px;font-weight:600">${title}</h2>
   <div style="font-size:14px;line-height:1.9">${body}</div>
   ${
-    manageUrl
-      ? `<p style="margin-top:20px"><a href="${manageUrl}" style="display:inline-block;background:#1d5c4d;color:#fff;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:14px">予約内容を確認する</a></p>`
+    ctaUrl
+      ? `<p style="margin-top:20px"><a href="${ctaUrl}" style="display:inline-block;background:#1d5c4d;color:#fff;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:14px">${ctaLabel}</a></p>`
       : ""
   }
 </div>`;
@@ -75,6 +81,23 @@ export function renderNotification(
            メニュー: ${ctx.serviceName}<br>日時: ${when(ctx)}<br>予約番号: ${ctx.bookingNo}<br><br>
            ご都合が悪い場合は下記からご連絡ください。`,
           ctx.manageUrl,
+        ),
+      };
+    case "booking_created_internal":
+      // 院内(スタッフ)向け。患者向け文面(「〜様」)にはしない
+      return {
+        subject: "【予約システム】新しい予約が入りました(要確認)",
+        html: wrap(
+          "新しい予約が入りました",
+          `Web から新しい予約が入りました。内容をご確認ください。<br><br>
+           患者名: ${ctx.patientName}<br>メニュー: ${ctx.serviceName}<br>日時: ${when(ctx)}<br>予約番号: ${ctx.bookingNo}<br><br>
+           <strong>${
+             ctx.requiresApproval
+               ? "この予約は承認待ちです。管理画面での承認操作が必要です。"
+               : "この予約は自動確定済みです。内容をご確認ください。"
+}</strong>`,
+          ctx.dashboardUrl,
+          "管理画面で確認する",
         ),
       };
     default:

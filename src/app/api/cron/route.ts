@@ -133,7 +133,7 @@ export async function GET(request: Request) {
     const { data: booking } = await admin
       .from("bookings")
       .select(
-        "booking_no, guest_name, patient:patients(name), service:services(name), clinic:clinics(name, slug), sessions:booking_sessions(time_range, status, seq)",
+        "booking_no, status, guest_name, patient:patients(name), service:services(name), clinic:clinics(name, slug), sessions:booking_sessions(time_range, status, seq)",
       )
       .eq("id", bookingId)
       .eq("clinic_id", clinicId)
@@ -150,7 +150,13 @@ export async function GET(request: Request) {
 
     // 管理リンクが要る種別は都度トークンを再発行
     let manageUrl: string | undefined;
-    if (kind !== "booking_cancelled") {
+    let dashboardUrl: string | undefined;
+    let requiresApproval: boolean | undefined;
+    if (kind === "booking_created_internal") {
+      // 院内向け。患者用 manage トークンは発行せず、院内ダッシュボードへ誘導する
+      dashboardUrl = `${env.APP_URL}/${booking.clinic.slug}`;
+      requiresApproval = booking.status === "requested";
+    } else if (kind !== "booking_cancelled") {
       const { token, tokenHash } = generateBookingToken();
       await admin.from("booking_access_tokens").insert({
         booking_id: bookingId,
@@ -169,6 +175,8 @@ export async function GET(request: Request) {
       endISO: lr?.end ?? null,
       bookingNo: booking.booking_no,
       manageUrl,
+      dashboardUrl,
+      requiresApproval,
     };
   }
 }

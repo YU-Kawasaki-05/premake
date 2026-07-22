@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 import { layoutSessions, rangeLiteral } from "@/features/bookings/session-layout";
-import { enqueueNotification } from "@/features/notifications/enqueue";
+import { enqueueNotification, resolveClinicInternalEmail } from "@/features/notifications/enqueue";
 import type { SessionStep } from "@/features/services/session-template";
 import { recordAudit } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -163,6 +163,17 @@ export async function createGuestBooking(
     recipientEmail: d.email,
     recipientType: "patient",
     kind: autoConfirm ? "booking_confirmed" : "booking_requested",
+  });
+
+  // @implements v2-23 院内(スタッフ)向け通知。manual/auto を問わず常に enqueue し、
+  // 承認漏れ=予約喪失(台帳 No.18)を防ぐ。宛先が解決できなければ enqueue 側でスキップ。
+  const internalEmail = await resolveClinicInternalEmail(clinic.id);
+  await enqueueNotification({
+    clinicId: clinic.id,
+    bookingId: booking.id,
+    recipientEmail: internalEmail,
+    recipientType: "member",
+    kind: "booking_created_internal",
   });
 
   return { done: { bookingNo: booking.booking_no, manageToken: token, pending: !autoConfirm } };
