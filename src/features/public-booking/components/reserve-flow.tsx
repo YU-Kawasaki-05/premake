@@ -50,16 +50,24 @@ export function ReserveFlow({
         <p className="mt-3 text-sm leading-6 text-[var(--ink-soft)]">
           予約番号 <span className="font-semibold tabular-nums">{state.done.bookingNo}</span>
           <br />
-          {state.done.pending
-            ? "クリニックの確認後に確定します。確認・キャンセルは下記リンクから行えます。"
-            : "確認・変更・キャンセルは下記リンクから行えます。"}
+          {state.done.manageToken
+            ? state.done.pending
+              ? "クリニックの確認後に確定します。確認・キャンセルは下記リンクから行えます。"
+              : "確認・変更・キャンセルは下記リンクから行えます。"
+            : state.done.pending
+              ? "クリニックの確認後に確定します。確認・キャンセル用のリンクはメールでお送りします。"
+              : "確認・変更・キャンセル用のリンクはメールでお送りします。"}
         </p>
-        <Button asChild className="mt-4">
-          <Link href={`/c/${slug}/manage/${state.done.manageToken}`}>予約内容を確認する</Link>
-        </Button>
-        <p className="mt-3 text-[12px] text-muted-foreground">
-          ※このリンクは大切に保管してください
-        </p>
+        {state.done.manageToken && (
+          <>
+            <Button asChild className="mt-4">
+              <Link href={`/c/${slug}/manage/${state.done.manageToken}`}>予約内容を確認する</Link>
+            </Button>
+            <p className="mt-3 text-[12px] text-muted-foreground">
+              ※このリンクは大切に保管してください
+            </p>
+          </>
+        )}
       </div>
     );
   }
@@ -195,6 +203,8 @@ export function ReserveFlow({
           <input type="hidden" name="serviceId" value={service.id} />
           <input type="hidden" name="memberId" value={selected.memberId} />
           <input type="hidden" name="roomId" value={selected.roomId} />
+          {/* BC-NEW-07: 指名の有無を Server Action へ伝搬(「指定なし」は空) */}
+          <input type="hidden" name="nominatedMemberId" value={nominated ?? ""} />
           <input type="hidden" name="startISO" value={selected.startISO} />
           <p className="text-sm font-medium">
             {formatJaDate(date)} {jstHhmm(selected.startISO)} で予約

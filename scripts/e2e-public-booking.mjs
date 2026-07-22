@@ -169,7 +169,7 @@ try {
 
   // 5) DB 検証: bookings に guest 予約(status=requested)が 1 件
   const bk = await rest(
-    `bookings?guest_email=eq.${encodeURIComponent(GUEST_EMAIL)}&select=id,booking_no,status,source,guest_name`,
+    `bookings?guest_email=eq.${encodeURIComponent(GUEST_EMAIL)}&select=id,booking_no,status,source,guest_name,nominated_member_id`,
   );
   const rows = Array.isArray(bk.json) ? bk.json : [];
   const okBooking = rows.length === 1 && rows[0].status === "requested";
@@ -181,6 +181,12 @@ try {
     "DB: guest 予約が requested で存在",
     okBooking,
     `件数=${rows.length} status=${rows[0]?.status} source=${rows[0]?.source} no=${bookingNo}`,
+  );
+  // BC-NEW-07: このフロー(?member 指定なし=「指定なし」)では nominated_member_id が null になる
+  rec(
+    "DB: 指定なし予約の nominated_member_id が null【BC-NEW-07】",
+    rows[0]?.nominated_member_id === null,
+    `nominated_member_id=${rows[0]?.nominated_member_id ?? "null"}`,
   );
   // 画面表示の予約番号と DB が一致(参考)
   if (bookingNo) {

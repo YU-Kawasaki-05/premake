@@ -118,4 +118,15 @@ describe.skipIf(!enabled)("cancel_booking の status ガード(BC-NEW-01)", () =
     });
     expect(error).not.toBeNull();
   });
+
+  it("(e) no_show の予約に cancel_booking すると例外になり status は no_show のまま(BC-NEW-03)", async () => {
+    const b = await makeBooking("no_show");
+
+    const { error } = await admin.rpc("cancel_booking", { p_booking_id: b, p_clinic_id: CLINIC });
+    expect(error).not.toBeNull();
+    expect(error?.message).toContain("is no_show");
+
+    const { data } = await admin.from("bookings").select("status").eq("id", b).single();
+    expect(data?.status).toBe("no_show"); // 終端状態はガードで守られ変化しない
+  });
 });

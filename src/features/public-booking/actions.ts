@@ -12,7 +12,9 @@ import { generateBookingToken, hashBookingToken } from "./token";
 
 export type GuestBookingState = {
   error?: string;
-  done?: { bookingNo: string; manageToken: string; pending: boolean };
+  // BC-NEW-06: manageToken はトークン発行に失敗しても予約自体は成立するため optional。
+  // 未発行時は UI が「リンクはメールで届きます」を表示する。
+  done?: { bookingNo: string; manageToken?: string; pending: boolean };
 };
 
 const guestSchema = z.object({
@@ -20,6 +22,8 @@ const guestSchema = z.object({
   serviceId: z.uuid(),
   memberId: z.uuid(),
   roomId: z.uuid(),
+  // BC-NEW-07: 患者が指名したスタッフ(「指定なし」は空)。
+  nominatedMemberId: z.union([z.uuid(), z.literal("")]).optional(),
   startISO: z.string().datetime(),
   name: z.string().trim().min(1, "お名前を入力してください").max(60),
   kana: z.string().trim().max(60).optional(),
@@ -37,6 +41,7 @@ export async function createGuestBooking(
     serviceId: formData.get("serviceId"),
     memberId: formData.get("memberId"),
     roomId: formData.get("roomId"),
+    nominatedMemberId: formData.get("nominatedMemberId") || undefined,
     startISO: formData.get("startISO"),
     name: formData.get("name"),
     kana: formData.get("kana") || undefined,
@@ -137,7 +142,9 @@ export async function createGuestBooking(
       service_id: d.serviceId,
       status: autoConfirm ? "confirmed" : "requested",
       source: "web",
-      nominated_member_id: d.memberId,
+      // BC-NEW-07: 「指定なし」は指名を記録しない(null)。指名ありの経路では
+      // 空き枠が指名スタッフに限定されるため nominatedMemberId は memberId と一致する。
+      nominated_member_id: d.nominatedMemberId === d.memberId ? d.memberId : null,
       guest_name: d.name,
       guest_kana: d.kana || null,
       guest_email: d.email,
@@ -172,14 +179,17 @@ export async function createGuestBooking(
     return { error: "予約の受付に失敗しました" };
   }
 
-  // 管理トークン(照会・キャンセル用)
+  // 管理トークン(照会・キャンセル用)。
+  // BC-NEW-06: 発行に失敗しても予約は成立済み。ここで中断すると枠がロックされ喪失するため、
+  // 失敗はログのみ残して完了画面へ進む(manage リンクはメール送信時に cron が再発行するため回復可能)。
   const { token, tokenHash } = generateBookingToken();
-  await admin.from("booking_access_tokens").insert({
+  const { error: tokErr } = await admin.from("booking_access_tokens").insert({
     booking_id: booking.id,
     token_hash: tokenHash,
     purpose: "manage",
     expires_at: new Date(endMs + 30 * 24 * 60 * 60 * 1000).toISOString(),
   });
+  if (tokErr) console.error("[public-booking] manage token insert failed", tokErr);
 
   await recordAudit({
     clinicId: clinic.id,
@@ -210,7 +220,13 @@ export async function createGuestBooking(
     kind: "booking_created_internal",
   });
 
-  return { done: { bookingNo: booking.booking_no, manageToken: token, pending: !autoConfirm } };
+  return {
+    done: {
+      bookingNo: booking.booking_no,
+      manageToken: tokErr ? undefined : token,
+      pending: !autoConfirm,
+    },
+  };
 }
 
 export type ManagedBooking = {

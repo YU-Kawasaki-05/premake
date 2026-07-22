@@ -115,8 +115,9 @@ function BookingForm({
   }, [state.bookingId, onCreated]);
 
   const selectedService = services.find((s) => s.id === serviceId);
-  const bookableMembers = members.filter((m) => m.bookable);
-  const memberChoices = bookableMembers.length > 0 ? bookableMembers : members;
+  // No.36: 院内予約の担当候補は active な全メンバー(is_bookable は公開指名対象の別概念)。
+  // F2 電話予約で非公開スタッフ(is_bookable=false)も担当に指定できるようにする。
+  const memberChoices = members;
 
   return (
     <form action={formAction} className="space-y-4">

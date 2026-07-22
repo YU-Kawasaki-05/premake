@@ -30,7 +30,6 @@ export function ScheduleWeekView({
   members,
   rooms,
   currentMemberId,
-  isOwner,
 }: {
   slug: string;
   anchor: string;
@@ -39,7 +38,6 @@ export function ScheduleWeekView({
   members: Option[];
   rooms: Option[];
   currentMemberId: string;
-  isOwner: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const memberName = (id: string) => members.find((m) => m.id === id)?.name ?? "?";
@@ -56,8 +54,6 @@ export function ScheduleWeekView({
     byDate.set(dateJst, arr);
   }
   for (const arr of byDate.values()) arr.sort((a, b) => a.start.localeCompare(b.start));
-
-  const canManage = (b: Block) => isOwner || b.member_id === currentMemberId;
 
   return (
     <div>
@@ -82,7 +78,6 @@ export function ScheduleWeekView({
             members={members}
             rooms={rooms}
             currentMemberId={currentMemberId}
-            isOwner={isOwner}
             defaultDate={days[0].date}
           />
         </div>
@@ -126,23 +121,22 @@ export function ScheduleWeekView({
                         <span className="tabular-nums font-medium">
                           {jstTime(b.start)}–{jstTime(b.end)}
                         </span>
-                        {canManage(b) && (
-                          <button
-                            type="button"
-                            aria-label="枠を削除"
-                            disabled={pending}
-                            onClick={() =>
-                              startTransition(async () => {
-                                const res = await deleteScheduleBlock(slug, b.id);
-                                if (res?.error) toast.error(res.error);
-                                else toast.success("施術枠を削除しました");
-                              })
-                            }
-                            className="opacity-0 transition-opacity group-hover:opacity-100"
-                          >
-                            <Trash2 className="size-3 text-muted-foreground hover:text-[var(--destructive)]" />
-                          </button>
-                        )}
+                        {/* No.35: メンバー全員が任意スタッフの枠を削除できる */}
+                        <button
+                          type="button"
+                          aria-label="枠を削除"
+                          disabled={pending}
+                          onClick={() =>
+                            startTransition(async () => {
+                              const res = await deleteScheduleBlock(slug, b.id);
+                              if (res?.error) toast.error(res.error);
+                              else toast.success("施術枠を削除しました");
+                            })
+                          }
+                          className="opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                          <Trash2 className="size-3 text-muted-foreground hover:text-[var(--destructive)]" />
+                        </button>
                       </div>
                       <div className="truncate text-muted-foreground">
                         {roomName(b.room_id)} · {memberName(b.member_id)}

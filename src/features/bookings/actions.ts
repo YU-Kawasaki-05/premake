@@ -52,6 +52,27 @@ const BOOKING_STATUSES = [
   "no_show",
 ] as const;
 
+/**
+ * BC-NEW-05: yyyy-mm-dd + HH:mm が JST の実在日時か検証する。
+ * regex を通っても暦上不正な値(例: 2026-13-40)は new Date() が Invalid になり、
+ * jstDateTimeToUtcISO の toISOString() が RangeError で落ちる。ここで事前に弾く。
+ */
+function isRealJstDateTime(date: string, time: string): boolean {
+  const [y, mo, da] = date.split("-").map(Number);
+  const [h, mi] = time.split(":").map(Number);
+  const ms = Date.parse(`${date}T${time}:00+09:00`);
+  if (Number.isNaN(ms)) return false;
+  // UTC インスタンス + 9h の UTC 各成分 = JST の壁時計。入力成分と一致すれば実在日時。
+  const jst = new Date(ms + 9 * 60 * 60 * 1000);
+  return (
+    jst.getUTCFullYear() === y &&
+    jst.getUTCMonth() + 1 === mo &&
+    jst.getUTCDate() === da &&
+    jst.getUTCHours() === h &&
+    jst.getUTCMinutes() === mi
+  );
+}
+
 const createSchema = z
   .object({
     // 患者: 既存 or 新規のいずれか
@@ -69,6 +90,10 @@ const createSchema = z
   .refine((v) => v.patientId || (v.newPatientName && v.newPatientName.trim().length > 0), {
     message: "患者を選択するか、新規患者名を入力してください",
     path: ["patientId"],
+  })
+  .refine((v) => isRealJstDateTime(v.startDate, v.startTime), {
+    message: "日付が不正です",
+    path: ["startDate"],
   });
 
 export async function createBooking(
@@ -196,6 +221,27 @@ export async function createBooking(
     return { error: "予約の作成に失敗しました" };
   }
 
+  // BC-NEW-04: 各セッションが収まる open な施術枠(schedule_block)を探して紐づける。
+  // v2-10「枠外への強制作成も可」を維持するため、見つからなければ null のまま作成継続。
+  const { data: openBlocks } = await supabase
+    .from("schedule_blocks")
+    .select("id, time_range")
+    .eq("clinic_id", clinic.id)
+    .eq("member_id", d.memberId)
+    .eq("room_id", d.roomId)
+    .eq("block_type", "open")
+    .overlaps("time_range", rangeLiteral(laid[0].startISO, laid[laid.length - 1].occupiedEndISO));
+
+  const blockForSession = (sStartISO: string, sEndISO: string): string | null => {
+    const s = Date.parse(sStartISO);
+    const e = Date.parse(sEndISO);
+    for (const b of openBlocks ?? []) {
+      const r = parseRange(b.time_range as string);
+      if (r && Date.parse(r.start) <= s && e <= Date.parse(r.end)) return b.id;
+    }
+    return null;
+  };
+
   // セッション作成(EXCLUDE 制約で部屋/スタッフ重複はエラー)
   const sessionRows = laid.map((s) => ({
     clinic_id: clinic.id,
@@ -207,6 +253,7 @@ export async function createBooking(
     room_id: d.roomId,
     time_range: rangeLiteral(s.startISO, s.endISO),
     occupied_range: rangeLiteral(s.startISO, s.occupiedEndISO),
+    schedule_block_id: blockForSession(s.startISO, s.occupiedEndISO),
   }));
   const { error: sErr } = await supabase.from("booking_sessions").insert(sessionRows);
   if (sErr) {
@@ -252,13 +299,18 @@ export async function createBooking(
   return { bookingId: booking.id };
 }
 
-const rescheduleSchema = z.object({
-  bookingId: z.uuid(),
-  memberId: z.uuid("担当を選択してください"),
-  roomId: z.uuid("部屋を選択してください"),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日付が不正です"),
-  startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "時刻が不正です"),
-});
+const rescheduleSchema = z
+  .object({
+    bookingId: z.uuid(),
+    memberId: z.uuid("担当を選択してください"),
+    roomId: z.uuid("部屋を選択してください"),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日付が不正です"),
+    startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "時刻が不正です"),
+  })
+  .refine((v) => isRealJstDateTime(v.startDate, v.startTime), {
+    message: "日付が不正です",
+    path: ["startDate"],
+  });
 
 // リスケ可能なステータス(来院以降・完了・キャンセルは変更不可)
 const RESCHEDULABLE = new Set<BookingStatus>(["requested", "confirmed"]);
@@ -502,6 +554,8 @@ export async function cancelBooking(
     .maybeSingle();
   if (!current) return { error: "予約が見つかりません" };
   if (current.status === "done") return { error: "完了済みの予約はキャンセルできません" };
+  // BC-NEW-03(v2-12): 無断キャンセル(no_show)は終端状態。cancelled への遷移を禁止する。
+  if (current.status === "no_show") return { error: "無断キャンセルの予約はキャンセルできません" };
   if (current.status === "cancelled") return { ok: true };
 
   // ヘッダの cancelled 更新とセッション解放を単一トランザクション(RPC)で原子的に行う。
@@ -515,6 +569,10 @@ export async function cancelBooking(
     // pre-check 後の競合で done になった場合、RPC の done ガードが 'booking % is done' を返す
     if (error.message.includes("is done")) {
       return { error: "完了済みの予約はキャンセルできません" };
+    }
+    // BC-NEW-03: pre-check 後の競合で no_show になった場合、RPC が 'booking % is no_show' を返す
+    if (error.message.includes("is no_show")) {
+      return { error: "無断キャンセルの予約はキャンセルできません" };
     }
     return { error: "キャンセルに失敗しました" };
   }

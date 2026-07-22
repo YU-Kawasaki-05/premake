@@ -64,9 +64,9 @@ export function BookingRescheduleDialog({
     }
   }, [state.ok, onRescheduled]);
 
-  // 担当候補は予約可能スタッフを優先。現担当が候補に無ければ先頭に補う(defaultValue を有効にするため)。
-  const bookable = members.filter((m) => m.bookable);
-  let memberChoices = bookable.length > 0 ? bookable : members;
+  // No.36: 担当候補は active な全メンバー(院内予約・リスケは is_bookable と分離)。
+  // 現担当が候補に無ければ先頭に補う(defaultValue を有効にするため)。
+  let memberChoices = members;
   if (defaultMemberId && !memberChoices.some((m) => m.id === defaultMemberId)) {
     const cur = members.find((m) => m.id === defaultMemberId);
     if (cur) memberChoices = [cur, ...memberChoices];
