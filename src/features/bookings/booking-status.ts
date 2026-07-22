@@ -12,7 +12,7 @@ export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   checked_in: "来院",
   done: "完了",
   cancelled: "キャンセル",
-  no_show: "無断",
+  no_show: "不来院",
 };
 
 /** ステータス → CSS 変数(globals.css の --status-*) */

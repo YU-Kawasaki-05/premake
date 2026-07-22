@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { SessionStep } from "@/features/services/session-template";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -31,7 +32,7 @@ export type PublicService = {
  * 公開予約が有効なクリニックを slug で取得。未ログイン導線のため service role を使うが、
  * public_booking_enabled=false のクリニックは返さない(=公開していない)。
  */
-export async function getPublicClinic(slug: string): Promise<PublicClinic | null> {
+export const getPublicClinic = cache(async (slug: string): Promise<PublicClinic | null> => {
   const admin = createAdminClient();
   const { data } = await admin
     .from("clinics")
@@ -42,7 +43,7 @@ export async function getPublicClinic(slug: string): Promise<PublicClinic | null
     .maybeSingle();
   if (!data?.public_booking_enabled) return null;
   return data as unknown as PublicClinic;
-}
+});
 
 export async function getPublicServices(clinicId: string): Promise<PublicService[]> {
   const admin = createAdminClient();

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/features/auth/actions";
-import { generateInviteToken } from "@/features/invitations/token";
+import { openPendingInvitation } from "@/features/invitations/actions";
 import { getUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -11,8 +10,8 @@ export const metadata: Metadata = { title: "招待の確認" };
 
 /**
  * 所属ゼロだが招待を持つユーザーの受け皿。
- * 招待の生トークンは DB にハッシュしか無いため、ここでは受諾用の新トークンを再発行して
- * 既存の招待レコードに紐付け直し、/invite/[token] へ渡す。
+ * 描画(GET)は一覧表示のみで副作用を持たない。受諾用トークンの再発行(ローテーション)は
+ * 「参加する」ボタン(openPendingInvitation / POST)押下時にのみ行う(AUTH-4)。
  */
 export default async function PendingInvitationsPage() {
   const user = await getUser();
@@ -36,15 +35,9 @@ export default async function PendingInvitationsPage() {
     .maybeSingle();
   if (membership?.clinics?.slug) redirect(`/${membership.clinics.slug}`);
 
-  // 各招待に受諾用トークンを再発行(既存 token_hash を差し替え)
-  const items: { id: string; name: string; token: string }[] = [];
-  for (const inv of invitations ?? []) {
-    const name = inv.clinics?.name;
-    if (!name) continue;
-    const { token, tokenHash } = generateInviteToken();
-    await admin.from("invitations").update({ token_hash: tokenHash }).eq("id", inv.id);
-    items.push({ id: inv.id, name, token });
-  }
+  const items = (invitations ?? []).flatMap((inv) =>
+    inv.clinics?.name ? [{ id: inv.id, name: inv.clinics.name }] : [],
+  );
 
   return (
     <div className="rounded-lg border border-border bg-card p-8">
@@ -61,9 +54,11 @@ export default async function PendingInvitationsPage() {
               className="flex items-center justify-between rounded-md border border-border px-4 py-3 text-sm"
             >
               <span className="font-medium">{item.name}</span>
-              <Button asChild size="sm">
-                <Link href={`/invite/${item.token}`}>参加する</Link>
-              </Button>
+              <form action={openPendingInvitation.bind(null, item.id)}>
+                <Button type="submit" size="sm">
+                  参加する
+                </Button>
+              </form>
             </li>
           ))}
         </ul>

@@ -5,7 +5,7 @@ import { getManagedBooking } from "@/features/public-booking/actions";
 import { ManageBookingView } from "@/features/public-booking/components/manage-booking-view";
 import { formatTimeRange } from "@/lib/datetime";
 
-export const metadata: Metadata = { title: "予約内容" };
+export const metadata: Metadata = { title: { absolute: "予約内容" } };
 
 // @implements v2-21 予約内容の確認・キャンセル(管理トークン)
 export default async function ManagePage(props: PageProps<"/c/[slug]/manage/[token]">) {
@@ -60,6 +60,7 @@ export default async function ManagePage(props: PageProps<"/c/[slug]/manage/[tok
       <ManageBookingView
         token={token}
         slug={slug}
+        clinicName={booking.clinicName}
         status={booking.status}
         cancelDeadlineHours={booking.cancelDeadlineHours}
       />

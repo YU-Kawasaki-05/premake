@@ -8,6 +8,7 @@ import { recordAudit } from "@/lib/audit";
 import { getUser } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { generateInviteToken } from "./token";
 import { verifyInvitation } from "./verify";
 
 export type AcceptInviteState = {
@@ -117,6 +118,37 @@ export async function acceptInviteAsNewUser(
   });
 
   redirect(`/${invitation.clinic.slug}`);
+}
+
+/**
+ * AUTH-4: 招待の受諾リンクを開く(POST 専用)。生トークンは DB にハッシュしか無いため、
+ * 受諾用トークンをここで再発行して既存レコードに紐付け、/invite/[token] へ渡す。
+ * ページ描画(GET)では副作用を起こさず、このボタン押下時にのみローテーションする。
+ */
+export async function openPendingInvitation(
+  invitationId: string,
+  _formData: FormData,
+): Promise<void> {
+  const user = await getUser();
+  if (!user?.email) redirect("/login");
+
+  const admin = createAdminClient();
+  // 本人宛・未受諾・有効な招待に限定(他人の招待 ID を推測してのローテーションを防ぐ)
+  const { data: inv } = await admin
+    .from("invitations")
+    .select("id, email")
+    .eq("id", invitationId)
+    .is("accepted_at", null)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+
+  if (!inv || inv.email.toLowerCase() !== user.email.toLowerCase()) {
+    redirect("/pending-invitations");
+  }
+
+  const { token, tokenHash } = generateInviteToken();
+  await admin.from("invitations").update({ token_hash: tokenHash }).eq("id", inv.id);
+  redirect(`/invite/${token}`);
 }
 
 /** ログイン中のユーザーとして招待を受諾(招待メールと一致するアカウントのみ) */

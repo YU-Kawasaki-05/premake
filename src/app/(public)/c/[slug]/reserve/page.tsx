@@ -7,7 +7,11 @@ import { getPublicClinic, getPublicServices } from "@/features/public-booking/da
 import { TIME_ZONE } from "@/lib/datetime";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const metadata: Metadata = { title: "ご予約" };
+export async function generateMetadata(props: PageProps<"/c/[slug]/reserve">): Promise<Metadata> {
+  const { slug } = await props.params;
+  const clinic = await getPublicClinic(slug);
+  return { title: { absolute: clinic ? `ご予約 | ${clinic.name}` : "ご予約" } };
+}
 
 // @implements v2-20 ゲスト予約フロー
 export default async function ReservePage(props: PageProps<"/c/[slug]/reserve">) {

@@ -554,8 +554,8 @@ export async function cancelBooking(
     .maybeSingle();
   if (!current) return { error: "予約が見つかりません" };
   if (current.status === "done") return { error: "完了済みの予約はキャンセルできません" };
-  // BC-NEW-03(v2-12): 無断キャンセル(no_show)は終端状態。cancelled への遷移を禁止する。
-  if (current.status === "no_show") return { error: "無断キャンセルの予約はキャンセルできません" };
+  // BC-NEW-03(v2-12): 不来院(no_show)は終端状態。cancelled への遷移を禁止する。
+  if (current.status === "no_show") return { error: "不来院の予約はキャンセルできません" };
   if (current.status === "cancelled") return { ok: true };
 
   // ヘッダの cancelled 更新とセッション解放を単一トランザクション(RPC)で原子的に行う。
@@ -572,7 +572,7 @@ export async function cancelBooking(
     }
     // BC-NEW-03: pre-check 後の競合で no_show になった場合、RPC が 'booking % is no_show' を返す
     if (error.message.includes("is no_show")) {
-      return { error: "無断キャンセルの予約はキャンセルできません" };
+      return { error: "不来院の予約はキャンセルできません" };
     }
     return { error: "キャンセルに失敗しました" };
   }

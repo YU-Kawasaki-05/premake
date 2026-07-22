@@ -11,11 +11,13 @@ import { cancelByToken } from "@/features/public-booking/actions";
 export function ManageBookingView({
   token,
   slug,
+  clinicName,
   status,
   cancelDeadlineHours,
 }: {
   token: string;
   slug: string;
+  clinicName: string;
   status: string;
   cancelDeadlineHours: number;
 }) {
@@ -75,7 +77,7 @@ export function ManageBookingView({
         href={`/c/${slug}`}
         className="block text-center text-[13px] text-[var(--primary)] underline underline-offset-4"
       >
-        {slug} のトップへ
+        {clinicName} のトップへ
       </Link>
     </div>
   );

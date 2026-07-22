@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 import { LookupForm } from "@/features/public-booking/components/lookup-form";
 import { getPublicClinic } from "@/features/public-booking/data";
 
-export const metadata: Metadata = { title: "予約の確認" };
+export async function generateMetadata(props: PageProps<"/c/[slug]/lookup">): Promise<Metadata> {
+  const { slug } = await props.params;
+  const clinic = await getPublicClinic(slug);
+  return { title: { absolute: clinic ? `予約の確認 | ${clinic.name}` : "予約の確認" } };
+}
 
 // @implements v2-21 予約照会(番号 + メール)
 export default async function LookupPage(props: PageProps<"/c/[slug]/lookup">) {
