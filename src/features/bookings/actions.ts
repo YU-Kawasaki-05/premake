@@ -5,6 +5,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { enqueueNotification } from "@/features/notifications/enqueue";
+import { parseRange } from "@/features/schedule/week";
 import type { SessionStep } from "@/features/services/session-template";
 import { recordAudit } from "@/lib/audit";
 import { requireMember } from "@/lib/auth";
@@ -249,6 +250,154 @@ export async function createBooking(
 
   revalidatePath(`/${slug}`);
   return { bookingId: booking.id };
+}
+
+const rescheduleSchema = z.object({
+  bookingId: z.uuid(),
+  memberId: z.uuid("担当を選択してください"),
+  roomId: z.uuid("部屋を選択してください"),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日付が不正です"),
+  startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "時刻が不正です"),
+});
+
+// リスケ可能なステータス(来院以降・完了・キャンセルは変更不可)
+const RESCHEDULABLE = new Set<BookingStatus>(["requested", "confirmed"]);
+
+// @implements v2-11 予約変更(リスケ): 開始日時 + 担当・部屋の一括変更(全 scheduled セッションに適用)
+export async function rescheduleBooking(
+  slug: string,
+  _prev: BookingActionState,
+  formData: FormData,
+): Promise<BookingActionState> {
+  const { user, clinic } = await requireMember(slug);
+
+  const parsed = rescheduleSchema.safeParse({
+    bookingId: formData.get("bookingId"),
+    memberId: formData.get("memberId"),
+    roomId: formData.get("roomId"),
+    startDate: formData.get("startDate"),
+    startTime: formData.get("startTime"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "入力内容を確認してください" };
+  }
+  const d = parsed.data;
+
+  const startISO = jstDateTimeToUtcISO(d.startDate, d.startTime);
+  if (Date.parse(startISO) < Date.now()) {
+    return { error: "過去の日時には変更できません" };
+  }
+
+  const supabase = await createClient();
+
+  // 予約ヘッダ + 現行 scheduled セッション(旧値=監査 diff 用)を取得
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select(
+      "status, service_id, sessions:booking_sessions(seq, time_range, member_id, room_id, status)",
+    )
+    .eq("id", d.bookingId)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  if (!booking) return { error: "予約が見つかりません" };
+  if (!RESCHEDULABLE.has(booking.status as BookingStatus)) {
+    return { error: "この予約は変更できません" };
+  }
+
+  // メニュー(session_template)取得 + クリニック検証
+  const { data: service } = await supabase
+    .from("services")
+    .select("session_template")
+    .eq("id", booking.service_id)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  if (!service) return { error: "メニューが見つかりません" };
+
+  const steps = service.session_template as unknown as SessionStep[];
+  if (!Array.isArray(steps) || steps.length === 0 || steps.some((s) => !(s.duration_min > 0))) {
+    return { error: "メニューのセッション構成が不正です。メニュー設定を確認してください" };
+  }
+
+  // member / room のクリニック検証(越境防止)
+  const [{ data: member }, { data: room }] = await Promise.all([
+    supabase
+      .from("clinic_members")
+      .select("id")
+      .eq("id", d.memberId)
+      .eq("clinic_id", clinic.id)
+      .maybeSingle(),
+    supabase.from("rooms").select("id").eq("id", d.roomId).eq("clinic_id", clinic.id).maybeSingle(),
+  ]);
+  if (!member) return { error: "担当スタッフが見つかりません" };
+  if (!room) return { error: "部屋が見つかりません" };
+
+  // 新開始時刻からセッションを再配置し、RPC に渡す jsonb を組み立てる
+  const laid = layoutSessions(steps, startISO);
+  const sessionsPayload = laid.map((s) => ({
+    seq: s.seq,
+    time_range: rangeLiteral(s.startISO, s.endISO),
+    occupied_range: rangeLiteral(s.startISO, s.occupiedEndISO),
+  }));
+
+  // 旧値(監査 diff)。scheduled を seq 昇順で並べ先頭を代表値にする。
+  const oldScheduled = (booking.sessions ?? [])
+    .filter((s) => s.status === "scheduled")
+    .sort((a, b) => a.seq - b.seq);
+  const oldStartISO = oldScheduled[0]
+    ? (parseRange(oldScheduled[0].time_range as string)?.start ?? null)
+    : null;
+  const oldMemberId = oldScheduled[0]?.member_id ?? null;
+  const oldRoomId = oldScheduled[0]?.room_id ?? null;
+
+  const { error } = await supabase.rpc("reschedule_booking", {
+    p_booking_id: d.bookingId,
+    p_clinic_id: clinic.id,
+    p_expected_status: booking.status,
+    p_member_id: d.memberId,
+    p_room_id: d.roomId,
+    p_sessions: sessionsPayload,
+  });
+  if (error) {
+    if (error.code === "23P01") {
+      return { error: "指定の時間帯は部屋または担当が既に埋まっています" };
+    }
+    if (error.message.includes("status changed")) {
+      return { error: "他の操作と競合しました。画面を更新してやり直してください" };
+    }
+    console.error("[bookings] reschedule failed", error);
+    return { error: "予約の変更に失敗しました" };
+  }
+
+  await recordAudit({
+    clinicId: clinic.id,
+    actorUserId: user.id,
+    actorType: "member",
+    action: "booking.reschedule",
+    targetType: "booking",
+    targetId: d.bookingId,
+    diff: {
+      from: { startISO: oldStartISO, memberId: oldMemberId, roomId: oldRoomId },
+      to: { startISO, memberId: d.memberId, roomId: d.roomId },
+    },
+  });
+
+  // 変更後の内容で患者へ通知(ゲスト予約はゲストメール優先)
+  const { data: bk } = await supabase
+    .from("bookings")
+    .select("guest_email, patient:patients(email)")
+    .eq("id", d.bookingId)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  await enqueueNotification({
+    clinicId: clinic.id,
+    bookingId: d.bookingId,
+    recipientEmail: bk?.guest_email ?? bk?.patient?.email ?? null,
+    recipientType: "patient",
+    kind: "booking_rescheduled",
+  });
+
+  revalidatePath(`/${slug}`);
+  return { ok: true };
 }
 
 const statusSchema = z.enum(BOOKING_STATUSES);

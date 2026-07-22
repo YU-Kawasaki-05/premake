@@ -252,6 +252,8 @@ export function DayLedger({
         slug={slug}
         session={selected}
         memberName={selected ? memberName(selected.member_id) : ""}
+        rooms={rooms}
+        members={members}
         onClose={() => setSelected(null)}
       />
     </div>

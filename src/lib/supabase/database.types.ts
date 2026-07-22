@@ -983,6 +983,17 @@ export type Database = {
         Args: { p_booking_id: string; p_clinic_id: string; p_reason?: string };
         Returns: undefined;
       };
+      reschedule_booking: {
+        Args: {
+          p_booking_id: string;
+          p_clinic_id: string;
+          p_expected_status: string;
+          p_member_id: string;
+          p_room_id: string;
+          p_sessions: Json;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

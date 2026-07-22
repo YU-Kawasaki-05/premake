@@ -5,6 +5,7 @@ import { formatTimeRange } from "@/lib/datetime";
 export type NotificationKind =
   | "booking_confirmed"
   | "booking_requested"
+  | "booking_rescheduled"
   | "booking_cancelled"
   | "reminder"
   | "booking_created_internal";
@@ -59,6 +60,16 @@ export function renderNotification(
         html: wrap(
           "ご予約を受け付けました",
           `${ctx.patientName} 様<br>以下のご予約を受け付けました。クリニックの確認後に確定します。<br><br>
+           メニュー: ${ctx.serviceName}<br>日時: ${when(ctx)}<br>予約番号: ${ctx.bookingNo}`,
+          ctx.manageUrl,
+        ),
+      };
+    case "booking_rescheduled":
+      return {
+        subject: `【${ctx.clinicName}】ご予約内容が変更になりました`,
+        html: wrap(
+          "ご予約内容が変更になりました",
+          `${ctx.patientName} 様<br>ご予約内容を変更しました。変更後の内容は以下の通りです。<br><br>
            メニュー: ${ctx.serviceName}<br>日時: ${when(ctx)}<br>予約番号: ${ctx.bookingNo}`,
           ctx.manageUrl,
         ),
