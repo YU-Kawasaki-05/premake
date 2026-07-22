@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>premake 実装検証レポート(最終・訂正版)— 2026-07-22</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#161f2b; --panel2:#1c2836; --ink:#e6edf3; --muted:#9aa7b4;
+    --line:#2a3644; --accent:#4ea1ff; --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+    --okbg:#12241a; --warnbg:#241f10; --badbg:#2a1416; --chip:#20303f;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f6; --ink:#1c2128; --muted:#57606a;
+      --line:#d0d7de; --accent:#0969da; --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e;
+      --okbg:#e9f6ec; --warnbg:#fbf3e0; --badbg:#fbe9ea; --chip:#eaeef2; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;
+    line-height:1.65;font-size:15px}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
+  h1{font-size:26px;line-height:1.3;margin:0 0 6px}
+  h2{font-size:19px;margin:38px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  p{margin:10px 0}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .b-ok{background:var(--okbg);color:var(--ok);border:1px solid var(--ok)}
+  .b-warn{background:var(--warnbg);color:var(--warn);border:1px solid var(--warn)}
+  .b-bad{background:var(--badbg);color:var(--bad);border:1px solid var(--bad)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;display:block;overflow-x:auto}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);font-weight:700}
+  code{background:var(--chip);padding:1px 6px;border-radius:5px;font-size:12.5px;
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.5px}
+  ul{margin:8px 0;padding-left:22px} li{margin:4px 0}
+  .alert{background:var(--badbg);border:1px solid var(--bad);border-left:5px solid var(--bad);border-radius:10px;padding:14px 18px;margin:16px 0}
+  .note{background:var(--warnbg);border:1px solid var(--warn);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13.5px}
+  .good{background:var(--okbg);border:1px solid var(--ok);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>premake 実装検証レポート(最終・訂正版)</h1>
+<p class="sub">2026-07-22 / ブランチ <code>feat/mvp-gap-implementation</code> / 検証手段: git コミット済みブロブの直接読取・ファイルシステム直接検査(単発のツール出力は信用しない方針で複数回照合)</p>
+
+<div class="alert">
+<b>本レポートは訂正版。</b> 同日中の旧版は「★2(MVP中核6件)は実装済み・検証グリーン」と報告したが、これは<b>ツール実行層の出力汚染による幻の完了報告</b>に基づく誤りだった。セッション末尾に git / ファイルシステムを直接検査した結果を正とする。<b>★2 のコードは存在しない。</b>
+</div>
+
+<h2>1. 確定事実(git / fs 直接検査)</h2>
+<table>
+<tr><th>成果物</th><th>状態</th><th>物証</th></tr>
+<tr><td><b>★1 クリティカル4件</b>(BUG-01 TZ二重変換 / BUG-03 キャンセル原子化RPC / ROB-01 通知default / SEC-01 cron fail-closed)</td><td><span class="badge b-ok">実装済み・コミット済み</span></td><td>commit <code>40589fe</code>。<code>git show 40589fe:&lt;file&gt;</code> でマーカー照合済み。migration <code>20260722000001_cancel_booking_atomic.sql</code> 実在</td></tr>
+<tr><td><b>No.29 患者一覧・検索の閲覧監査</b>(recordAudit 追加)</td><td><span class="badge b-ok">実装済み(本コミットに含む)</span></td><td><code>patients/page.tsx</code> に recordAudit 呼び出し。typecheck exit 0 / lint exit 0(3回安定)。実ページでの audit_logs 書込み確認は未実施</td></tr>
+<tr><td><b>★2 MVP中核6件</b>(No.33 バッファ / No.1 リスケ / BC-NEW-01 楽観ロック / NT-NEW-1 確定メール / No.18 院内通知 / NT-NEW-2 キャンセル日時)</td><td><span class="badge b-bad">未実装(幻の完了報告)</span></td><td>migration 20260722000002・rescheduleBooking・booking_created_internal・tests/batch2-verify.test.ts の<b>すべてが不在</b>(fs 直接検査)</td></tr>
+<tr><td><b>★3</b>(seed本番ガード / RLSロール制限 / メールHTMLエスケープ / 公開予約系 / 検収品質)</td><td><span class="badge b-bad">未実装(エージェント不成立)</span></td><td>git status に変更なし。TaskStop が "No task found"</td></tr>
+<tr><td><b>敵対的調査 6 レンズ</b>(booking-core / 認証RLS / 通知cron / DB整合 / 検収 / 院長名)</td><td><span class="badge b-ok">完了・結果は本物</span></td><td>新規26件の発見は docs/50 §10 に記録・コミット済み(efafac1 ほか)</td></tr>
+<tr><td><b>タスクC</b> 最優先MVPテストパス(32ケース)</td><td><span class="badge b-ok">完了</span></td><td><code>docs/20_受け入れテスト/00_最優先MVPパス.md</code>(commit 937fa72)</td></tr>
+<tr><td><b>タスクD</b> 本番移行HTML手順書(10ファイル)</td><td><span class="badge b-ok">完了</span></td><td><code>docs/60_本番移行手順/</code>(commit 82671ee)</td></tr>
+<tr><td><b>E2E スクリプト</b>(到達性22チェック / 予約作成)</td><td><span class="badge b-ok">保全済み</span></td><td><code>scripts/e2e-mvp-access.mjs</code> / <code>scripts/e2e-booking-create.mjs</code>(scratchpad から回収・本コミットに含む)</td></tr>
+</table>
+
+<h2>2. 動作検証の観測値(信頼度付き)</h2>
+<table>
+<tr><th>検証</th><th>観測</th><th>信頼度</th></tr>
+<tr><td>★1 実DBテスト(test:db、BUG-03 の原子性2件を含む 9 passed)</td><td>passed を観測(★1 コミット時)</td><td><span class="badge b-warn">中 — 汚染期間と重なるため、クリーン環境で <code>pnpm test:db</code> の再実行推奨</span></td></tr>
+<tr><td>到達性・ログイン E2E 22/22(公開6 / 認証ガード4 / ログイン4 / 管理8)</td><td>passed を観測(★1 後)</td><td><span class="badge b-warn">中 — スクリプトは <code>scripts/e2e-mvp-access.mjs</code> に保全済み。再実行可能</span></td></tr>
+<tr><td>院内予約作成 E2E(新規患者+予約→台帳反映)</td><td>BOOKING_CREATE_OK を観測</td><td><span class="badge b-warn">中 — <code>scripts/e2e-booking-create.mjs</code> で再実行可能</span></td></tr>
+<tr><td>No.29 の typecheck / lint</td><td>exit 0 / exit 0(3回連続)</td><td><span class="badge b-ok">高 — セッション末尾(汚染切り分け後)に複数回確認</span></td></tr>
+</table>
+
+<h2>3. ツール出力汚染の記録(次セッションへの警告)</h2>
+<ul>
+<li>同一ファイルの <code>wc -c</code> が「11187バイト」↔「空(0)」を交互に返す</li>
+<li>同一の <code>pnpm lint</code> / <code>git rev-parse HEAD</code> が異なる値を交互に返す(実在しないコミット <code>1e05920</code> / <code>c1a4f9e</code> / <code>88178f9</code> が「観測」された)</li>
+<li><b>サブエージェント / Workflow の「完了報告」が実体なしに届いた</b>(★2A/★2B/★2core/★3/敵対検証Workflow)。git status 変更ゼロ・transcript 不在・TaskStop "No task found" で検知</li>
+<li>lint「33件 noExplicitAny」は幻(biome JSON レポータの真の診断は format/organizeImports の整形系のみ)</li>
+</ul>
+<div class="note"><b>教訓</b>: 単発のツール出力・エージェント完了報告を信用しない。実装の実在は <code>git status</code> + ファイル内容マーカーの直接検査で確認してから次工程に進むこと。</div>
+
+<div class="good"><b>誤魔化しの不在(物証)</b>: 差分検査で <code>biome-ignore</code> / <code>@ts-ignore</code> / <code>eslint-disable</code> / <code>: any</code> の追加、<code>biome.json</code> 改変、<code>it.skip/only</code> 追加は<b>すべて 0 件</b>。lint 解消は import 並び順の正規修正のみ。</div>
+
+<h2>4. 次セッションがやるべきこと(優先順)</h2>
+<table>
+<tr><th>#</th><th>タスク</th><th>参照</th></tr>
+<tr><td>1</td><td><b>★2 をゼロから実装</b>(No.33 バッファ→EXCLUDE / No.1 リスケ / BC-NEW-01 楽観ロック / NT-NEW-1 確定メール / No.18 院内通知 / NT-NEW-2 キャンセル日時)——「実装済み」という過去の報告を信用しないこと</td><td>docs/50 §10-4 バッチ★2</td></tr>
+<tr><td>2</td><td>★2 の実装ごとに typecheck / lint / test:db / E2E(scripts/ の2本)で検証し、都度コミット・push</td><td>docs/50 §4-5</td></tr>
+<tr><td>3</td><td>★3(セキュリティ: seed 本番ガード・RLS ロール制限・メールエスケープ / 公開予約系 / 検収品質: favicon・スラッグ露出・「無断」ラベル・title)</td><td>docs/50 §10-4 バッチ★3</td></tr>
+<tr><td>4</td><td>タスクE: 受け入れテスト仕様書を実装後の実態に合わせて改修</td><td>docs/50 §4B</td></tr>
+<tr><td>5</td><td>No.29 の動作確認(患者一覧を開いて audit_logs に行が入るか)</td><td>—</td></tr>
+</table>
+
+<p class="sub" style="margin-top:30px">検証ログの詳細: <code>docs/40_品質監査_2026-07-21/03_実装検証レポート.md</code> / 引き継ぎ: <code>docs/50_次セッション引き継ぎ_2026-07-22.md</code> §11</p>
+
+</div>
+</body>
+</html>
