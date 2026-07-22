@@ -253,6 +253,113 @@ try {
     `status=${internalSent?.status}`,
   );
 
+  // ============================================================
+  // 承認フェーズ(NT-NEW-1): manual 承認 requested→confirmed で
+  // 患者に booking_confirmed が届くことを検証する。
+  // ============================================================
+  step("=== 承認フェーズ(NT-NEW-1)===");
+  if (!bookingId || !usedDate) {
+    rec("承認フェーズ: 前提(bookingId/日付)が揃っている", false, "予約作成が未完了のためスキップ");
+  } else {
+    // 9) owner でログイン(e2e-booking-create.mjs と同方式)
+    await p.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+    await p.fill("#email", "owner@demo.local");
+    await p.fill("#password", "premake-dev");
+    await p.getByRole("button", { name: "ログイン" }).click();
+    await p.waitForURL((u) => !u.pathname.endsWith("/login"), { timeout: 30000 });
+    rec("承認: owner ログイン成功", !p.url().endsWith("/login"), `url=${p.url().replace(BASE, "")}`);
+
+    // 10) 台帳を予約日へ移動(ledger は ?d=YYYY-MM-DD)
+    await p.goto(`${BASE}/demo?d=${usedDate}`, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+
+    // 予約チップの JST 開始時刻を取得(チップ本文に "hh:mm (患者未設定)" が出る)
+    let chipHhmm = null;
+    const sres = await rest(
+      `booking_sessions?booking_id=eq.${bookingId}&select=time_range&order=time_range&limit=1`,
+    );
+    const trange = Array.isArray(sres.json) && sres.json[0] ? sres.json[0].time_range : null;
+    if (trange) {
+      const m = trange.match(/^\[?"?([^",]+)"?,/);
+      if (m) {
+        const startMs = Date.parse(m[1]) + 9 * 3600000;
+        const d = new Date(startMs);
+        chipHhmm = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+      }
+    }
+    step(`E2E予約の台帳表示時刻(JST)=${chipHhmm}`);
+
+    // ゲスト予約は patient_id=null のため台帳チップは「(患者未設定)」表示。
+    // 同時刻の別予約と衝突しないよう hh:mm でも絞り込む。
+    let chip = p.locator("button").filter({ hasText: "(患者未設定)" });
+    if (chipHhmm) chip = chip.filter({ hasText: chipHhmm });
+    const chipCount = await chip.count();
+    rec("承認: 台帳に E2E ゲスト予約チップが表示される", chipCount >= 1, `候補=${chipCount} time=${chipHhmm}`);
+    await p.screenshot({ path: SHOT + "/public-booking-ledger.png", fullPage: true }).catch(() => {});
+
+    if (chipCount >= 1) {
+      // 11) チップを開く → 詳細ドロワー。booking_no 一致を確認
+      await chip.first().click();
+      await p.waitForTimeout(400);
+      const drawerHasNo = bookingNo ? (await p.getByText(bookingNo).count()) > 0 : false;
+      rec("承認: 詳細ドロワーが開き予約番号が一致", drawerHasNo, `booking_no=${bookingNo}`);
+
+      // 12) 「確定にする」を押下(requested→confirmed)
+      const confirmBtn = p.getByRole("button", { name: "確定にする" });
+      const hasConfirm = (await confirmBtn.count()) > 0;
+      rec("承認: 「確定にする」操作が存在する", hasConfirm);
+      if (hasConfirm) {
+        await confirmBtn.first().click();
+        // 成功時はトースト表示 + ドロワークローズ。少し待って DB を再取得。
+        await p.waitForTimeout(1200);
+      }
+    }
+
+    // 13) DB: bookings.status='confirmed'
+    const bk2 = await rest(
+      `bookings?id=eq.${bookingId}&select=status`,
+    );
+    const status2 = Array.isArray(bk2.json) && bk2.json[0] ? bk2.json[0].status : null;
+    rec("承認後 DB: 予約が confirmed", status2 === "confirmed", `status=${status2}`);
+
+    // 14) DB(NT-NEW-1 の核心): 患者宛 booking_confirmed が queued で追加
+    const nres = await rest(
+      `notifications?booking_id=eq.${bookingId}&kind=eq.booking_confirmed&select=kind,recipient_type,recipient_email,status`,
+    );
+    const confNotifs = Array.isArray(nres.json) ? nres.json : [];
+    const confNotif = confNotifs.find((n) => n.recipient_email === GUEST_EMAIL);
+    step(`承認後の booking_confirmed 通知: ${JSON.stringify(confNotifs)}`);
+    rec(
+      "承認後 DB: 患者宛 booking_confirmed(queued)が追加【NT-NEW-1】",
+      !!confNotif && confNotif.status === "queued" && confNotif.recipient_type === "patient",
+      confNotif
+        ? `to=${confNotif.recipient_email} type=${confNotif.recipient_type} status=${confNotif.status}`
+        : "見つからない",
+    );
+
+    // 15) cron 実行 → booking_confirmed が sent
+    let cron2Ok = false;
+    let cron2Body = null;
+    try {
+      const cres = await fetch(`${BASE}/api/cron`);
+      cron2Body = await cres.json().catch(() => null);
+      cron2Ok = cres.ok && cron2Body?.ok === true;
+    } catch (e) {
+      cron2Body = { fetchError: String(e).slice(0, 120) };
+    }
+    step(`承認後 cron 応答: ${JSON.stringify(cron2Body)}`);
+    rec("承認後 cron: /api/cron が ok=true", cron2Ok, `body=${JSON.stringify(cron2Body)}`);
+
+    await p.waitForTimeout(500);
+    const nres2 = await rest(
+      `notifications?booking_id=eq.${bookingId}&kind=eq.booking_confirmed&select=recipient_email,status,sent_at`,
+    );
+    const confSentRows = Array.isArray(nres2.json) ? nres2.json : [];
+    const confSent = confSentRows.find((n) => n.recipient_email === GUEST_EMAIL);
+    step(`承認後 cron 後の booking_confirmed: ${JSON.stringify(confSentRows)}`);
+    rec("承認後 cron 後: 患者宛 booking_confirmed が sent", confSent?.status === "sent", `status=${confSent?.status}`);
+  }
+
   console.log("PAGEERRORS:", errs.length, errs.slice(0, 3));
 } catch (e) {
   console.log("EXCEPTION:", String(e).slice(0, 300));

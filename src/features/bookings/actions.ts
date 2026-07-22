@@ -295,6 +295,25 @@ export async function updateBookingStatus(
     targetId: bookingId,
     diff: { from: current.status, to: parsed.data },
   });
+
+  // @implements v2-23 通知(患者)。manual 承認(requested→confirmed)が最も一般的な確定経路。
+  // ここで確定メールを積まないと、院内承認した予約の確定通知が患者に届かない。
+  if (current.status === "requested" && parsed.data === "confirmed") {
+    const { data: bk } = await supabase
+      .from("bookings")
+      .select("guest_email, patient:patients(email)")
+      .eq("id", bookingId)
+      .eq("clinic_id", clinic.id)
+      .maybeSingle();
+    await enqueueNotification({
+      clinicId: clinic.id,
+      bookingId,
+      recipientEmail: bk?.guest_email ?? bk?.patient?.email ?? null,
+      recipientType: "patient",
+      kind: "booking_confirmed",
+    });
+  }
+
   revalidatePath(`/${slug}`);
   return { ok: true };
 }
