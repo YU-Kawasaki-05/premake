@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>premake 実装検証レポート(最終・訂正版)— 2026-07-22</title>
+<title>premake 実装検証レポート(完了版)— 2026-07-23</title>
 <style>
   :root{
     --bg:#0f1720; --panel:#161f2b; --panel2:#1c2836; --ink:#e6edf3; --muted:#9aa7b4;
@@ -37,63 +37,75 @@
   ul{margin:8px 0;padding-left:22px} li{margin:4px 0}
   .alert{background:var(--badbg);border:1px solid var(--bad);border-left:5px solid var(--bad);border-radius:10px;padding:14px 18px;margin:16px 0}
   .note{background:var(--warnbg);border:1px solid var(--warn);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13.5px}
-  .good{background:var(--okbg);border:1px solid var(--ok);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13.5px}
+  .good{background:var(--okbg);border:1px solid var(--ok);border-left:5px solid var(--ok);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:13.5px}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<h1>premake 実装検証レポート(最終・訂正版)</h1>
-<p class="sub">2026-07-22 / ブランチ <code>feat/mvp-gap-implementation</code> / 検証手段: git コミット済みブロブの直接読取・ファイルシステム直接検査(単発のツール出力は信用しない方針で複数回照合)</p>
+<h1>premake 実装検証レポート(完了版)</h1>
+<p class="sub">2026-07-23 / ブランチ <code>feat/mvp-gap-implementation</code> / 運用: Fable がオーケストレーション、Opus サブエージェントが実装、全報告を git/fs 直接検査・diff 直読・検証コマンド自己再実行で裏取り(前セッションの「幻の完了報告」対策プロトコルを全工程で適用)</p>
 
-<div class="alert">
-<b>本レポートは訂正版。</b> 同日中の旧版は「★2(MVP中核6件)は実装済み・検証グリーン」と報告したが、これは<b>ツール実行層の出力汚染による幻の完了報告</b>に基づく誤りだった。セッション末尾に git / ファイルシステムを直接検査した結果を正とする。<b>★2 のコードは存在しない。</b>
+<div class="good">
+<b>★2(MVP 中核 6 件)・★3(セキュリティ+公開予約+受付運用+検収品質)・タスクE(受け入れテスト改修)まで完了。</b>
+前版(2026-07-22 訂正版)で「幻の完了報告により未実装」と確定した ★2 は、本セッションで<b>ゼロから再実装し、全コミットを git log で実在確認済み</b>。
 </div>
 
-<h2>1. 確定事実(git / fs 直接検査)</h2>
+<h2>1. 実装完了一覧(コミットはすべて push 済み・実在確認済み)</h2>
 <table>
-<tr><th>成果物</th><th>状態</th><th>物証</th></tr>
-<tr><td><b>★1 クリティカル4件</b>(BUG-01 TZ二重変換 / BUG-03 キャンセル原子化RPC / ROB-01 通知default / SEC-01 cron fail-closed)</td><td><span class="badge b-ok">実装済み・コミット済み</span></td><td>commit <code>40589fe</code>。<code>git show 40589fe:&lt;file&gt;</code> でマーカー照合済み。migration <code>20260722000001_cancel_booking_atomic.sql</code> 実在</td></tr>
-<tr><td><b>No.29 患者一覧・検索の閲覧監査</b>(recordAudit 追加)</td><td><span class="badge b-ok">実装済み(本コミットに含む)</span></td><td><code>patients/page.tsx</code> に recordAudit 呼び出し。typecheck exit 0 / lint exit 0(3回安定)。実ページでの audit_logs 書込み確認は未実施</td></tr>
-<tr><td><b>★2 MVP中核6件</b>(No.33 バッファ / No.1 リスケ / BC-NEW-01 楽観ロック / NT-NEW-1 確定メール / No.18 院内通知 / NT-NEW-2 キャンセル日時)</td><td><span class="badge b-bad">未実装(幻の完了報告)</span></td><td>migration 20260722000002・rescheduleBooking・booking_created_internal・tests/batch2-verify.test.ts の<b>すべてが不在</b>(fs 直接検査)</td></tr>
-<tr><td><b>★3</b>(seed本番ガード / RLSロール制限 / メールHTMLエスケープ / 公開予約系 / 検収品質)</td><td><span class="badge b-bad">未実装(エージェント不成立)</span></td><td>git status に変更なし。TaskStop が "No task found"</td></tr>
-<tr><td><b>敵対的調査 6 レンズ</b>(booking-core / 認証RLS / 通知cron / DB整合 / 検収 / 院長名)</td><td><span class="badge b-ok">完了・結果は本物</span></td><td>新規26件の発見は docs/50 §10 に記録・コミット済み(efafac1 ほか)</td></tr>
-<tr><td><b>タスクC</b> 最優先MVPテストパス(32ケース)</td><td><span class="badge b-ok">完了</span></td><td><code>docs/20_受け入れテスト/00_最優先MVPパス.md</code>(commit 937fa72)</td></tr>
-<tr><td><b>タスクD</b> 本番移行HTML手順書(10ファイル)</td><td><span class="badge b-ok">完了</span></td><td><code>docs/60_本番移行手順/</code>(commit 82671ee)</td></tr>
-<tr><td><b>E2E スクリプト</b>(到達性22チェック / 予約作成)</td><td><span class="badge b-ok">保全済み</span></td><td><code>scripts/e2e-mvp-access.mjs</code> / <code>scripts/e2e-booking-create.mjs</code>(scratchpad から回収・本コミットに含む)</td></tr>
+<tr><th>コミット</th><th>バッチ</th><th>内容</th><th>状態</th></tr>
+<tr><td><code>40589fe</code></td><td>★1</td><td>BUG-01 TZ二重変換 / BUG-03 キャンセル原子化 RPC / ROB-01 通知 default / SEC-01 cron fail-closed</td><td><span class="badge b-ok">完了(前半)</span></td></tr>
+<tr><td><code>74a5223</code></td><td>基盤</td><td>E2E スクリプトの再実行耐性・誤検知修正(ベースライン 22/22 + 予約作成 OK 確立)</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>a1f9843</code></td><td>★2</td><td>No.18 院内通知(booking_created_internal。宛先 clinics.email→owner、患者用トークン非混入)</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>b287410</code></td><td>★2</td><td>NT-NEW-1 手動承認(requested→confirmed)の患者確定メール配線</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>fd73fb2</code></td><td>★2</td><td>NT-NEW-2 キャンセルメール「日時未定」修正(セッション選択の純関数化 + unit 6件)</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>ef1f8d5</code></td><td>★2</td><td>BC-NEW-01 楽観ロック(status 前提条件 + RPC ガード・冪等化)</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>896ffc2</code></td><td>★2</td><td>No.33 バッファ占有(occupied_range + EXCLUDE 張替え + availability + 公開 fit-check)</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>13d113a</code></td><td>★2</td><td>No.1 リスケ v2-11(EXCLUDE deferrable 化 + reschedule_booking RPC + UI + 変更通知)</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>8b8685e</code></td><td>★3-a</td><td>AUTH-1 RLS owner 制限 / DB-N-1 複合FK 15本 / DB-N-2 seed 本番ガード / DB-N-4,5,7 CHECK・UNIQUE</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>992d244</code></td><td>★3-b</td><td>メール HTML エスケープ / timingSafeEqual / 送信リトライ / 差出人=クリニック名 / APP_URL 本番必須 / No.22 セルフキャンセル通知</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>99b1ac3</code></td><td>★3-c</td><td>公開空き枠フィルタ(active×is_bookable×担当割当×active部屋)/ F8 本名露出遮断</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>610a244</code></td><td>★3-d</td><td>No.35 枠の他人操作開放 / No.36 院内担当候補拡大 / BC-NEW-03〜07 堅牢化</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td><code>6347ad4</code></td><td>★3-e</td><td>favicon 差替 / スラッグ露出解消 / 「無断」→「不来院」/ title・OGP / AUTH-4 / loading.tsx</td><td><span class="badge b-ok">完了</span></td></tr>
+<tr><td>(後続)</td><td>タスクE</td><td>受け入れテスト仕様書 8 ファイルを実装後の実態に改修(実装×仕様×テスト三者整合)</td><td><span class="badge b-ok">完了</span></td></tr>
 </table>
 
-<h2>2. 動作検証の観測値(信頼度付き)</h2>
+<h2>2. 最終検証(Fable 自己実行の実測値)</h2>
 <table>
-<tr><th>検証</th><th>観測</th><th>信頼度</th></tr>
-<tr><td>★1 実DBテスト(test:db、BUG-03 の原子性2件を含む 9 passed)</td><td>passed を観測(★1 コミット時)</td><td><span class="badge b-warn">中 — 汚染期間と重なるため、クリーン環境で <code>pnpm test:db</code> の再実行推奨</span></td></tr>
-<tr><td>到達性・ログイン E2E 22/22(公開6 / 認証ガード4 / ログイン4 / 管理8)</td><td>passed を観測(★1 後)</td><td><span class="badge b-warn">中 — スクリプトは <code>scripts/e2e-mvp-access.mjs</code> に保全済み。再実行可能</span></td></tr>
-<tr><td>院内予約作成 E2E(新規患者+予約→台帳反映)</td><td>BOOKING_CREATE_OK を観測</td><td><span class="badge b-warn">中 — <code>scripts/e2e-booking-create.mjs</code> で再実行可能</span></td></tr>
-<tr><td>No.29 の typecheck / lint</td><td>exit 0 / exit 0(3回連続)</td><td><span class="badge b-ok">高 — セッション末尾(汚染切り分け後)に複数回確認</span></td></tr>
+<tr><th>検証</th><th>結果</th></tr>
+<tr><td><code>pnpm typecheck</code>(next typegen + tsc)</td><td><span class="badge b-ok">exit 0</span>(各コミット前に 2 回以上)</td></tr>
+<tr><td><code>pnpm exec biome check .</code></td><td><span class="badge b-ok">exit 0</span></td></tr>
+<tr><td><code>pnpm test:db</code>(実 DB vitest)</td><td><span class="badge b-ok">51 passed / 8 files</span>(セッション開始時 9 → 51)</td></tr>
+<tr><td>E2E <code>e2e-mvp-access.mjs</code>(到達性・認証ガード・ログイン)</td><td><span class="badge b-ok">22/22</span></td></tr>
+<tr><td>E2E <code>e2e-booking-create.mjs</code>(院内予約作成)</td><td><span class="badge b-ok">OK</span></td></tr>
+<tr><td>E2E <code>e2e-public-booking.mjs</code>(ゲスト予約→院内通知→承認→確定メール→キャンセル)</td><td><span class="badge b-ok">27/27</span></td></tr>
+<tr><td>E2E <code>e2e-booking-reschedule.mjs</code>(リスケ→変更通知)</td><td><span class="badge b-ok">11/11</span></td></tr>
+<tr><td>E2E <code>e2e-self-cancel.mjs</code>(セルフキャンセル→患者+院内通知)</td><td><span class="badge b-ok">16/16</span></td></tr>
+<tr><td>E2E <code>e2e-public-availability.mjs</code>(空き枠フィルタの対照実験)</td><td><span class="badge b-ok">14/14</span></td></tr>
+<tr><td>E2E <code>e2e-ops-flow.mjs</code>(staff の受付運用)</td><td><span class="badge b-ok">8/8</span></td></tr>
+<tr><td>No.29 動作確認(患者一覧閲覧→audit_logs)</td><td><span class="badge b-ok">patient.list.view / patient.search の記録を psql で確認</span></td></tr>
+<tr><td>DB 実挙動(No.33): 施術終了直後の同室 insert</td><td><span class="badge b-ok">23P01 拒否、バッファ後は成功</span></td></tr>
 </table>
 
-<h2>3. ツール出力汚染の記録(次セッションへの警告)</h2>
+<h2>3. 実装中に発見・解決した重要な副作用</h2>
 <ul>
-<li>同一ファイルの <code>wc -c</code> が「11187バイト」↔「空(0)」を交互に返す</li>
-<li>同一の <code>pnpm lint</code> / <code>git rev-parse HEAD</code> が異なる値を交互に返す(実在しないコミット <code>1e05920</code> / <code>c1a4f9e</code> / <code>88178f9</code> が「観測」された)</li>
-<li><b>サブエージェント / Workflow の「完了報告」が実体なしに届いた</b>(★2A/★2B/★2core/★3/敵対検証Workflow)。git status 変更ゼロ・transcript 不在・TaskStop "No task found" で検知</li>
-<li>lint「33件 noExplicitAny」は幻(biome JSON レポータの真の診断は format/organizeImports の整形系のみ)</li>
+<li><b>複合 FK による PostgREST 埋め込みの曖昧化(PGRST201)</b>: ★3-a の複合 FK 追加で関係埋め込みが解決不能になり、台帳・公開予約・リスケが静かに壊れた。全 10 箇所に FK ヒント(<code>patients!bookings_patient_id_fkey</code> 形式)を付与して解決。<b>今後の新規埋め込みにはヒント必須</b>(AGENTS.md に規約追記済み)</li>
+<li><b>リスケの自己衝突</b>: 同一予約の複数セッション UPDATE で「新枠 vs 旧枠」が EXCLUDE 即時評価に衝突するため、EXCLUDE を <code>deferrable initially immediate</code> 化し RPC 内でのみコミット時評価に切替(通常 insert の挙動は不変)</li>
+<li><b>公開 fit-check の穴</b>: バッファ占有(No.33)導入時、直接 POST でバッファが open 枠外にはみ出せる残穴を発見し占有終端検証に統一</li>
 </ul>
-<div class="note"><b>教訓</b>: 単発のツール出力・エージェント完了報告を信用しない。実装の実在は <code>git status</code> + ファイル内容マーカーの直接検査で確認してから次工程に進むこと。</div>
 
-<div class="good"><b>誤魔化しの不在(物証)</b>: 差分検査で <code>biome-ignore</code> / <code>@ts-ignore</code> / <code>eslint-disable</code> / <code>: any</code> の追加、<code>biome.json</code> 改変、<code>it.skip/only</code> 追加は<b>すべて 0 件</b>。lint 解消は import 並び順の正規修正のみ。</div>
-
-<h2>4. 次セッションがやるべきこと(優先順)</h2>
+<h2>4. 残タスク・既知の限界</h2>
 <table>
-<tr><th>#</th><th>タスク</th><th>参照</th></tr>
-<tr><td>1</td><td><b>★2 をゼロから実装</b>(No.33 バッファ→EXCLUDE / No.1 リスケ / BC-NEW-01 楽観ロック / NT-NEW-1 確定メール / No.18 院内通知 / NT-NEW-2 キャンセル日時)——「実装済み」という過去の報告を信用しないこと</td><td>docs/50 §10-4 バッチ★2</td></tr>
-<tr><td>2</td><td>★2 の実装ごとに typecheck / lint / test:db / E2E(scripts/ の2本)で検証し、都度コミット・push</td><td>docs/50 §4-5</td></tr>
-<tr><td>3</td><td>★3(セキュリティ: seed 本番ガード・RLS ロール制限・メールエスケープ / 公開予約系 / 検収品質: favicon・スラッグ露出・「無断」ラベル・title)</td><td>docs/50 §10-4 バッチ★3</td></tr>
-<tr><td>4</td><td>タスクE: 受け入れテスト仕様書を実装後の実態に合わせて改修</td><td>docs/50 §4B</td></tr>
-<tr><td>5</td><td>No.29 の動作確認(患者一覧を開いて audit_logs に行が入るか)</td><td>—</td></tr>
+<tr><th>項目</th><th>状態</th></tr>
+<tr><td>MVP 除外機能(問診オンライン化 No.12/13/19、公開 auto 確認リンク No.7/8、法定ページ弁護士確認 No.26)</td><td><span class="badge b-warn">未実装(ユーザー判断待ち)</span></td></tr>
+<tr><td>E2E の稀な flake(承認フェーズの UI タイミング。7 回中 1 回程度)・日付跨ぎ時は要 <code>pnpm db:reset</code>(seed の枠が相対日付のため)</td><td><span class="badge b-warn">既知の限界(記録済み)</span></td></tr>
+<tr><td>日付フォーマット 3 実装の重複・「今日/本日」ゆれ</td><td><span class="badge b-warn">調査済み・修正見送り(場所は docs/50 §13)</span></td></tr>
+<tr><td>本番リリース前の必須作業(Resend ドメイン認証、CRON_SECRET・APP_URL・EMAIL_FROM_ADDRESS 設定)</td><td><span class="badge b-warn">docs/60_本番移行手順/ 参照</span></td></tr>
 </table>
 
-<p class="sub" style="margin-top:30px">検証ログの詳細: <code>docs/40_品質監査_2026-07-21/03_実装検証レポート.md</code> / 引き継ぎ: <code>docs/50_次セッション引き継ぎ_2026-07-22.md</code> §11</p>
+<div class="note"><b>前版(2026-07-22 訂正版)の経緯</b>: 前半セッションでツール実行層の出力汚染により「★2 実装済み」という幻の完了報告が発生し、git/fs 直接検査で不在を確定・訂正した。本セッションは同プロトコル(報告を信用せず物証で確認)を全工程に適用し、上記すべてのコミット・検証値は Fable が直接実測している。</div>
+
+<p class="sub" style="margin-top:30px">検証ログの詳細: <code>docs/40_品質監査_2026-07-21/03_実装検証レポート.md</code> / 進捗・残タスク: <code>docs/50_次セッション引き継ぎ_2026-07-22.md</code> §12〜§13</p>
 
 </div>
 </body>
