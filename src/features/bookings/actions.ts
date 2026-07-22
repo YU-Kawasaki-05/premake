@@ -294,7 +294,7 @@ export async function rescheduleBooking(
   const { data: booking } = await supabase
     .from("bookings")
     .select(
-      "status, service_id, sessions:booking_sessions(seq, time_range, member_id, room_id, status)",
+      "status, service_id, sessions:booking_sessions!booking_sessions_booking_id_fkey(seq, time_range, member_id, room_id, status)",
     )
     .eq("id", d.bookingId)
     .eq("clinic_id", clinic.id)
@@ -384,7 +384,7 @@ export async function rescheduleBooking(
   // 変更後の内容で患者へ通知(ゲスト予約はゲストメール優先)
   const { data: bk } = await supabase
     .from("bookings")
-    .select("guest_email, patient:patients(email)")
+    .select("guest_email, patient:patients!bookings_patient_id_fkey(email)")
     .eq("id", d.bookingId)
     .eq("clinic_id", clinic.id)
     .maybeSingle();
@@ -458,7 +458,7 @@ export async function updateBookingStatus(
   if (current.status === "requested" && parsed.data === "confirmed") {
     const { data: bk } = await supabase
       .from("bookings")
-      .select("guest_email, patient:patients(email)")
+      .select("guest_email, patient:patients!bookings_patient_id_fkey(email)")
       .eq("id", bookingId)
       .eq("clinic_id", clinic.id)
       .maybeSingle();
@@ -532,7 +532,7 @@ export async function cancelBooking(
   // キャンセル通知(患者/ゲストのメールがあれば)
   const { data: bk } = await supabase
     .from("bookings")
-    .select("guest_email, patient:patients(email)")
+    .select("guest_email, patient:patients!bookings_patient_id_fkey(email)")
     .eq("id", parsed.data.bookingId)
     .eq("clinic_id", clinic.id)
     .maybeSingle();

@@ -206,7 +206,7 @@ export async function getManagedBooking(token: string): Promise<ManagedBooking |
   const { data: booking } = await admin
     .from("bookings")
     .select(
-      "booking_no, status, service:services(name), clinic:clinics(name, slug, cancel_deadline_hours), sessions:booking_sessions(time_range, status, seq)",
+      "booking_no, status, service:services!bookings_service_id_fkey(name), clinic:clinics(name, slug, cancel_deadline_hours), sessions:booking_sessions!booking_sessions_booking_id_fkey(time_range, status, seq)",
     )
     .eq("id", tok.booking_id)
     .maybeSingle();

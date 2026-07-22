@@ -44,7 +44,9 @@ export async function GET(request: Request) {
 
     const { data: sessions } = await admin
       .from("booking_sessions")
-      .select("booking_id, booking:bookings(id, clinic_id, status)")
+      .select(
+        "booking_id, booking:bookings!booking_sessions_booking_id_fkey(id, clinic_id, status)",
+      )
       .eq("status", "scheduled")
       .overlaps("time_range", `[${from},${to})`);
 
@@ -65,7 +67,7 @@ export async function GET(request: Request) {
 
       const { data: booking } = await admin
         .from("bookings")
-        .select("id, clinic_id, guest_email, patient:patients(email)")
+        .select("id, clinic_id, guest_email, patient:patients!bookings_patient_id_fkey(email)")
         .eq("id", bookingId)
         .maybeSingle();
       const email = booking?.guest_email ?? booking?.patient?.email ?? null;
@@ -134,7 +136,7 @@ export async function GET(request: Request) {
     const { data: booking } = await admin
       .from("bookings")
       .select(
-        "booking_no, status, guest_name, patient:patients(name), service:services(name), clinic:clinics(name, slug), sessions:booking_sessions(time_range, status, seq)",
+        "booking_no, status, guest_name, patient:patients!bookings_patient_id_fkey(name), service:services!bookings_service_id_fkey(name), clinic:clinics(name, slug), sessions:booking_sessions!booking_sessions_booking_id_fkey(time_range, status, seq)",
       )
       .eq("id", bookingId)
       .eq("clinic_id", clinicId)
