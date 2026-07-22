@@ -121,46 +121,6 @@ export async function updatePatient(
   return { saved: true };
 }
 
-/**
- * 名寄せ: source(ゲスト予約由来など)を target に統合する。
- * source の予約を target に付け替え、source を削除する。
- */
-export async function mergePatients(slug: string, sourceId: string, targetId: string) {
-  const { user, clinic } = await requireMember(slug, "owner");
-  if (sourceId === targetId) return { error: "同一患者は統合できません" };
-
-  const supabase = await createClient();
-  const { data: both } = await supabase
-    .from("patients")
-    .select("id")
-    .eq("clinic_id", clinic.id)
-    .in("id", [sourceId, targetId]);
-  if (both?.length !== 2) return { error: "患者が見つかりません" };
-
-  // 予約を付け替え
-  const { error: reassignErr } = await supabase
-    .from("bookings")
-    .update({ patient_id: targetId })
-    .eq("clinic_id", clinic.id)
-    .eq("patient_id", sourceId);
-  if (reassignErr) return { error: "予約の付け替えに失敗しました" };
-
-  const { error: delErr } = await supabase
-    .from("patients")
-    .delete()
-    .eq("id", sourceId)
-    .eq("clinic_id", clinic.id);
-  if (delErr) return { error: "統合元の削除に失敗しました" };
-
-  await recordAudit({
-    clinicId: clinic.id,
-    actorUserId: user.id,
-    actorType: "member",
-    action: "patient.merge",
-    targetType: "patient",
-    targetId: targetId,
-    diff: { merged_from: sourceId },
-  });
-  revalidatePath(`/${slug}/patients`);
-  return { ok: true };
-}
+// 名寄せ(v2-16 / 台帳 No.14)は未実装。旧 mergePatients は呼び出し元ゼロの死蔵コードで、
+// source 患者を物理削除し notes/tags/birthdate を破棄する破壊的・非トランザクション実装だったため削除した。
+// 実装時は「候補提示 → 受付が確認して紐付け(自動マージしない)」+ 論理削除 + RPC 原子化で作り直すこと。
