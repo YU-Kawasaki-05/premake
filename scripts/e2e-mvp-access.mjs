@@ -121,7 +121,9 @@ for (const [path, textRe] of adminPages) {
   try {
     const resp = await p.goto(BASE + path, { waitUntil: "domcontentloaded", timeout: 30000 });
     const status = resp?.status();
-    const bodyHasErr = (await p.getByText(/Application error|Unhandled|500|Internal Server/i).count()) > 0;
+    // 「500」単独は価格表示(¥16,500 等)に誤マッチするため除外
+    const bodyHasErr =
+      (await p.getByText(/Application error|Unhandled|Internal Server Error/i).count()) > 0;
     const textCount = await p.getByText(new RegExp(textRe)).count();
     const ok = status === 200 && !bodyHasErr && textCount > 0;
     rec("管理到達性(owner)", path, ok, `status=${status} match=${textCount} err=${bodyHasErr}`);
