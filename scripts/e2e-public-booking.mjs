@@ -305,10 +305,16 @@ try {
     await p.screenshot({ path: SHOT + "/public-booking-ledger.png", fullPage: true }).catch(() => {});
 
     if (chipCount >= 1) {
-      // 11) チップを開く → 詳細ドロワー。booking_no 一致を確認
+      // 11) チップを開く → 詳細ドロワー。booking_no 表示をポーリング(固定待ちは flaky)
       await chip.first().click();
-      await p.waitForTimeout(400);
-      const drawerHasNo = bookingNo ? (await p.getByText(bookingNo).count()) > 0 : false;
+      let drawerHasNo = false;
+      for (let i = 0; i < 10; i++) {
+        await p.waitForTimeout(300);
+        if (bookingNo && (await p.getByText(bookingNo).count()) > 0) {
+          drawerHasNo = true;
+          break;
+        }
+      }
       rec("承認: 詳細ドロワーが開き予約番号が一致", drawerHasNo, `booking_no=${bookingNo}`);
 
       // 12) 「確定にする」を押下(requested→confirmed)
@@ -317,16 +323,17 @@ try {
       rec("承認: 「確定にする」操作が存在する", hasConfirm);
       if (hasConfirm) {
         await confirmBtn.first().click();
-        // 成功時はトースト表示 + ドロワークローズ。少し待って DB を再取得。
-        await p.waitForTimeout(1200);
       }
     }
 
-    // 13) DB: bookings.status='confirmed'
-    const bk2 = await rest(
-      `bookings?id=eq.${bookingId}&select=status`,
-    );
-    const status2 = Array.isArray(bk2.json) && bk2.json[0] ? bk2.json[0].status : null;
+    // 13) DB: bookings.status='confirmed'(Server Action 完了まで最大 10 秒ポーリング)
+    let status2 = null;
+    for (let i = 0; i < 20; i++) {
+      await p.waitForTimeout(500);
+      const bk2 = await rest(`bookings?id=eq.${bookingId}&select=status`);
+      status2 = Array.isArray(bk2.json) && bk2.json[0] ? bk2.json[0].status : null;
+      if (status2 === "confirmed") break;
+    }
     rec("承認後 DB: 予約が confirmed", status2 === "confirmed", `status=${status2}`);
 
     // 14) DB(NT-NEW-1 の核心): 患者宛 booking_confirmed が queued で追加

@@ -19,18 +19,21 @@ function occupiedSpanMin(steps: SessionStep[]): number {
 }
 
 /**
- * 指定日・サービスの予約可能スロットを算出する。
- * open な schedule_blocks の中で、サービス全体所要時間が収まり、
- * かつ同室・同担当の既存セッションと重ならない開始時刻を 15 分刻みで列挙。
+ * 指定日・サービスの予約可能スロットを算出する(公開予約専用)。
+ * open な schedule_blocks のうち、担当可能なスタッフ(在籍中・公開指名対象・当該サービス担当割当あり)
+ * かつ有効な部屋の枠に限定し、サービス全体所要時間が収まり、同室・同担当の既存セッションと重ならない
+ * 開始時刻を 15 分刻みで列挙する。
+ * @implements v2-06 空き枠 / v2-07 担当可否(No.9・No.34・BC-NEW-02)
  * @param nominatedMemberId 指名がある場合そのスタッフの枠に限定
  */
 export async function availableSlots(params: {
   clinicId: string;
+  serviceId: string;
   service: { session_template: SessionStep[] };
   dateJst: string; // yyyy-mm-dd
   nominatedMemberId?: string | null;
 }): Promise<Slot[]> {
-  const { clinicId, service, dateJst, nominatedMemberId } = params;
+  const { clinicId, serviceId, service, dateJst, nominatedMemberId } = params;
   const spanMs = occupiedSpanMin(service.session_template) * 60_000;
   const admin = createAdminClient();
 
@@ -38,7 +41,13 @@ export async function availableSlots(params: {
   const dayEndISO = new Date(`${dateJst}T23:59:59+09:00`).toISOString();
   const dayRange = `[${dayStartISO},${dayEndISO})`;
 
-  const [{ data: blocks }, { data: sessions }] = await Promise.all([
+  const [
+    { data: blocks },
+    { data: sessions },
+    { data: members },
+    { data: assignments },
+    { data: activeRooms },
+  ] = await Promise.all([
     admin
       .from("schedule_blocks")
       .select("member_id, room_id, time_range")
@@ -51,7 +60,29 @@ export async function availableSlots(params: {
       .eq("clinic_id", clinicId)
       .eq("status", "scheduled")
       .overlaps("occupied_range", dayRange),
+    // 公開空き枠に出せるスタッフ = 在籍中(status=active)かつ公開指名対象(is_bookable)
+    admin
+      .from("clinic_members")
+      .select("id")
+      .eq("clinic_id", clinicId)
+      .eq("status", "active")
+      .eq("is_bookable", true),
+    // 当該サービスを施術できるスタッフ(担当割当)
+    admin
+      .from("staff_service_assignments")
+      .select("member_id")
+      .eq("clinic_id", clinicId)
+      .eq("service_id", serviceId),
+    // 有効な部屋(アーカイブ部屋を除外)
+    admin.from("rooms").select("id").eq("clinic_id", clinicId).eq("status", "active"),
   ]);
+
+  // active + is_bookable かつ当該サービス担当のスタッフのみを公開空き枠の対象にする
+  const assignedMemberIds = new Set((assignments ?? []).map((a) => a.member_id));
+  const eligibleMemberIds = new Set(
+    (members ?? []).map((m) => m.id).filter((id) => assignedMemberIds.has(id)),
+  );
+  const activeRoomIds = new Set((activeRooms ?? []).map((r) => r.id));
 
   const now = Date.now();
   const busy = (sessions ?? [])
@@ -73,6 +104,8 @@ export async function availableSlots(params: {
 
   for (const block of blocks ?? []) {
     if (nominatedMemberId && block.member_id !== nominatedMemberId) continue;
+    if (!eligibleMemberIds.has(block.member_id)) continue;
+    if (!activeRoomIds.has(block.room_id)) continue;
     const r = parseRange(block.time_range as string);
     if (!r) continue;
     const blockStart = Date.parse(r.start);

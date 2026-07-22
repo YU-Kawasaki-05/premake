@@ -69,6 +69,37 @@ export async function createGuestBooking(
     .maybeSingle();
   if (!service) return { error: "選択されたメニューは予約できません" };
 
+  // 公開経路の担当・部屋の妥当性(UI を迂回した直接 POST 対策。BC-NEW-02 / No.9 / No.34)。
+  // 在籍中(status=active)・公開指名対象(is_bookable)・当該サービスの担当割当あり・有効な部屋のみ許可。
+  // 院内予約(createBooking)には適用しない(No.36: 院内は非公開スタッフも指名可)。
+  const [{ data: member }, { data: assignment }, { data: room }] = await Promise.all([
+    admin
+      .from("clinic_members")
+      .select("id")
+      .eq("id", d.memberId)
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active")
+      .eq("is_bookable", true)
+      .maybeSingle(),
+    admin
+      .from("staff_service_assignments")
+      .select("id")
+      .eq("clinic_id", clinic.id)
+      .eq("member_id", d.memberId)
+      .eq("service_id", d.serviceId)
+      .maybeSingle(),
+    admin
+      .from("rooms")
+      .select("id")
+      .eq("id", d.roomId)
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active")
+      .maybeSingle(),
+  ]);
+  if (!member || !assignment || !room) {
+    return { error: "選択された枠は予約できません。別の枠をお選びください" };
+  }
+
   // member/room がこのクリニックのものか、かつ指定 open 枠内に収まるか
   const startMs = Date.parse(d.startISO);
   const steps = service.session_template as unknown as SessionStep[];
