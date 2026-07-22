@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
 
 const BASE = "http://localhost:3000";
-const SHOT = process.env.SHOT_DIR ?? ".";
+const SHOT = process.env.SHOT_DIR ?? (process.env.TMPDIR ?? "/tmp");
 const GUEST_EMAIL = "e2e-guest@example.com";
 const GUEST_NAME = "E2Eゲスト";
 const GUEST_KANA = "イーツーイーゲスト";
@@ -102,6 +102,7 @@ p.on("pageerror", (e) => errs.push("pageerror: " + e.message));
 
 let bookingId = null;
 let bookingNo = null;
+let chipHhmm = null; // 台帳チップの JST 開始時刻(承認/キャンセル両フェーズで共用)
 
 try {
   // 1) 予約ページを開き、空き枠のある日(seed の open 枠は翌日・翌々日)を探す
@@ -274,7 +275,6 @@ try {
     await p.waitForTimeout(500);
 
     // 予約チップの JST 開始時刻を取得(チップ本文に "hh:mm (患者未設定)" が出る)
-    let chipHhmm = null;
     const sres = await rest(
       `booking_sessions?booking_id=eq.${bookingId}&select=time_range&order=time_range&limit=1`,
     );
@@ -358,6 +358,96 @@ try {
     const confSent = confSentRows.find((n) => n.recipient_email === GUEST_EMAIL);
     step(`承認後 cron 後の booking_confirmed: ${JSON.stringify(confSentRows)}`);
     rec("承認後 cron 後: 患者宛 booking_confirmed が sent", confSent?.status === "sent", `status=${confSent?.status}`);
+  }
+
+  // ============================================================
+  // キャンセルフェーズ(NT-NEW-2): 台帳の詳細ドロワーから確定済み予約を
+  // キャンセルし、booking_cancelled 通知が queued→sent になることを検証する。
+  // (通知本文の「日時未定」バグは pickNotificationSessions の unit テストで担保)
+  // ============================================================
+  step("=== キャンセルフェーズ(NT-NEW-2)===");
+  if (!bookingId || !usedDate) {
+    rec("キャンセルフェーズ: 前提(bookingId/日付)が揃っている", false, "予約作成が未完了のためスキップ");
+  } else {
+    // 台帳を予約日へ再表示(承認でドロワーが閉じた後の最新状態を取得)
+    await p.goto(`${BASE}/demo?d=${usedDate}`, { waitUntil: "networkidle" });
+    await p.waitForTimeout(500);
+
+    // 承認フェーズと同じ絞り込み(患者未設定 + JST 開始時刻)でチップを再取得
+    let cchip = p.locator("button").filter({ hasText: "(患者未設定)" });
+    if (chipHhmm) cchip = cchip.filter({ hasText: chipHhmm });
+    const cchipCount = await cchip.count();
+    rec("キャンセル: 台帳に E2E 予約チップが表示される", cchipCount >= 1, `候補=${cchipCount} time=${chipHhmm}`);
+
+    if (cchipCount >= 1) {
+      // チップを開く → 詳細ドロワー
+      await cchip.first().click();
+      await p.waitForTimeout(400);
+      const drawerHasNo = bookingNo ? (await p.getByText(bookingNo).count()) > 0 : false;
+      rec("キャンセル: 詳細ドロワーが開き予約番号が一致", drawerHasNo, `booking_no=${bookingNo}`);
+
+      // 「予約をキャンセル」ghost → 理由入力フォーム → 「キャンセルを確定」
+      const openCancel = p.getByRole("button", { name: "予約をキャンセル" });
+      const hasOpenCancel = (await openCancel.count()) > 0;
+      rec("キャンセル: 「予約をキャンセル」操作が存在する", hasOpenCancel);
+      if (hasOpenCancel) {
+        await openCancel.first().click();
+        await p.waitForTimeout(200);
+        await p.fill('input[name="reason"]', "E2Eテスト");
+        await p.getByRole("button", { name: "キャンセルを確定" }).click();
+        // 成功時はトースト + ドロワークローズ。revalidate 後に DB を再取得。
+        await p.waitForTimeout(1200);
+      }
+      await p.screenshot({ path: SHOT + "/public-booking-cancel.png", fullPage: true }).catch(() => {});
+    }
+
+    // DB: bookings.status='cancelled'
+    const bk3 = await rest(`bookings?id=eq.${bookingId}&select=status,cancel_reason`);
+    const row3 = Array.isArray(bk3.json) && bk3.json[0] ? bk3.json[0] : null;
+    rec("キャンセル後 DB: 予約が cancelled", row3?.status === "cancelled", `status=${row3?.status} reason=${row3?.cancel_reason}`);
+
+    // DB: booking_sessions が全て cancelled(枠が解放されている)
+    const sres3 = await rest(`booking_sessions?booking_id=eq.${bookingId}&select=status`);
+    const srows3 = Array.isArray(sres3.json) ? sres3.json : [];
+    const allCancelled = srows3.length > 0 && srows3.every((s) => s.status === "cancelled");
+    rec("キャンセル後 DB: booking_sessions が全て cancelled", allCancelled, `${srows3.map((s) => s.status).join(",")}`);
+
+    // DB(NT-NEW-2 の核心): 患者宛 booking_cancelled が queued で追加
+    const cnres = await rest(
+      `notifications?booking_id=eq.${bookingId}&kind=eq.booking_cancelled&select=kind,recipient_type,recipient_email,status`,
+    );
+    const cancelNotifs = Array.isArray(cnres.json) ? cnres.json : [];
+    const cancelNotif = cancelNotifs.find((n) => n.recipient_email === GUEST_EMAIL);
+    step(`キャンセル後の booking_cancelled 通知: ${JSON.stringify(cancelNotifs)}`);
+    rec(
+      "キャンセル後 DB: 患者宛 booking_cancelled(queued)が追加【NT-NEW-2】",
+      !!cancelNotif && cancelNotif.status === "queued" && cancelNotif.recipient_type === "patient",
+      cancelNotif
+        ? `to=${cancelNotif.recipient_email} type=${cancelNotif.recipient_type} status=${cancelNotif.status}`
+        : "見つからない",
+    );
+
+    // cron 実行 → booking_cancelled が sent
+    let cron3Ok = false;
+    let cron3Body = null;
+    try {
+      const cres = await fetch(`${BASE}/api/cron`);
+      cron3Body = await cres.json().catch(() => null);
+      cron3Ok = cres.ok && cron3Body?.ok === true;
+    } catch (e) {
+      cron3Body = { fetchError: String(e).slice(0, 120) };
+    }
+    step(`キャンセル後 cron 応答: ${JSON.stringify(cron3Body)}`);
+    rec("キャンセル後 cron: /api/cron が ok=true", cron3Ok, `body=${JSON.stringify(cron3Body)}`);
+
+    await p.waitForTimeout(500);
+    const cnres2 = await rest(
+      `notifications?booking_id=eq.${bookingId}&kind=eq.booking_cancelled&select=recipient_email,status,sent_at`,
+    );
+    const cancelSentRows = Array.isArray(cnres2.json) ? cnres2.json : [];
+    const cancelSent = cancelSentRows.find((n) => n.recipient_email === GUEST_EMAIL);
+    step(`キャンセル後 cron 後の booking_cancelled: ${JSON.stringify(cancelSentRows)}`);
+    rec("キャンセル後 cron 後: 患者宛 booking_cancelled が sent", cancelSent?.status === "sent", `status=${cancelSent?.status}`);
   }
 
   console.log("PAGEERRORS:", errs.length, errs.slice(0, 3));

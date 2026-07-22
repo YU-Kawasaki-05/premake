@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { chromium } from "playwright";
 const BASE = "http://localhost:3000";
-const SHOT = process.env.SHOT_DIR ?? ".";
+const SHOT = process.env.SHOT_DIR ?? (process.env.TMPDIR ?? "/tmp");
 
 // 再実行耐性: 前回実行が残した E2E 患者・予約を削除(ローカル Supabase 限定)
 async function cleanupPreviousRuns() {

@@ -1,7 +1,8 @@
 import { formatInTimeZone } from "date-fns-tz";
 import { NextResponse } from "next/server";
 import { env } from "@/env";
-import { renderNotification } from "@/features/notifications/templates";
+import { pickNotificationSessions } from "@/features/notifications/select-sessions";
+import { type NotificationKind, renderNotification } from "@/features/notifications/templates";
 import { generateBookingToken } from "@/features/public-booking/token";
 import { parseRange } from "@/features/schedule/week";
 import { TIME_ZONE } from "@/lib/datetime";
@@ -140,9 +141,9 @@ export async function GET(request: Request) {
       .maybeSingle();
     if (!booking?.clinic) return null;
 
-    const active = (booking.sessions ?? [])
-      .filter((s) => s.status === "scheduled")
-      .sort((a, b) => a.seq - b.seq);
+    // booking_cancelled はキャンセル後に全セッションが cancelled になるため、
+    // scheduled 限定だと日時が出せない。pickNotificationSessions が cancelled を補う(NT-NEW-2)。
+    const active = pickNotificationSessions(kind as NotificationKind, booking.sessions ?? []);
     const fr = active[0] ? parseRange(active[0].time_range as string) : null;
     const lr = active[active.length - 1]
       ? parseRange(active[active.length - 1].time_range as string)
