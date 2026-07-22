@@ -50,4 +50,10 @@ describe("pickNotificationSessions", () => {
     const sessions: S[] = [s(1, "done")];
     expect(pickNotificationSessions("booking_cancelled", sessions)).toEqual([]);
   });
+
+  it("booking_cancelled_internal も全 cancelled のとき cancelled を返す(No.22)", () => {
+    const sessions: S[] = [s(1, "cancelled"), s(2, "cancelled")];
+    const picked = pickNotificationSessions("booking_cancelled_internal", sessions);
+    expect(picked.map((x) => x.seq)).toEqual([1, 2]);
+  });
 });

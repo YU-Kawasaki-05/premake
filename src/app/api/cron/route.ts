@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { formatInTimeZone } from "date-fns-tz";
 import { NextResponse } from "next/server";
 import { env } from "@/env";
@@ -17,8 +18,12 @@ export async function GET(request: Request) {
   // 開発(next dev = NODE_ENV=development)でのみ未設定を許可する。
   const secret = env.CRON_SECRET;
   if (secret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${secret}`) {
+    const auth = request.headers.get("authorization") ?? "";
+    // 定数時間比較(AUTH-3)。長さ不一致は timingSafeEqual が例外を投げるため先に弾く。
+    const expected = Buffer.from(`Bearer ${secret}`);
+    const provided = Buffer.from(auth);
+    const authorized = provided.length === expected.length && timingSafeEqual(provided, expected);
+    if (!authorized) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
   } else if (process.env.NODE_ENV !== "development") {
@@ -90,14 +95,16 @@ export async function GET(request: Request) {
   async function processQueue(): Promise<number> {
     const { data: queued } = await admin
       .from("notifications")
-      .select("id, clinic_id, booking_id, recipient_email, kind")
+      .select("id, clinic_id, booking_id, recipient_email, kind, attempts")
       .eq("status", "queued")
       .limit(50);
 
+    const MAX_ATTEMPTS = 3;
     let count = 0;
     for (const n of queued ?? []) {
       const ctx = await buildContext(n.booking_id, n.clinic_id, n.kind);
       if (!ctx) {
+        // 恒久エラー(参照先が消えた等)。再送しても直らないので即 failed で隔離。
         await admin
           .from("notifications")
           .update({ status: "failed", error: "context not found" })
@@ -117,16 +124,27 @@ export async function GET(request: Request) {
         to: n.recipient_email,
         subject: rendered.subject,
         html: rendered.html,
+        fromName: ctx.clinicName,
       });
-      await admin
-        .from("notifications")
-        .update({
-          status: res.ok ? "sent" : "failed",
-          sent_at: res.ok ? new Date().toISOString() : null,
-          error: res.error ?? null,
-        })
-        .eq("id", n.id);
-      if (res.ok) count++;
+      if (res.ok) {
+        await admin
+          .from("notifications")
+          .update({ status: "sent", sent_at: new Date().toISOString(), error: null })
+          .eq("id", n.id);
+        count++;
+      } else {
+        // 送信失敗はリトライ対象(No.20)。attempts をインクリメントし、上限到達で恒久 failed。
+        // 上限未満は queued のまま残し、次回 cron で自動再送する。
+        const nextAttempts = n.attempts + 1;
+        await admin
+          .from("notifications")
+          .update({
+            status: nextAttempts >= MAX_ATTEMPTS ? "failed" : "queued",
+            attempts: nextAttempts,
+            error: res.error ?? null,
+          })
+          .eq("id", n.id);
+      }
     }
     return count;
   }
@@ -155,19 +173,25 @@ export async function GET(request: Request) {
     let manageUrl: string | undefined;
     let dashboardUrl: string | undefined;
     let requiresApproval: boolean | undefined;
-    if (kind === "booking_created_internal") {
+    if (kind === "booking_created_internal" || kind === "booking_cancelled_internal") {
       // 院内向け。患者用 manage トークンは発行せず、院内ダッシュボードへ誘導する
       dashboardUrl = `${env.APP_URL}/${booking.clinic.slug}`;
-      requiresApproval = booking.status === "requested";
+      requiresApproval =
+        kind === "booking_created_internal" ? booking.status === "requested" : undefined;
     } else if (kind !== "booking_cancelled") {
       const { token, tokenHash } = generateBookingToken();
-      await admin.from("booking_access_tokens").insert({
+      // トークン insert 失敗を検査。失敗時はリンク切れメールを送らないよう manageUrl を未定義のままにする(NT-NEW-4)
+      const { error: tokErr } = await admin.from("booking_access_tokens").insert({
         booking_id: bookingId,
         token_hash: tokenHash,
         purpose: "manage",
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       });
-      manageUrl = `${env.APP_URL}/c/${booking.clinic.slug}/manage/${token}`;
+      if (tokErr) {
+        console.error("[cron] manage token insert failed; sending mail without link", tokErr);
+      } else {
+        manageUrl = `${env.APP_URL}/c/${booking.clinic.slug}/manage/${token}`;
+      }
     }
 
     return {

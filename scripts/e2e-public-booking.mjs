@@ -150,7 +150,14 @@ try {
       break;
     }
     formErr = await p.getByText(/ください|正しくありません|できません|失敗|エラー/).allTextContents();
-    if (formErr.length > 0) break;
+    if (formErr.length > 0) {
+      // 完了画面の注意書き(「※このリンクは大切に保管してください」等)への誤マッチを除外
+      if ((await p.getByText("予約を受け付けました").count()) > 0) {
+        doneShown = true;
+        formErr = [];
+      }
+      break;
+    }
   }
   await p.screenshot({ path: SHOT + "/public-booking-done.png", fullPage: true }).catch(() => {});
   const numShown = (await p.getByText("予約番号").count()) > 0;

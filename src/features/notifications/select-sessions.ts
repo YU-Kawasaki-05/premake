@@ -6,10 +6,10 @@ import type { NotificationKind } from "./templates";
  * 通知本文の日時算出に使うセッションを選ぶ純関数。
  *
  * - 通常 kind: status='scheduled' のみを seq 昇順で返す(従来挙動)
- * - kind='booking_cancelled': scheduled があれば scheduled を優先し、
+ * - kind='booking_cancelled' / 'booking_cancelled_internal': scheduled があれば scheduled を優先し、
  *   無ければ status='cancelled' のセッションを seq 昇順で返す。
  *   キャンセル後は cancel_booking RPC が全セッションを cancelled にするため、
- *   scheduled 限定だと日時が算出できず本文が「日時未定」になる(NT-NEW-2)。
+ *   scheduled 限定だと日時が算出できず本文が「日時未定」になる(NT-NEW-2 / No.22)。
  *   キャンセル済みでも元の予約日時をメールに出せるよう cancelled を採用する。
  * - 'done' セッションはどの kind でも対象外のまま。
  *
@@ -21,7 +21,8 @@ export function pickNotificationSessions<T extends { status: string; seq: number
 ): T[] {
   const bySeq = (a: T, b: T) => a.seq - b.seq;
   const scheduled = sessions.filter((s) => s.status === "scheduled").sort(bySeq);
-  if (kind === "booking_cancelled" && scheduled.length === 0) {
+  const isCancelKind = kind === "booking_cancelled" || kind === "booking_cancelled_internal";
+  if (isCancelKind && scheduled.length === 0) {
     return sessions.filter((s) => s.status === "cancelled").sort(bySeq);
   }
   return scheduled;

@@ -295,7 +295,9 @@ export async function cancelByToken(token: string): Promise<{ error?: string; ok
 
   const { data: booking } = await admin
     .from("bookings")
-    .select("id, clinic_id, status, clinic:clinics(cancel_deadline_hours)")
+    .select(
+      "id, clinic_id, status, guest_email, patient:patients!bookings_patient_id_fkey(email), clinic:clinics(cancel_deadline_hours)",
+    )
     .eq("id", tok.booking_id)
     .maybeSingle();
   if (!booking) return { error: "予約が見つかりません" };
@@ -339,6 +341,25 @@ export async function cancelByToken(token: string): Promise<{ error?: string; ok
     targetType: "booking",
     targetId: booking.id,
   });
+
+  // @implements v2-23 キャンセル通知(No.22)。患者宛 + 院内宛を enqueue(Cron が送信)。
+  const patientEmail = booking.guest_email ?? booking.patient?.email ?? null;
+  await enqueueNotification({
+    clinicId: booking.clinic_id,
+    bookingId: booking.id,
+    recipientEmail: patientEmail,
+    recipientType: "patient",
+    kind: "booking_cancelled",
+  });
+  const internalEmail = await resolveClinicInternalEmail(booking.clinic_id);
+  await enqueueNotification({
+    clinicId: booking.clinic_id,
+    bookingId: booking.id,
+    recipientEmail: internalEmail,
+    recipientType: "member",
+    kind: "booking_cancelled_internal",
+  });
+
   return { ok: true };
 }
 
