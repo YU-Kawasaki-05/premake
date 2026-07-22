@@ -279,12 +279,19 @@ export async function updateBookingStatus(
     return { error: "この予約ではそのステータスに変更できません" };
   }
 
-  const { error } = await supabase
+  // 楽観ロック: SELECT した status を UPDATE 条件に含め、更新行数で競合を検出する。
+  // 同時実行(別の受付が承認/キャンセル)で前提が変わっていたら 0 行になる。
+  const { data: updated, error } = await supabase
     .from("bookings")
     .update({ status: parsed.data })
     .eq("id", bookingId)
-    .eq("clinic_id", clinic.id);
+    .eq("clinic_id", clinic.id)
+    .eq("status", current.status)
+    .select("id");
   if (error) return { error: "ステータスの更新に失敗しました" };
+  if (!updated || updated.length === 0) {
+    return { error: "他の操作と競合しました。画面を更新してやり直してください" };
+  }
 
   await recordAudit({
     clinicId: clinic.id,
@@ -354,7 +361,13 @@ export async function cancelBooking(
     p_clinic_id: clinic.id,
     p_reason: parsed.data.reason,
   });
-  if (error) return { error: "キャンセルに失敗しました" };
+  if (error) {
+    // pre-check 後の競合で done になった場合、RPC の done ガードが 'booking % is done' を返す
+    if (error.message.includes("is done")) {
+      return { error: "完了済みの予約はキャンセルできません" };
+    }
+    return { error: "キャンセルに失敗しました" };
+  }
 
   await recordAudit({
     clinicId: clinic.id,
