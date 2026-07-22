@@ -76,7 +76,9 @@ export async function createGuestBooking(
     return { error: "このメニューは現在予約できません" };
   }
   const laid = layoutSessions(steps, d.startISO);
-  const endMs = Date.parse(laid[laid.length - 1].endISO);
+  // 収まり検証は表示終端でなく占有終端(バッファ込み)。UI(availableSlots)と同じ基準にし、
+  // 直接 POST で清掃バッファが open 枠外にはみ出す予約を弾く(No.33)
+  const endMs = Date.parse(laid[laid.length - 1].occupiedEndISO);
   if (startMs < Date.now()) return { error: "過去の時間は予約できません" };
 
   const { data: block } = await admin
@@ -86,7 +88,7 @@ export async function createGuestBooking(
     .eq("member_id", d.memberId)
     .eq("room_id", d.roomId)
     .eq("block_type", "open")
-    .overlaps("time_range", rangeLiteral(d.startISO, laid[laid.length - 1].endISO))
+    .overlaps("time_range", rangeLiteral(d.startISO, laid[laid.length - 1].occupiedEndISO))
     .maybeSingle();
   if (!block) return { error: "選択された時間は予約できません。別の枠をお選びください" };
   const br = parseRangeSafe(block.time_range as string);
@@ -126,6 +128,7 @@ export async function createGuestBooking(
     member_id: d.memberId,
     room_id: d.roomId,
     time_range: rangeLiteral(s.startISO, s.endISO),
+    occupied_range: rangeLiteral(s.startISO, s.occupiedEndISO),
     schedule_block_id: block.id,
   }));
   const { error: sErr } = await admin.from("booking_sessions").insert(sessionRows);

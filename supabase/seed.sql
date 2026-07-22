@@ -168,15 +168,21 @@ values (
   '00000000-0000-4000-a000-000000000002'
 );
 
-insert into booking_sessions (clinic_id, booking_id, seq, kind, label, member_id, room_id, time_range)
+-- occupied_range は施術時間+バッファ(メニュー 眉: counseling buffer 0 / procedure buffer 15)。
+-- セッション1 = time_range と同値、セッション2 = 施術終了 13:00 + バッファ 15分 = 13:15 まで占有。
+insert into booking_sessions (clinic_id, booking_id, seq, kind, label, member_id, room_id, time_range, occupied_range)
 values
   ('10000000-0000-4000-a000-000000000001', '80000000-0000-4000-a000-000000000001', 1,
    'counseling', 'カウンセリング・医師診察',
    '20000000-0000-4000-a000-000000000002', '30000000-0000-4000-a000-000000000001',
+   tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '10:30') at time zone 'Asia/Tokyo',
+             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo', '[)'),
    tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '10:30') at time zone 'Asia/Tokyo',
              ((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo', '[)')),
   ('10000000-0000-4000-a000-000000000001', '80000000-0000-4000-a000-000000000001', 2,
    'procedure', '施術(1回目)',
    '20000000-0000-4000-a000-000000000002', '30000000-0000-4000-a000-000000000001',
    tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo',
-             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '13:00') at time zone 'Asia/Tokyo', '[)'));
+             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '13:00') at time zone 'Asia/Tokyo', '[)'),
+   tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo',
+             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '13:15') at time zone 'Asia/Tokyo', '[)'));

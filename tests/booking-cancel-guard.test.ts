@@ -58,6 +58,7 @@ describe.skipIf(!enabled)("cancel_booking の status ガード(BC-NEW-01)", () =
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(h1, h2),
+      occupied_range: range(h1, h2),
     });
     expect(error).toBeNull();
   }

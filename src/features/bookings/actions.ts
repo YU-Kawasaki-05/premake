@@ -205,6 +205,7 @@ export async function createBooking(
     member_id: d.memberId,
     room_id: d.roomId,
     time_range: rangeLiteral(s.startISO, s.endISO),
+    occupied_range: rangeLiteral(s.startISO, s.occupiedEndISO),
   }));
   const { error: sErr } = await supabase.from("booking_sessions").insert(sessionRows);
   if (sErr) {

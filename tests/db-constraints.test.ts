@@ -111,6 +111,7 @@ describe.skipIf(!enabled)("booking_sessions の EXCLUDE 制約", () => {
       member_id: NURSE_2,
       room_id: ROOM_2,
       time_range: range(15, 16),
+      occupied_range: range(15, 16),
     };
 
     const { data: s1, error: e1 } = await admin

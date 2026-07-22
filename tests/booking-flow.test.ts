@@ -58,6 +58,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(10, 11),
+      occupied_range: range(10, 11),
     });
     expect(e1).toBeNull();
 
@@ -70,6 +71,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(10, 11), // 完全重複
+      occupied_range: range(10, 11),
     });
     expect(e2?.code).toBe("23P01");
   });
@@ -86,6 +88,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
         member_id: NURSE_1,
         room_id: ROOM_1,
         time_range: range(14, 15),
+        occupied_range: range(14, 15),
       })
       .select("id")
       .single();
@@ -104,6 +107,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(14, 15),
+      occupied_range: range(14, 15),
     });
     expect(e2).toBeNull();
   });
@@ -118,6 +122,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(16, 17),
+      occupied_range: range(16, 17),
     });
     expect(e1).toBeNull();
 
@@ -155,6 +160,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(16, 17),
+      occupied_range: range(16, 17),
     });
     expect(e2).toBeNull();
   });

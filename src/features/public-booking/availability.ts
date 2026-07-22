@@ -12,14 +12,10 @@ export type Slot = {
 
 const STEP_GRANULARITY_MIN = 15;
 
-function totalSpanMin(steps: SessionStep[]): number {
-  // 最後のステップのバッファは枠占有に含めない(施術終了=枠終了)
-  let total = 0;
-  steps.forEach((s, i) => {
-    total += s.duration_min;
-    if (i < steps.length - 1) total += s.buffer_min;
-  });
-  return total;
+function occupiedSpanMin(steps: SessionStep[]): number {
+  // 占有時間 = 全ステップの施術時間 + バッファ(最終バッファ=清掃時間も含める)。
+  // スロット列挙が「バッファ込みで open ブロックに収まる開始時刻」になり、清掃がスタッフ退勤後にはみ出さない。
+  return steps.reduce((sum, s) => sum + s.duration_min + s.buffer_min, 0);
 }
 
 /**
@@ -35,7 +31,7 @@ export async function availableSlots(params: {
   nominatedMemberId?: string | null;
 }): Promise<Slot[]> {
   const { clinicId, service, dateJst, nominatedMemberId } = params;
-  const spanMs = totalSpanMin(service.session_template) * 60_000;
+  const spanMs = occupiedSpanMin(service.session_template) * 60_000;
   const admin = createAdminClient();
 
   const dayStartISO = new Date(`${dateJst}T00:00:00+09:00`).toISOString();
@@ -51,16 +47,16 @@ export async function availableSlots(params: {
       .overlaps("time_range", dayRange),
     admin
       .from("booking_sessions")
-      .select("member_id, room_id, time_range")
+      .select("member_id, room_id, occupied_range")
       .eq("clinic_id", clinicId)
       .eq("status", "scheduled")
-      .overlaps("time_range", dayRange),
+      .overlaps("occupied_range", dayRange),
   ]);
 
   const now = Date.now();
   const busy = (sessions ?? [])
     .map((s) => {
-      const r = parseRange(s.time_range as string);
+      const r = parseRange(s.occupied_range as string);
       return r
         ? {
             memberId: s.member_id,

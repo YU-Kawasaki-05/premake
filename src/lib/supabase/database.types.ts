@@ -92,6 +92,7 @@ export type Database = {
           kind: string;
           label: string | null;
           member_id: string | null;
+          occupied_range: unknown;
           room_id: string | null;
           schedule_block_id: string | null;
           seq: number;
@@ -107,6 +108,7 @@ export type Database = {
           kind?: string;
           label?: string | null;
           member_id?: string | null;
+          occupied_range: unknown;
           room_id?: string | null;
           schedule_block_id?: string | null;
           seq?: number;
@@ -122,6 +124,7 @@ export type Database = {
           kind?: string;
           label?: string | null;
           member_id?: string | null;
+          occupied_range?: unknown;
           room_id?: string | null;
           schedule_block_id?: string | null;
           seq?: number;
