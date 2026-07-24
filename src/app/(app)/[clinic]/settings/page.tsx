@@ -3,7 +3,9 @@ import { BusinessHoursForm } from "@/features/clinic-settings/components/busines
 import { ClinicProfileForm } from "@/features/clinic-settings/components/clinic-profile-form";
 import { PublicSettingsForm } from "@/features/clinic-settings/components/public-settings-form";
 import type { BusinessHour } from "@/features/clinic-settings/types";
+import { NotificationLog } from "@/features/notifications/components/notification-log";
 import { requireMember } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "クリニック設定" };
 
@@ -11,6 +13,17 @@ export const metadata: Metadata = { title: "クリニック設定" };
 export default async function SettingsPage(props: PageProps<"/[clinic]/settings">) {
   const { clinic: slug } = await props.params;
   const { clinic } = await requireMember(slug, "owner");
+  const supabase = await createClient();
+
+  // notifications は member の RLS(notifications_select)で自クリニック分のみ閲覧可
+  const { data: notifications } = await supabase
+    .from("notifications")
+    .select(
+      "id, kind, recipient_email, recipient_type, status, attempts, error, created_at, sent_at",
+    )
+    .eq("clinic_id", clinic.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -52,6 +65,14 @@ export default async function SettingsPage(props: PageProps<"/[clinic]/settings"
             cancel_deadline_hours: clinic.cancel_deadline_hours,
           }}
         />
+      </section>
+
+      <section className="rounded-lg border border-border bg-card p-5">
+        <h2 className="text-sm font-semibold">通知の送信状況</h2>
+        <p className="mt-1 text-[12.5px] text-muted-foreground">
+          直近 50 件のメール通知です。「失敗」は再試行上限に達したもので、自動再送されません。
+        </p>
+        <NotificationLog rows={notifications ?? []} />
       </section>
     </div>
   );
