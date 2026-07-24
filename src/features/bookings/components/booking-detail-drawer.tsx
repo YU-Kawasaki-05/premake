@@ -1,8 +1,9 @@
 "use client";
 
-// @implements v2-11 予約変更・キャンセル / v2-12 ステータス遷移
+// @implements v2-11 予約変更・キャンセル / v2-12 ステータス遷移 / v2-16 名寄せ(紐付け導線)
 
 import { formatInTimeZone } from "date-fns-tz";
+import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import {
 } from "@/features/bookings/booking-status";
 import { parseRange } from "@/features/schedule/week";
 import { TIME_ZONE } from "@/lib/datetime";
+import { BookingLinkPatientDialog } from "./booking-link-patient-dialog";
 import { BookingRescheduleDialog } from "./booking-reschedule-dialog";
 import type { LedgerSession } from "./day-ledger";
 
@@ -47,9 +49,11 @@ export function BookingDetailDrawer({
   onClose: () => void;
 }) {
   const booking = session?.booking ?? null;
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
+  const [linking, setLinking] = useState(false);
 
   const [cancelState, cancelAction, cancelPending] = useActionState<BookingActionState, FormData>(
     cancelBooking.bind(null, slug),
@@ -71,6 +75,8 @@ export function BookingDetailDrawer({
   const range = parseRange(session.time_range);
   const transitions = nextStatuses(status);
   const canReschedule = RESCHEDULABLE.includes(status);
+  // 名寄せ(v2-16): 患者未紐付けのゲスト予約のみ紐付けできる
+  const canLink = !booking.patient_id && !!booking.guest_name;
   const rsDefaultDate = range ? formatInTimeZone(range.start, TIME_ZONE, "yyyy-MM-dd") : "";
   const rsDefaultTime = range ? jstHhmm(range.start) : "";
 
@@ -137,6 +143,23 @@ export function BookingDetailDrawer({
             </div>
           )}
 
+          {canLink && (
+            <div className="space-y-2 border-t border-border pt-4">
+              <p className="text-[12.5px] font-medium text-muted-foreground">
+                ゲスト予約(患者マスタ未紐付け)
+              </p>
+              <dl className="space-y-1.5">
+                <Row label="申告氏名" value={booking.guest_name ?? "—"} />
+                {booking.guest_kana && <Row label="かな" value={booking.guest_kana} />}
+                {booking.guest_phone && <Row label="電話" value={booking.guest_phone} />}
+                {booking.guest_email && <Row label="メール" value={booking.guest_email} />}
+              </dl>
+              <Button variant="outline" size="sm" onClick={() => setLinking(true)}>
+                患者に紐付け
+              </Button>
+            </div>
+          )}
+
           {canReschedule && (
             <div className="border-t border-border pt-4">
               <Button variant="outline" size="sm" onClick={() => setRescheduling(true)}>
@@ -179,6 +202,21 @@ export function BookingDetailDrawer({
           )}
         </div>
       </SheetContent>
+
+      {canLink && (
+        <BookingLinkPatientDialog
+          key={`link-${bookingId}`}
+          slug={slug}
+          bookingId={bookingId}
+          open={linking}
+          onOpenChange={setLinking}
+          onLinked={() => {
+            setLinking(false);
+            onClose();
+            router.refresh();
+          }}
+        />
+      )}
 
       {canReschedule && (
         <BookingRescheduleDialog

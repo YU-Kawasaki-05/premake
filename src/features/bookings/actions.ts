@@ -1,6 +1,7 @@
 "use server";
 
 // @implements v2-10 院内予約作成 / v2-11 変更・キャンセル / v2-12 ステータス / v2-13 重複防止 / v2-14 セッション
+// @implements v2-16 名寄せ(ゲスト予約 → 患者マスタの候補提示・受付による紐付け)
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -41,6 +42,309 @@ export async function searchPatients(slug: string, query: string): Promise<Patie
     diff: { hits: data?.length ?? 0 },
   });
   return data ?? [];
+}
+
+// ============================================================
+// 名寄せ(v2-16 / 台帳 No.14)
+// ゲスト予約(patient_id = null・guest_* 保持)を患者マスタへ紐付ける受付導線。
+// 自動マージは行わない: 候補を提示し、受付が目視確認して明示操作で紐付ける。
+// ============================================================
+
+export type PatientLinkCandidate = {
+  id: string;
+  name: string;
+  kana: string | null;
+  phone: string | null;
+  email: string | null;
+  /** 候補として提示した理由ラベル(メール一致 / 電話一致 / 氏名類似 等) */
+  reasons: string[];
+};
+
+/** 予約時点でゲストが申告した連絡先(紐付け前の確認・新規登録のプレビュー用) */
+export type GuestContact = {
+  name: string;
+  kana: string | null;
+  phone: string | null;
+  email: string | null;
+};
+
+export type PatientLinkCandidatesResult = {
+  error?: string;
+  guest?: GuestContact;
+  candidates?: PatientLinkCandidate[];
+};
+
+const CANDIDATE_LIMIT = 5;
+/** SQL 側の粗い前絞り込みで読む上限(厳密判定は JS 側で行う) */
+const CANDIDATE_SCAN_LIMIT = 50;
+
+/** 電話番号を数字列に正規化(ハイフン・空白・国番号 +81 の差異を吸収) */
+function normalizePhone(input: string | null | undefined): string {
+  if (!input) return "";
+  const digits = input.replace(/\D/g, "");
+  if (digits.startsWith("81") && digits.length >= 11) return `0${digits.slice(2)}`;
+  return digits;
+}
+
+/** 氏名・かなの表記ゆれ比較用に空白(半角・全角)を除去する */
+function compactName(input: string | null | undefined): string {
+  return (input ?? "").replace(/[\s\u3000]+/g, "");
+}
+
+/**
+ * `.or()` の値として安全な形にする。`,` `(` `)` は PostgREST のフィルタ構文、
+ * `%` `_` は ilike ワイルドカードのため除去する(メールの `.` `@` は保持)。
+ */
+function sanitizeOrValue(input: string): string {
+  return input
+    .replace(/[,()*:"'\\%_]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+}
+
+/**
+ * ゲスト予約の連絡先から既存患者の候補を返す(最大 5 件・スコア順)。
+ * SQL は粗い前絞り込みに留め、一致理由は正規化した値で JS 側が厳密に判定する
+ * (電話のハイフン位置・メールの大文字小文字・氏名の空白差を SQL で表現できないため)。
+ * @implements v2-16
+ */
+export async function findPatientLinkCandidates(
+  slug: string,
+  bookingId: string,
+): Promise<PatientLinkCandidatesResult> {
+  const { user, clinic } = await requireMember(slug);
+  if (!z.uuid().safeParse(bookingId).success) return { error: "不正な予約です" };
+
+  const supabase = await createClient();
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, patient_id, guest_name, guest_kana, guest_phone, guest_email")
+    .eq("id", bookingId)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  if (!booking) return { error: "予約が見つかりません" };
+  if (booking.patient_id || !booking.guest_name) {
+    return { error: "この予約は紐付けできません" };
+  }
+
+  const guest: GuestContact = {
+    name: booking.guest_name,
+    kana: booking.guest_kana,
+    phone: booking.guest_phone,
+    email: booking.guest_email,
+  };
+
+  const emailTerm = sanitizeOrValue(guest.email ?? "");
+  const nameTerm = sanitizeSearchTerm(guest.name);
+  const kanaTerm = sanitizeSearchTerm(guest.kana ?? "");
+  const phoneDigits = normalizePhone(guest.phone);
+
+  const conds: string[] = [];
+  if (emailTerm) conds.push(`email.ilike.${emailTerm}`);
+  if (nameTerm) conds.push(`name.ilike.%${nameTerm}%`);
+  if (kanaTerm) conds.push(`kana.ilike.%${kanaTerm}%`);
+  // 姓だけの粗引き(「山田 花子」↔「山田花子」の表記差を前絞り込みで落とさないため)
+  const nameHead = nameTerm.includes(" ") ? nameTerm.split(" ")[0] : nameTerm.slice(0, 2);
+  if (nameHead.length >= 2 && nameHead !== nameTerm) conds.push(`name.ilike.%${nameHead}%`);
+  const kanaHead = kanaTerm.includes(" ") ? kanaTerm.split(" ")[0] : kanaTerm.slice(0, 2);
+  if (kanaHead.length >= 2 && kanaHead !== kanaTerm) conds.push(`kana.ilike.%${kanaHead}%`);
+  // 電話はハイフン位置が揃わないため末尾 4 桁で粗く引く(完全一致は JS 側で判定)
+  if (phoneDigits.length >= 4) conds.push(`phone.ilike.%${phoneDigits.slice(-4)}%`);
+
+  let candidates: PatientLinkCandidate[] = [];
+  if (conds.length > 0) {
+    const { data: patients } = await supabase
+      .from("patients")
+      .select("id, name, kana, phone, email")
+      .eq("clinic_id", clinic.id)
+      .or(conds.join(","))
+      .limit(CANDIDATE_SCAN_LIMIT);
+
+    const gEmail = (guest.email ?? "").trim().toLowerCase();
+    const gName = compactName(guest.name);
+    const gKana = compactName(guest.kana);
+
+    const scored = (patients ?? [])
+      .map((p) => {
+        const reasons: string[] = [];
+        let score = 0;
+        if (gEmail && p.email && p.email.trim().toLowerCase() === gEmail) {
+          reasons.push("メール一致");
+          score += 60;
+        }
+        if (phoneDigits && normalizePhone(p.phone) === phoneDigits) {
+          reasons.push("電話一致");
+          score += 40;
+        }
+        const pName = compactName(p.name);
+        if (gName && pName) {
+          if (pName === gName) {
+            reasons.push("氏名一致");
+            score += 20;
+          } else if (pName.includes(gName) || gName.includes(pName)) {
+            reasons.push("氏名類似");
+            score += 10;
+          }
+        }
+        const pKana = compactName(p.kana);
+        if (gKana && pKana) {
+          if (pKana === gKana) {
+            reasons.push("かな一致");
+            score += 10;
+          } else if (pKana.includes(gKana) || gKana.includes(pKana)) {
+            reasons.push("かな類似");
+            score += 5;
+          }
+        }
+        return { patient: p, reasons, score };
+      })
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score || a.patient.name.localeCompare(b.patient.name, "ja"))
+      .slice(0, CANDIDATE_LIMIT);
+
+    candidates = scored.map((r) => ({
+      id: r.patient.id,
+      name: r.patient.name,
+      kana: r.patient.kana,
+      phone: r.patient.phone,
+      email: r.patient.email,
+      reasons: r.reasons,
+    }));
+  }
+
+  // 患者 PII の検索を監査記録(diff は件数のみ。PII は残さない)
+  await recordAudit({
+    clinicId: clinic.id,
+    actorUserId: user.id,
+    actorType: "member",
+    action: "patient.link_candidates",
+    targetType: "booking",
+    targetId: bookingId,
+    diff: { hits: candidates.length },
+  });
+
+  return { guest, candidates };
+}
+
+const linkSchema = z
+  .object({
+    bookingId: z.uuid(),
+    mode: z.enum(["existing", "new"]),
+    patientId: z.union([z.uuid(), z.literal("")]).optional(),
+  })
+  .refine((v) => v.mode === "new" || !!v.patientId, {
+    message: "紐付ける患者を選択してください",
+    path: ["patientId"],
+  });
+
+/**
+ * ゲスト予約を既存患者へ紐付ける(mode=existing)、または guest_* から新規患者を作って
+ * 紐付ける(mode=new)。guest_* は予約時点の申告情報として残す(履歴保全)。
+ * 院内の内部操作なので通知は送らない。
+ * @implements v2-16
+ */
+export async function linkGuestBookingToPatient(
+  slug: string,
+  _prev: BookingActionState,
+  formData: FormData,
+): Promise<BookingActionState> {
+  // 受付業務のため member 全員に許可(owner 限定にしない)
+  const { user, clinic } = await requireMember(slug);
+
+  const parsed = linkSchema.safeParse({
+    bookingId: formData.get("bookingId"),
+    mode: formData.get("mode") === "new" ? "new" : "existing",
+    patientId: formData.get("patientId") || undefined,
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "入力内容を確認してください" };
+  }
+  const d = parsed.data;
+
+  const supabase = await createClient();
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, patient_id, guest_name, guest_kana, guest_phone, guest_email")
+    .eq("id", d.bookingId)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  if (!booking) return { error: "予約が見つかりません" };
+  if (booking.patient_id || !booking.guest_name) {
+    return { error: "この予約は紐付けできません" };
+  }
+
+  let patientId: string;
+  let createdPatientId: string | null = null;
+  if (d.mode === "new") {
+    const { data: created, error: pErr } = await supabase
+      .from("patients")
+      .insert({
+        clinic_id: clinic.id,
+        name: booking.guest_name.trim(),
+        kana: booking.guest_kana?.trim() || null,
+        phone: booking.guest_phone?.trim() || null,
+        email: booking.guest_email?.trim() || null,
+      })
+      .select("id")
+      .single();
+    if (pErr || !created) {
+      console.error("[bookings] link: patient create failed", pErr);
+      return { error: "患者の登録に失敗しました" };
+    }
+    patientId = created.id;
+    createdPatientId = created.id;
+  } else {
+    if (!d.patientId) return { error: "紐付ける患者を選択してください" };
+    // 既存患者のクリニック検証(越境防止)
+    const { data: p } = await supabase
+      .from("patients")
+      .select("id")
+      .eq("id", d.patientId)
+      .eq("clinic_id", clinic.id)
+      .maybeSingle();
+    if (!p) return { error: "患者が見つかりません" };
+    patientId = p.id;
+  }
+
+  // 楽観ロック: patient_id が null のままであることを UPDATE 条件に含め、更新行数で競合を検出する
+  const { data: updated, error } = await supabase
+    .from("bookings")
+    .update({ patient_id: patientId })
+    .eq("id", d.bookingId)
+    .eq("clinic_id", clinic.id)
+    .is("patient_id", null)
+    .select("id");
+  if (error || !updated || updated.length === 0) {
+    // 新規作成した患者は宛先を失うので補償削除(createBooking の rollbackPatient と同方針)
+    if (createdPatientId) {
+      await supabase
+        .from("patients")
+        .delete()
+        .eq("id", createdPatientId)
+        .eq("clinic_id", clinic.id);
+    }
+    if (error) {
+      console.error("[bookings] link: update failed", error);
+      return { error: "紐付けに失敗しました" };
+    }
+    return { error: "他の操作と競合しました。画面を更新してやり直してください" };
+  }
+
+  await recordAudit({
+    clinicId: clinic.id,
+    actorUserId: user.id,
+    actorType: "member",
+    action: "patient.link",
+    targetType: "booking",
+    targetId: d.bookingId,
+    diff: { patient_id: patientId, mode: d.mode },
+  });
+
+  revalidatePath(`/${slug}`);
+  revalidatePath(`/${slug}/patients`);
+  revalidatePath(`/${slug}/patients/${patientId}`);
+  return { ok: true };
 }
 
 const BOOKING_STATUSES = [
