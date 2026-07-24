@@ -38,20 +38,32 @@ export default async function ReservePage(props: PageProps<"/c/[slug]/reserve">)
     nominatedMemberId: nominated,
   });
 
-  // 指名候補(allow_nomination かつ bookable なスタッフ)。
+  // 指名候補(allow_nomination かつ bookable かつ当該サービスの担当割当があるスタッフ)。
+  // 絞り込み基準は availableSlots と同一(No.9・No.34・BC-NEW-02)— 割当が無いスタッフを指名しても
+  // 空き枠が 0 件になるため、チップ自体を出さない。
   // 公開文脈では profiles.full_name にフォールバックしない(本名露出防止 F8)。
   // display_name 未設定のスタッフは指名チップに出さない(空き枠には「指定なし」経由で出せる)。
   const nominees: { id: string; name: string }[] = [];
   if (service.allow_nomination) {
     const admin = createAdminClient();
-    const { data } = await admin
-      .from("clinic_members")
-      .select("id, display_name")
-      .eq("clinic_id", clinic.id)
-      .eq("status", "active")
-      .eq("is_bookable", true);
-    for (const m of data ?? []) {
-      if (m.display_name) nominees.push({ id: m.id, name: m.display_name });
+    const [{ data: members }, { data: assignments }] = await Promise.all([
+      admin
+        .from("clinic_members")
+        .select("id, display_name")
+        .eq("clinic_id", clinic.id)
+        .eq("status", "active")
+        .eq("is_bookable", true),
+      admin
+        .from("staff_service_assignments")
+        .select("member_id")
+        .eq("clinic_id", clinic.id)
+        .eq("service_id", service.id),
+    ]);
+    const assignedMemberIds = new Set((assignments ?? []).map((a) => a.member_id));
+    for (const m of members ?? []) {
+      if (m.display_name && assignedMemberIds.has(m.id)) {
+        nominees.push({ id: m.id, name: m.display_name });
+      }
     }
   }
 

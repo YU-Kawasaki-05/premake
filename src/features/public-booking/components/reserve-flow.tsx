@@ -11,6 +11,7 @@ import { FormError } from "@/features/auth/components/form-error";
 import { jstHhmm } from "@/features/bookings/booking-status";
 import { createGuestBooking, type GuestBookingState } from "@/features/public-booking/actions";
 import type { Slot } from "@/features/public-booking/availability";
+import { formatDateShort } from "@/lib/datetime";
 
 type Option = { id: string; name: string };
 
@@ -145,7 +146,7 @@ export function ReserveFlow({
           </Link>
         </Button>
         <span className="text-sm font-medium tabular-nums">
-          {formatJaDate(date)}
+          {formatDateShort(date)}
           {date === todayJst && "(本日)"}
         </span>
         <Button variant="outline" size="sm" asChild>
@@ -207,7 +208,7 @@ export function ReserveFlow({
           <input type="hidden" name="nominatedMemberId" value={nominated ?? ""} />
           <input type="hidden" name="startISO" value={selected.startISO} />
           <p className="text-sm font-medium">
-            {formatJaDate(date)} {jstHhmm(selected.startISO)} で予約
+            {formatDateShort(date)} {jstHhmm(selected.startISO)} で予約
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
@@ -255,11 +256,4 @@ function shiftDate(date: string, delta: number): string {
   const d = new Date(`${date}T00:00:00+09:00`);
   d.setUTCDate(d.getUTCDate() + delta);
   return new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-
-function formatJaDate(date: string): string {
-  const d = new Date(`${date}T00:00:00+09:00`);
-  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-  const wd = ["日", "月", "火", "水", "木", "金", "土"][jst.getUTCDay()];
-  return `${jst.getUTCMonth() + 1}/${jst.getUTCDate()}(${wd})`;
 }
