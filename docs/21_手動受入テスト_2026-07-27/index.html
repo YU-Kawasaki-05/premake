@@ -133,6 +133,8 @@ tr:last-child td{border-bottom:none}
 .dbwrap{margin-top:20px;border-top:1px solid var(--line-soft);padding-top:12px}
 .dbwrap summary{cursor:pointer;font-weight:600;font-size:14.5px}
 .db code{font-size:11.5px;white-space:pre-wrap}
+.issue-shot{margin-top:12px;max-width:520px}
+.issue-shot-cap{font-size:12px;color:inherit;opacity:.85;margin:0 0 6px}
 .limit{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
 .limit h3{margin:0 0 10px;font-size:16px}
 .limit dl{margin:0;display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:14px}
@@ -167,12 +169,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <h1>本番投入前の受け入れテスト — 画面証跡つき報告書</h1>
   <p class="lede">クリニックで実際に使う操作を、ブラウザを動かして 1 手順ずつ確認した記録です。各手順のスクリーンショットを画面が移り変わる順に並べ、<b>何を期待し、何が起き、なぜ合格と判断したか</b>を併記しています。画面だけでは分からない「本当にデータが保存されたか」はデータベースへ直接問い合わせて裏を取っています。</p>
   <div class="chips">
-    <span class="chip big">ケース 4</span>
-    <span class="chip big ok">合格 4</span>
-    
+    <span class="chip big">ケース 8</span>
+    <span class="chip big ok">合格 7</span>
+    <span class="chip big warn">一部制限 1</span>
     
     <span class="chip big ok">不合格 0</span>
-    <span class="chip">生成 2026/07/27 4:56</span>
+    <span class="chip">生成 2026/07/27 5:08</span>
   </div>
 </div>
 
@@ -199,7 +201,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <div class="table-scroll"><table>
     <thead><tr><th>フェーズ</th><th>範囲</th><th>ケース</th><th>合格</th><th>一部制限</th><th>検証不能</th><th>不合格</th></tr></thead>
     <tbody><tr><td>A</td><td>中核フロー(院内予約 → 確認 → 施術 → キャンセル/変更)</td>
-    <td>4</td><td class="num-ok">4</td><td class="num-warn">0</td>
+    <td>8</td><td class="num-ok">7</td><td class="num-warn">1</td>
     <td class="num-na">0</td><td class="num-ng">0</td></tr></tbody>
   </table></div>
   <div class="callout ok"><span class="lab">現時点の判定</span>
@@ -450,9 +452,399 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       </tr></tbody>
     </table></div></details>
     
+  </article><article class="case" id="AT-CAT-010">
+    <header class="case-head">
+      <div class="case-id"><code>AT-CAT-010</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>部屋の作成(施術室の登録)</h3>
+      <p class="case-intent">予約は「部屋 × 時間」で重複を防いでいるため、部屋が登録されていないと予約が 1 件も作れない。本番の初期設定で最初に通る操作。</p>
+      <p class="case-meta">対象要件 <code>v2-06</code> ／ 詳細手順 <code>docs/20_受け入れテスト/02_メニュー・リソース・枠.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-010/01_%E9%83%A8%E5%B1%8B_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-010 ステップ1: 部屋・担当設定を開く">
+          <img src="evidence/AT-CAT-010/01_%E9%83%A8%E5%B1%8B_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" alt="部屋・担当設定を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>部屋・担当設定を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-010/02_%E9%83%A8%E5%B1%8B%E5%90%8D%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-010 ステップ2: 部屋名を入力">
+          <img src="evidence/AT-CAT-010/02_%E9%83%A8%E5%B1%8B%E5%90%8D%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="部屋名を入力" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>部屋名を入力</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-010/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" data-cap="AT-CAT-010 ステップ3: 一覧に追加された">
+          <img src="evidence/AT-CAT-010/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" alt="一覧に追加された" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">3</span>一覧に追加された</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>部屋・担当設定を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner で /demo/rooms を開く</dd>
+          <dt>期待</dt><dd>既存の部屋一覧と「部屋を追加」ボタンが表示される</dd>
+          <dt>実測</dt><dd>既存 2 室 / 追加ボタン=1個</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>「部屋を追加」ボタンがある<span class="ck-detail">owner のみ操作可</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-010/01_%E9%83%A8%E5%B1%8B_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-010 ステップ1: 部屋・担当設定を開く"><img src="evidence/AT-CAT-010/01_%E9%83%A8%E5%B1%8B_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" alt="部屋・担当設定を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>部屋名を入力</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>ダイアログで部屋名「検証用 処置室A」を入力</dd>
+          <dt>期待</dt><dd>ダイアログ「部屋を追加」が開き、入力が反映される</dd>
+          <dt>実測</dt><dd>入力値=検証用 処置室A</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>入力が反映<span class="ck-detail">検証用 処置室A</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-010/02_%E9%83%A8%E5%B1%8B%E5%90%8D%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-010 ステップ2: 部屋名を入力"><img src="evidence/AT-CAT-010/02_%E9%83%A8%E5%B1%8B%E5%90%8D%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="部屋名を入力" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">3</span><h4>一覧に追加された</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>ダイアログの「追加」を押す</dd>
+          <dt>期待</dt><dd>ダイアログが閉じ、一覧に新しい部屋が表示される</dd>
+          <dt>実測</dt><dd>一覧の一致=1件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>一覧に表示される<span class="ck-detail">count=1</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 画面の一覧表示と、次の DB 裏取りの両方で確認している。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-010/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" data-cap="AT-CAT-010 ステップ3: 一覧に追加された"><img src="evidence/AT-CAT-010/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" alt="一覧に追加された" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>rooms に status=active の行が 1 件増える</td>
+        <td><code>select name, status from rooms where clinic_id = '10000000-0000-4000-a000-000000000001' and name = '検証用 処置室A'</code></td>
+        <td>件数 2→3 / status=active</td>
+        <td>件数 2→3 / 行=検証用 処置室A, active</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>監査ログに room.create が記録される</td>
+        <td><code>select action, actor_type from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action = 'room.create' order by created_at desc limit 1</code></td>
+        <td>action=room.create / actor_type=member</td>
+        <td>room.create, member</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-CAT-001">
+    <header class="case-head">
+      <div class="case-id"><code>AT-CAT-001</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>メニュー(施術メニュー)の作成</h3>
+      <p class="case-intent">メニューには所要時間の内訳(セッション構成)が入っており、予約枠の長さと空き枠の計算がここに依存する。</p>
+      <p class="case-meta">対象要件 <code>v2-05</code> ／ 詳細手順 <code>docs/20_受け入れテスト/02_メニュー・リソース・枠.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-001/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%B8%80%E8%A6%A7%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-001 ステップ1: メニュー一覧を開く">
+          <img src="evidence/AT-CAT-001/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%B8%80%E8%A6%A7%E3%82%92%E9%96%8B%E3%81%8F.png" alt="メニュー一覧を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>メニュー一覧を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-001/02_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-001 ステップ2: メニュー情報を入力">
+          <img src="evidence/AT-CAT-001/02_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="メニュー情報を入力" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>メニュー情報を入力</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-001/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" data-cap="AT-CAT-001 ステップ3: 一覧に追加された">
+          <img src="evidence/AT-CAT-001/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" alt="一覧に追加された" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">3</span>一覧に追加された</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-001/04_%E6%97%A2%E5%AD%98%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%92%E9%96%8B%E3%81%84%E3%81%A6%E4%BF%9D%E5%AD%98_%E5%9B%9E%E5%B8%B0%E7%A2%BA%E8%AA%8D_.png" data-cap="AT-CAT-001 ステップ4: 既存メニューを開いて保存(回帰確認)">
+          <img src="evidence/AT-CAT-001/04_%E6%97%A2%E5%AD%98%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%92%E9%96%8B%E3%81%84%E3%81%A6%E4%BF%9D%E5%AD%98_%E5%9B%9E%E5%B8%B0%E7%A2%BA%E8%AA%8D_.png" alt="既存メニューを開いて保存(回帰確認)" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">4</span>既存メニューを開いて保存(回帰確認)</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>メニュー一覧を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner で /demo/services を開く</dd>
+          <dt>期待</dt><dd>既存メニューと「メニューを追加」ボタンが表示される</dd>
+          <dt>実測</dt><dd>既存 5 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>「メニューを追加」ボタンがある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-001/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%B8%80%E8%A6%A7%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-001 ステップ1: メニュー一覧を開く"><img src="evidence/AT-CAT-001/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%B8%80%E8%A6%A7%E3%82%92%E9%96%8B%E3%81%8F.png" alt="メニュー一覧を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>メニュー情報を入力</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>メニュー名「検証用 メニューA」/ 料金 12000 円 / 説明を入力し、「料金を表示」「公開ページに掲載」をオン。カテゴリと問診テンプレは既定値(未分類・なし)のまま</dd>
+          <dt>期待</dt><dd>ダイアログ「メニューを追加」に入力が反映される</dd>
+          <dt>実測</dt><dd>名前=検証用 メニューA / 料金=12000 / カテゴリ=未分類(既定)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>名前が入力される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>料金が入力される</span></li></ul>
+        <p class="why"><b>判定の根拠</b> カテゴリを敢えて既定値のままにしている。ここで保存できないと、カテゴリを作っていないクリニックは 1 件もメニューを登録できないため。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-001/02_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-001 ステップ2: メニュー情報を入力"><img src="evidence/AT-CAT-001/02_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="メニュー情報を入力" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">3</span><h4>一覧に追加された</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>ダイアログの「追加」を押す</dd>
+          <dt>期待</dt><dd>エラーなく保存され、一覧に新しいメニューが表示される</dd>
+          <dt>実測</dt><dd>一覧の一致=1件 / フォームのエラー表示=[]</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>一覧に表示される<span class="ck-detail">count=1</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>フォームにエラーが出ない<span class="ck-detail">なし</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 「カテゴリ未分類のまま保存できる」ことを含めて検証している(下記の修正済み問題を参照)。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-001/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" data-cap="AT-CAT-001 ステップ3: 一覧に追加された"><img src="evidence/AT-CAT-001/03_%E4%B8%80%E8%A6%A7%E3%81%AB%E8%BF%BD%E5%8A%A0%E3%81%95%E3%82%8C%E3%81%9F.png" alt="一覧に追加された" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">4</span><h4>既存メニューを開いて保存(回帰確認)</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>問診テンプレが未設定のメニュー「アートメイク カウンセリングのみ」を編集で開き、何も変えずに「保存」を押す</dd>
+          <dt>期待</dt><dd>エラーなく保存され、ダイアログが閉じる</dd>
+          <dt>実測</dt><dd>エラー=[] / ダイアログ残存=0</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>エラーなく保存できる<span class="ck-detail">なし</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 「なし」が既定値のまま保存できるかの確認。ここが落ちると既存メニューを一切編集できない。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-001/04_%E6%97%A2%E5%AD%98%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%92%E9%96%8B%E3%81%84%E3%81%A6%E4%BF%9D%E5%AD%98_%E5%9B%9E%E5%B8%B0%E7%A2%BA%E8%AA%8D_.png" data-cap="AT-CAT-001 ステップ4: 既存メニューを開いて保存(回帰確認)"><img src="evidence/AT-CAT-001/04_%E6%97%A2%E5%AD%98%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%82%92%E9%96%8B%E3%81%84%E3%81%A6%E4%BF%9D%E5%AD%98_%E5%9B%9E%E5%B8%B0%E7%A2%BA%E8%AA%8D_.png" alt="既存メニューを開いて保存(回帰確認)" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>services に行が作られ、セッション構成(所要時間の内訳)と公開フラグが保存される</td>
+        <td><code>select name, price_yen, status, jsonb_array_length(session_template) as sessions, is_public, coalesce(category_id::text,'NULL') from services where clinic_id = '10000000-0000-4000-a000-000000000001' and name = '検証用 メニューA'</code></td>
+        <td>price_yen=12000 / status=active / session_template が 1 件以上 / is_public=t / category_id=NULL(未分類)</td>
+        <td>検証用 メニューA, 12000, active, 1, t, NULL</td>
+      </tr></tbody>
+    </table></div></details>
+    <div class="callout warn">
+    <span class="lab">検出 → この作業内で修正済み ／ 深刻度 high</span>
+    <p><b>カテゴリ「未分類」/ 問診テンプレ「なし」のままメニューを保存すると Invalid UUID で失敗していた</b></p>
+    <p>画面の選択肢「未分類」「なし」は内部的に value=&quot;none&quot; を送るのに対し、サーバー側の検証が UUID か空文字しか許していなかったため、既定値のまま保存すると『Invalid UUID』という開発者向けの文言だけが出て保存できませんでした。カテゴリを 1 つも作っていないクリニックは新規メニューを 1 件も登録できず、問診テンプレが未設定の既存メニュー(seed では「カウンセリングのみ」「メディカルピーリング」)は開いて保存するだけで失敗していました。</p>
+    <p><b>影響:</b> 本番の初期設定でメニュー登録が止まる = 予約が 1 件も作れない。エラー文言からは原因が分からず、担当者は自力で回復できません。</p>
+    <p><b>修正内容:</b> src/features/services/actions.ts に optionalUuid() を追加し、&quot;none&quot; と空文字を undefined へ正規化(検証前)。既存の意図はコード内コメントに書かれていたが実装が伴っていませんでした。</p>
+    
+    <div class="issue-shot"><p class="issue-shot-cap">発見時の画面(修正前)</p><button type="button" class="shot shot-lg" data-src="evidence/_issues/ISS-01_%E4%BF%AE%E6%AD%A3%E5%89%8D_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%BF%9D%E5%AD%98%E3%81%8CInvalidUUID%E3%81%A7%E5%A4%B1%E6%95%97.png" data-cap=" 問題の証跡: カテゴリ「未分類」/ 問診テンプレ「なし」のままメニューを保存すると Invalid UUID で失敗していた"><img src="evidence/_issues/ISS-01_%E4%BF%AE%E6%AD%A3%E5%89%8D_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%BF%9D%E5%AD%98%E3%81%8CInvalidUUID%E3%81%A7%E5%A4%B1%E6%95%97.png" alt="カテゴリ「未分類」/ 問診テンプレ「なし」のままメニューを保存すると Invalid UUID で失敗していた" loading="lazy"></button></div>
+  </div>
+  </article><article class="case" id="AT-CAT-012">
+    <header class="case-head">
+      <div class="case-id"><code>AT-CAT-012</code><span class="pri pri-p1">P1</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>担当マトリクス(誰がどのメニューを担当できるか)の割当</h3>
+      <p class="case-intent">担当割当が無いスタッフは公開予約の空き枠に一切現れない。ここを設定し忘れると「予約できる枠が 1 件も出ない」という問い合わせになる。</p>
+      <p class="case-meta">対象要件 <code>v2-07</code> ／ 詳細手順 <code>docs/20_受け入れテスト/02_メニュー・リソース・枠.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>担当割当そのものは正しく保存されますが、この変更は監査ログに残りません(AT-CAT-014 の既知不具合)。誰がいつ担当を付け外ししたかを後から追跡できないため、運用でカバーするか改修が必要です。</p></div>
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-012/01_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%81%AE%E8%A1%A8%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-012 ステップ1: 担当設定の表を開く">
+          <img src="evidence/AT-CAT-012/01_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%81%AE%E8%A1%A8%E3%82%92%E9%96%8B%E3%81%8F.png" alt="担当設定の表を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>担当設定の表を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-012/02_%E6%8B%85%E5%BD%93%E3%82%92%E3%82%AA%E3%83%B3%E3%81%AB%E3%81%99%E3%82%8B.png" data-cap="AT-CAT-012 ステップ2: 担当をオンにする">
+          <img src="evidence/AT-CAT-012/02_%E6%8B%85%E5%BD%93%E3%82%92%E3%82%AA%E3%83%B3%E3%81%AB%E3%81%99%E3%82%8B.png" alt="担当をオンにする" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>担当をオンにする</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>担当設定の表を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner で /demo/rooms の「担当設定」を確認</dd>
+          <dt>期待</dt><dd>指名可能なスタッフ(鈴木・田中)× メニューの表が表示され、新しいメニューの列がある</dd>
+          <dt>実測</dt><dd>対象チェックボックス=2個(鈴木 はな × 検証用 メニューA)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>対象のチェックボックスが存在する<span class="ck-detail">count=2</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> aria-label(「〇〇が△△を担当」)で要素を特定しているため、表のレイアウト変更に影響されない。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-012/01_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%81%AE%E8%A1%A8%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-012 ステップ1: 担当設定の表を開く"><img src="evidence/AT-CAT-012/01_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%81%AE%E8%A1%A8%E3%82%92%E9%96%8B%E3%81%8F.png" alt="担当設定の表を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>担当をオンにする</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「鈴木 はなが検証用 メニューAを担当」のチェックを入れる</dd>
+          <dt>期待</dt><dd>即時に保存され、担当が 1 件増える</dd>
+          <dt>実測</dt><dd>割当 0→1 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>割当が 1 件増える<span class="ck-detail">0→1</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-012/02_%E6%8B%85%E5%BD%93%E3%82%92%E3%82%AA%E3%83%B3%E3%81%AB%E3%81%99%E3%82%8B.png" data-cap="AT-CAT-012 ステップ2: 担当をオンにする"><img src="evidence/AT-CAT-012/02_%E6%8B%85%E5%BD%93%E3%82%92%E3%82%AA%E3%83%B3%E3%81%AB%E3%81%99%E3%82%8B.png" alt="担当をオンにする" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>staff_service_assignments に反映され、対象は指名可能スタッフに限られる</td>
+        <td><code>select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '509b674b-2080-4d1d-a607-5e4c1c68c31e'</code></td>
+        <td>1 行 / is_bookable=t</td>
+        <td>t:検証用 メニューA</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>【既知の弱点】担当設定の変更が監査ログに残るか</td>
+        <td><code>select count(*) from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action like 'assignment%'</code></td>
+        <td>本来は assignment.* が記録されるべき(AT-CAT-014)</td>
+        <td>assignment 系の監査ログ 0 件</td>
+      </tr></tbody>
+    </table></div></details>
+    <div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 low</span>
+    <p><b>担当設定の変更が監査ログに記録されない(AT-CAT-014)</b></p>
+    <p>割当の追加後も action like 'assignment%' の監査ログは 0 件でした。他の操作(部屋作成・ログイン等)は記録されています。</p>
+    <p><b>影響:</b> 「担当が外れていて予約が取れない」等の問い合わせ時に、いつ誰が変更したのか追跡できません。患者影響はありませんが運用調査が難しくなります。</p>
+    
+    <p><b>回避策:</b> 変更時に運用側で記録を残す。改修は recordAudit() の呼び出し追加のみで済む軽微なもの。</p>
+    
+  </div>
+  </article><article class="case" id="AT-CAT-019">
+    <header class="case-head">
+      <div class="case-id"><code>AT-CAT-019</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>施術枠(受付枠)の確保 → 公開予約の空き枠に反映</h3>
+      <p class="case-intent">受付枠は「患者がインターネットから予約できる時間帯」そのもの。ここが作れないと公開予約が成立しないため P0。</p>
+      <p class="case-meta">対象要件 <code>v2-08</code> ／ 詳細手順 <code>docs/20_受け入れテスト/02_メニュー・リソース・枠.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-019/01_%E6%96%BD%E8%A1%93%E6%9E%A0_%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC_%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-019 ステップ1: 施術枠(週ビュー)を開く">
+          <img src="evidence/AT-CAT-019/01_%E6%96%BD%E8%A1%93%E6%9E%A0_%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC_%E3%82%92%E9%96%8B%E3%81%8F.png" alt="施術枠(週ビュー)を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>施術枠(週ビュー)を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-019 ステップ2: 枠の条件を入力">
+          <img src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="枠の条件を入力" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>枠の条件を入力</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-019/03_%E6%9E%A0%E3%81%8C%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC%E3%81%AB%E7%8F%BE%E3%82%8C%E3%82%8B.png" data-cap="AT-CAT-019 ステップ3: 枠が週ビューに現れる">
+          <img src="evidence/AT-CAT-019/03_%E6%9E%A0%E3%81%8C%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC%E3%81%AB%E7%8F%BE%E3%82%8C%E3%82%8B.png" alt="枠が週ビューに現れる" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">3</span>枠が週ビューに現れる</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CAT-019/04_%E5%85%AC%E9%96%8B%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AB%E6%96%B0%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%82%8B.png" data-cap="AT-CAT-019 ステップ4: 公開予約ページに新メニューが出る">
+          <img src="evidence/AT-CAT-019/04_%E5%85%AC%E9%96%8B%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AB%E6%96%B0%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%82%8B.png" alt="公開予約ページに新メニューが出る" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">4</span>公開予約ページに新メニューが出る</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>施術枠(週ビュー)を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>nurse1(看護師)で /demo/schedule を開く</dd>
+          <dt>期待</dt><dd>週ビューと「施術枠を追加」ボタンが表示される(staff も操作可)</dd>
+          <dt>実測</dt><dd>追加ボタン=1個</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>「施術枠を追加」ボタンがある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-019/01_%E6%96%BD%E8%A1%93%E6%9E%A0_%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC_%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-019 ステップ1: 施術枠(週ビュー)を開く"><img src="evidence/AT-CAT-019/01_%E6%96%BD%E8%A1%93%E6%9E%A0_%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC_%E3%82%92%E9%96%8B%E3%81%8F.png" alt="施術枠(週ビュー)を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>枠の条件を入力</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-30 13:00〜17:00</dd>
+          <dt>期待</dt><dd>ダイアログに入力が反映される</dd>
+          <dt>実測</dt><dd>日付=2026-07-30 開始=13:00 終了=17:00</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>日付が入力される<span class="ck-detail">2026-07-30</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>開始 13:00</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>終了 17:00</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-019 ステップ2: 枠の条件を入力"><img src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="枠の条件を入力" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">3</span><h4>枠が週ビューに現れる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>ダイアログの「登録」を押す</dd>
+          <dt>期待</dt><dd>枠が 1 件増え、週ビューに表示される</dd>
+          <dt>実測</dt><dd>toast=false / 枠 0→1 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>枠が 1 件増える<span class="ck-detail">0→1</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-019/03_%E6%9E%A0%E3%81%8C%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC%E3%81%AB%E7%8F%BE%E3%82%8C%E3%82%8B.png" data-cap="AT-CAT-019 ステップ3: 枠が週ビューに現れる"><img src="evidence/AT-CAT-019/03_%E6%9E%A0%E3%81%8C%E9%80%B1%E3%83%93%E3%83%A5%E3%83%BC%E3%81%AB%E7%8F%BE%E3%82%8C%E3%82%8B.png" alt="枠が週ビューに現れる" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">4</span><h4>公開予約ページに新メニューが出る</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>患者が見る /c/demo/reserve を開く</dd>
+          <dt>期待</dt><dd>作成したメニュー「検証用 メニューA」が選択肢に出る(公開かつ担当割当済みのため)</dd>
+          <dt>実測</dt><dd>メニューの一致=2件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>新メニューが公開ページに出る<span class="ck-detail">count=2</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 受付枠は「メニュー × 担当 × 部屋 × 時間」が全て揃って初めて空き枠になる。ここは公開側の入口が開いたことの確認。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-019/04_%E5%85%AC%E9%96%8B%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AB%E6%96%B0%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%82%8B.png" data-cap="AT-CAT-019 ステップ4: 公開予約ページに新メニューが出る"><img src="evidence/AT-CAT-019/04_%E5%85%AC%E9%96%8B%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AB%E6%96%B0%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%82%8B.png" alt="公開予約ページに新メニューが出る" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>schedule_blocks に受付枠として保存され、JST の時刻がずれない</td>
+        <td><code>select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'a26665d2-58c1-4786-86cb-bd126616a6b1' order by lower(time_range) desc limit 1</code></td>
+        <td>block_type=open / 2026-07-30 13:00 〜 2026-07-30 17:00 (JST)</td>
+        <td>open / 2026-07-30 13:00 / 2026-07-30 17:00</td>
+      </tr></tbody>
+    </table></div></details>
+    
   </article>
   </section>
-<section id="issues"><h2>検出した問題</h2><div class="callout ok"><span class="lab">現時点</span><p>実施済みの範囲で、実装側の問題は検出されていません。</p></div></section>
+<section id="issues"><h2>検出した問題</h2>
+     <p class="sec-sub">見つかったものは隠さず全部載せています。この作業内で直したものは「修正済み」、判断や別作業が必要なものは「未解決」に分けています。</p>
+     <div class="chips" style="margin-bottom:18px">
+       <span class="chip big ng">未解決 1</span>
+       <span class="chip big warn">修正済み 1</span>
+     </div>
+     <h3>未解決(判断・追加作業が必要)</h3><div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 low ／ AT-CAT-012</span>
+    <p><b>担当設定の変更が監査ログに記録されない(AT-CAT-014)</b></p>
+    <p>割当の追加後も action like 'assignment%' の監査ログは 0 件でした。他の操作(部屋作成・ログイン等)は記録されています。</p>
+    <p><b>影響:</b> 「担当が外れていて予約が取れない」等の問い合わせ時に、いつ誰が変更したのか追跡できません。患者影響はありませんが運用調査が難しくなります。</p>
+    
+    <p><b>回避策:</b> 変更時に運用側で記録を残す。改修は recordAudit() の呼び出し追加のみで済む軽微なもの。</p>
+    
+  </div>
+     <h3>この作業内で修正したもの</h3><div class="callout warn">
+    <span class="lab">検出 → この作業内で修正済み ／ 深刻度 high ／ AT-CAT-001</span>
+    <p><b>カテゴリ「未分類」/ 問診テンプレ「なし」のままメニューを保存すると Invalid UUID で失敗していた</b></p>
+    <p>画面の選択肢「未分類」「なし」は内部的に value=&quot;none&quot; を送るのに対し、サーバー側の検証が UUID か空文字しか許していなかったため、既定値のまま保存すると『Invalid UUID』という開発者向けの文言だけが出て保存できませんでした。カテゴリを 1 つも作っていないクリニックは新規メニューを 1 件も登録できず、問診テンプレが未設定の既存メニュー(seed では「カウンセリングのみ」「メディカルピーリング」)は開いて保存するだけで失敗していました。</p>
+    <p><b>影響:</b> 本番の初期設定でメニュー登録が止まる = 予約が 1 件も作れない。エラー文言からは原因が分からず、担当者は自力で回復できません。</p>
+    <p><b>修正内容:</b> src/features/services/actions.ts に optionalUuid() を追加し、&quot;none&quot; と空文字を undefined へ正規化(検証前)。既存の意図はコード内コメントに書かれていたが実装が伴っていませんでした。</p>
+    
+    <div class="issue-shot"><p class="issue-shot-cap">発見時の画面(修正前)</p><button type="button" class="shot shot-lg" data-src="evidence/_issues/ISS-01_%E4%BF%AE%E6%AD%A3%E5%89%8D_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%BF%9D%E5%AD%98%E3%81%8CInvalidUUID%E3%81%A7%E5%A4%B1%E6%95%97.png" data-cap="AT-CAT-001 問題の証跡: カテゴリ「未分類」/ 問診テンプレ「なし」のままメニューを保存すると Invalid UUID で失敗していた"><img src="evidence/_issues/ISS-01_%E4%BF%AE%E6%AD%A3%E5%89%8D_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E4%BF%9D%E5%AD%98%E3%81%8CInvalidUUID%E3%81%A7%E5%A4%B1%E6%95%97.png" alt="カテゴリ「未分類」/ 問診テンプレ「なし」のままメニューを保存すると Invalid UUID で失敗していた" loading="lazy"></button></div>
+  </div></section>
 <section id="limits"><h2>この環境では確認できないこと(と、代わりに行ったこと)</h2>
   <p class="sec-sub">「できない」で終わらせず、代替手段でどこまで確認したか・何が残るかを明示します。ここに挙げた項目は本番設定後に改めて確認が必要です。</p>
   <div class="limit">
@@ -493,7 +885,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <dt>残る未検証範囲</dt><dd class="rest">本番環境そのもの。</dd>
     </dl></div></section>
 
-<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 4:56(自動生成。手書きの判定は含みません)</footer>
+<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 5:08(自動生成。手書きの判定は含みません)</footer>
 </div>
 
 <dialog id="lb"><form method="dialog"><button type="submit" style="all:unset;cursor:zoom-out;display:block"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></button></form></dialog>

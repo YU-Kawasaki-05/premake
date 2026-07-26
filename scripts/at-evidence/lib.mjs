@@ -123,6 +123,39 @@ export async function anonContext({ viewport } = {}) {
   return { ctx, page: await ctx.newPage() };
 }
 
+/** shadcn/Radix の Select を選ぶ(trigger の id を渡す) */
+export async function selectOption(page, triggerId, optionText) {
+  await page.locator(`#${triggerId}`).click();
+  await page.waitForTimeout(250);
+  await page.getByRole("option", { name: optionText, exact: false }).first().click();
+  await page.waitForTimeout(250);
+}
+
+/**
+ * ダイアログの送信ボタンを押す。新規/編集でラベルが変わる(追加/保存/登録)ため候補を順に探す。
+ * @returns 押したボタンのラベル
+ */
+export async function submitDialog(page, names = ["追加", "保存", "登録", "予約を作成"]) {
+  for (const name of names) {
+    const b = page.getByRole("button", { name, exact: true });
+    if ((await b.count()) > 0) {
+      await b.first().click();
+      return name;
+    }
+  }
+  throw new Error(`送信ボタンが見つからない(候補: ${names.join(" / ")})`);
+}
+
+/** toast(sonner)の文言が出るまで待つ。出たら true */
+export async function waitToast(page, textRe, timeout = 6000) {
+  try {
+    await page.getByText(textRe).first().waitFor({ state: "visible", timeout });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // ---- ケース記録 ----
 /**
  * @param {{id:string, priority:string, title:string, phase:string, refs?:string[],
@@ -174,9 +207,14 @@ export function newCase(meta) {
     return ok;
   }
 
-  function issue({ severity = "medium", summary, detail, impact, workaround }) {
-    rec.issues.push({ severity, summary, detail, impact, workaround });
-    console.log(`  ! ISSUE(${severity}) ${summary}`);
+  /**
+   * @param {{severity?:string, summary:string, detail?:string, impact?:string,
+   *          workaround?:string, status?:string, fix?:string, evidence?:string}} i
+   *   status: "open" | "fixed"(この作業内で修正した) / evidence: evidence/_issues/ 配下のファイル名
+   */
+  function issue({ severity = "medium", summary, detail, impact, workaround, status = "open", fix, evidence }) {
+    rec.issues.push({ severity, summary, detail, impact, workaround, status, fix, evidence });
+    console.log(`  ! ISSUE(${severity}/${status}) ${summary}`);
   }
 
   function na(reason) {

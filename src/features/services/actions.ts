@@ -29,6 +29,16 @@ const serviceSchema = z.object({
   sessionTemplate: z.array(sessionStepSchema).min(1, "セッションを1つ以上構成してください"),
 });
 
+/**
+ * Radix の Select は「未選択」を空文字にできないため value="none" を送る。
+ * UUID 検証の前に undefined へ正規化しないと、カテゴリ「未分類」/ 問診テンプレ「なし」の
+ * まま保存したときに Invalid UUID で弾かれる(新規作成が実質不可能になる)。
+ */
+function optionalUuid(value: FormDataEntryValue | null): string | undefined {
+  const s = typeof value === "string" ? value : "";
+  return s === "" || s === "none" ? undefined : s;
+}
+
 function parseServiceForm(formData: FormData) {
   let sessionTemplate: unknown;
   try {
@@ -38,13 +48,13 @@ function parseServiceForm(formData: FormData) {
   }
   return serviceSchema.safeParse({
     name: formData.get("name"),
-    categoryId: formData.get("categoryId") || undefined,
+    categoryId: optionalUuid(formData.get("categoryId")),
     description: formData.get("description") || undefined,
     priceYen: formData.get("priceYen") ?? "",
     showPrice: formData.get("showPrice") === "on",
     isPublic: formData.get("isPublic") === "on",
     allowNomination: formData.get("allowNomination") === "on",
-    questionnaireTemplateId: formData.get("questionnaireTemplateId") || undefined,
+    questionnaireTemplateId: optionalUuid(formData.get("questionnaireTemplateId")),
     sessionTemplate,
   });
 }

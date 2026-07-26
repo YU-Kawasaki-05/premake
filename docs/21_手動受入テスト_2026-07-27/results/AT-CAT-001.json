@@ -1,0 +1,123 @@
+{
+  "id": "AT-CAT-001",
+  "priority": "P1",
+  "phase": "A",
+  "order": 6,
+  "title": "メニュー(施術メニュー)の作成",
+  "spec": "v2-05",
+  "refs": [
+    "20_受け入れテスト/02_メニュー・リソース・枠.md"
+  ],
+  "intent": "メニューには所要時間の内訳(セッション構成)が入っており、予約枠の長さと空き枠の計算がここに依存する。",
+  "startedAt": "2026-07-26T20:07:32.505Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "メニュー一覧を開く",
+      "action": "owner で /demo/services を開く",
+      "expect": "既存メニューと「メニューを追加」ボタンが表示される",
+      "actual": "既存 5 件",
+      "checks": [
+        {
+          "label": "「メニューを追加」ボタンがある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_メニュー一覧を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "メニュー情報を入力",
+      "action": "メニュー名「検証用 メニューA」/ 料金 12000 円 / 説明を入力し、「料金を表示」「公開ページに掲載」をオン。カテゴリと問診テンプレは既定値(未分類・なし)のまま",
+      "expect": "ダイアログ「メニューを追加」に入力が反映される",
+      "actual": "名前=検証用 メニューA / 料金=12000 / カテゴリ=未分類(既定)",
+      "note": "カテゴリを敢えて既定値のままにしている。ここで保存できないと、カテゴリを作っていないクリニックは 1 件もメニューを登録できないため。",
+      "checks": [
+        {
+          "label": "名前が入力される",
+          "ok": true
+        },
+        {
+          "label": "料金が入力される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_メニュー情報を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "一覧に追加された",
+      "action": "ダイアログの「追加」を押す",
+      "expect": "エラーなく保存され、一覧に新しいメニューが表示される",
+      "actual": "一覧の一致=1件 / フォームのエラー表示=[]",
+      "note": "「カテゴリ未分類のまま保存できる」ことを含めて検証している(下記の修正済み問題を参照)。",
+      "checks": [
+        {
+          "label": "一覧に表示される",
+          "ok": true,
+          "detail": "count=1"
+        },
+        {
+          "label": "フォームにエラーが出ない",
+          "ok": true,
+          "detail": "なし"
+        }
+      ],
+      "evidence": [
+        "03_一覧に追加された.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 4,
+      "label": "既存メニューを開いて保存(回帰確認)",
+      "action": "問診テンプレが未設定のメニュー「アートメイク カウンセリングのみ」を編集で開き、何も変えずに「保存」を押す",
+      "expect": "エラーなく保存され、ダイアログが閉じる",
+      "actual": "エラー=[] / ダイアログ残存=0",
+      "note": "「なし」が既定値のまま保存できるかの確認。ここが落ちると既存メニューを一切編集できない。",
+      "checks": [
+        {
+          "label": "エラーなく保存できる",
+          "ok": true,
+          "detail": "なし"
+        }
+      ],
+      "evidence": [
+        "04_既存メニューを開いて保存_回帰確認_.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "services に行が作られ、セッション構成(所要時間の内訳)と公開フラグが保存される",
+      "query": "select name, price_yen, status, jsonb_array_length(session_template) as sessions, is_public, coalesce(category_id::text,'NULL') from services where clinic_id = '10000000-0000-4000-a000-000000000001' and name = '検証用 メニューA'",
+      "expect": "price_yen=12000 / status=active / session_template が 1 件以上 / is_public=t / category_id=NULL(未分類)",
+      "actual": "検証用 メニューA, 12000, active, 1, t, NULL",
+      "ok": true
+    }
+  ],
+  "issues": [
+    {
+      "severity": "high",
+      "summary": "カテゴリ「未分類」/ 問診テンプレ「なし」のままメニューを保存すると Invalid UUID で失敗していた",
+      "detail": "画面の選択肢「未分類」「なし」は内部的に value=\"none\" を送るのに対し、サーバー側の検証が UUID か空文字しか許していなかったため、既定値のまま保存すると『Invalid UUID』という開発者向けの文言だけが出て保存できませんでした。カテゴリを 1 つも作っていないクリニックは新規メニューを 1 件も登録できず、問診テンプレが未設定の既存メニュー(seed では「カウンセリングのみ」「メディカルピーリング」)は開いて保存するだけで失敗していました。",
+      "impact": "本番の初期設定でメニュー登録が止まる = 予約が 1 件も作れない。エラー文言からは原因が分からず、担当者は自力で回復できません。",
+      "status": "fixed",
+      "fix": "src/features/services/actions.ts に optionalUuid() を追加し、\"none\" と空文字を undefined へ正規化(検証前)。既存の意図はコード内コメントに書かれていたが実装が伴っていませんでした。",
+      "evidence": "ISS-01_修正前_メニュー保存がInvalidUUIDで失敗.png"
+    }
+  ],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-26T20:07:40.944Z"
+}

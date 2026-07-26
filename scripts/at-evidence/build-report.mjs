@@ -176,16 +176,24 @@ function dbTable(c) {
     </table></div></details>`;
 }
 
+function issueBlock(i, caseId) {
+  const fixed = i.status === "fixed";
+  const shot = i.evidence
+    ? `<button type="button" class="shot shot-lg" data-src="evidence/_issues/${encodeURIComponent(i.evidence)}" data-cap="${esc(`${caseId ?? ""} 問題の証跡: ${i.summary}`)}"><img src="evidence/_issues/${encodeURIComponent(i.evidence)}" alt="${esc(i.summary)}" loading="lazy"></button>`
+    : "";
+  return `<div class="callout ${fixed ? "warn" : "crit"}">
+    <span class="lab">${fixed ? "検出 → この作業内で修正済み" : "未解決の問題"} ／ 深刻度 ${esc(i.severity)}${caseId ? ` ／ ${esc(caseId)}` : ""}</span>
+    <p><b>${esc(i.summary)}</b></p>
+    ${i.detail ? `<p>${esc(i.detail)}</p>` : ""}
+    ${i.impact ? `<p><b>影響:</b> ${esc(i.impact)}</p>` : ""}
+    ${i.fix ? `<p><b>修正内容:</b> ${esc(i.fix)}</p>` : ""}
+    ${i.workaround ? `<p><b>回避策:</b> ${esc(i.workaround)}</p>` : ""}
+    ${shot ? `<div class="issue-shot"><p class="issue-shot-cap">発見時の画面(修正前)</p>${shot}</div>` : ""}
+  </div>`;
+}
+
 function caseBlock(c) {
-  const issues = (c.issues ?? [])
-    .map(
-      (i) => `<div class="callout crit"><span class="lab">問題 (${esc(i.severity)})</span>
-      <p><b>${esc(i.summary)}</b></p>
-      ${i.detail ? `<p>${esc(i.detail)}</p>` : ""}
-      ${i.impact ? `<p><b>影響:</b> ${esc(i.impact)}</p>` : ""}
-      ${i.workaround ? `<p><b>回避策:</b> ${esc(i.workaround)}</p>` : ""}</div>`,
-    )
-    .join("");
+  const issues = (c.issues ?? []).map((i) => issueBlock(i, null)).join("");
   const reason = c.naReason
     ? `<div class="callout info"><span class="lab">この環境では検証できません</span><p>${esc(c.naReason)}</p></div>`
     : c.partialReason
@@ -228,17 +236,17 @@ const phaseSections = PHASES.map((p) => {
   </section>`;
 }).join("");
 
+const openIssues = allIssues.filter((i) => i.status !== "fixed");
+const fixedIssues = allIssues.filter((i) => i.status === "fixed");
 const issuesSection = allIssues.length
   ? `<section id="issues"><h2>検出した問題</h2>
-     <p class="sec-sub">見つかったものは隠さず全部載せています。深刻度・影響・回避策つき。</p>
-     ${allIssues
-       .map(
-         (i) => `<div class="callout crit"><span class="lab">${esc(i.severity)} ／ ${esc(i.caseId)}</span>
-         <p><b>${esc(i.summary)}</b></p>${i.detail ? `<p>${esc(i.detail)}</p>` : ""}
-         ${i.impact ? `<p><b>影響:</b> ${esc(i.impact)}</p>` : ""}
-         ${i.workaround ? `<p><b>回避策:</b> ${esc(i.workaround)}</p>` : ""}</div>`,
-       )
-       .join("")}</section>`
+     <p class="sec-sub">見つかったものは隠さず全部載せています。この作業内で直したものは「修正済み」、判断や別作業が必要なものは「未解決」に分けています。</p>
+     <div class="chips" style="margin-bottom:18px">
+       <span class="chip big ${openIssues.length ? "ng" : "ok"}">未解決 ${openIssues.length}</span>
+       <span class="chip big warn">修正済み ${fixedIssues.length}</span>
+     </div>
+     ${openIssues.length ? `<h3>未解決(判断・追加作業が必要)</h3>${openIssues.map((i) => issueBlock(i, i.caseId)).join("")}` : ""}
+     ${fixedIssues.length ? `<h3>この作業内で修正したもの</h3>${fixedIssues.map((i) => issueBlock(i, i.caseId)).join("")}` : ""}</section>`
   : `<section id="issues"><h2>検出した問題</h2><div class="callout ok"><span class="lab">現時点</span><p>実施済みの範囲で、実装側の問題は検出されていません。</p></div></section>`;
 
 const limitsSection = `<section id="limits"><h2>この環境では確認できないこと(と、代わりに行ったこと)</h2>
@@ -388,6 +396,8 @@ tr:last-child td{border-bottom:none}
 .dbwrap{margin-top:20px;border-top:1px solid var(--line-soft);padding-top:12px}
 .dbwrap summary{cursor:pointer;font-weight:600;font-size:14.5px}
 .db code{font-size:11.5px;white-space:pre-wrap}
+.issue-shot{margin-top:12px;max-width:520px}
+.issue-shot-cap{font-size:12px;color:inherit;opacity:.85;margin:0 0 6px}
 .limit{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
 .limit h3{margin:0 0 10px;font-size:16px}
 .limit dl{margin:0;display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:14px}
