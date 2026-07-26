@@ -521,6 +521,7 @@ export type Database = {
           payload: Json;
           recipient_email: string;
           recipient_type: string;
+          sending_at: string | null;
           sent_at: string | null;
           status: string;
         };
@@ -535,6 +536,7 @@ export type Database = {
           payload?: Json;
           recipient_email: string;
           recipient_type: string;
+          sending_at?: string | null;
           sent_at?: string | null;
           status?: string;
         };
@@ -549,6 +551,7 @@ export type Database = {
           payload?: Json;
           recipient_email?: string;
           recipient_type?: string;
+          sending_at?: string | null;
           sent_at?: string | null;
           status?: string;
         };

@@ -13,6 +13,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // @implements v2-24 リマインダー + v2-23 通知送信(Vercel Cron から定期実行)
 export const dynamic = "force-dynamic";
 
+/** 送信失敗時の再試行上限(No.20)。到達で恒久 failed */
+const MAX_ATTEMPTS = 3;
+/** status='sending' のまま放置された行を queued に戻すまでの猶予(ROB-03) */
+const STALE_SENDING_MS = 10 * 60 * 1000;
+
 export async function GET(request: Request) {
   // 認可: 本番相当では CRON_SECRET を必須とし、未設定なら fail-closed で拒否する。
   // 開発(next dev = NODE_ENV=development)でのみ未設定を許可する。
@@ -32,32 +37,60 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
+  const recovered = await recoverStaleSending();
   const reminded = await scanReminders();
   const sent = await processQueue();
 
-  return NextResponse.json({ ok: true, reminded, sent });
+  return NextResponse.json({ ok: true, recovered, reminded, sent });
 
-  // --- 前日リマインダーの走査 ---
+  // --- 送信中のまま落ちた通知の回収(ROB-03) ---
+  // クレーム(status='sending')後にプロセスが落ちると誰も再処理しないため、
+  // sending_at が古い行を queued に戻して次のループで拾い直す。
+  // 猶予は送信 1 件の想定所要より十分長い 10 分。
+  async function recoverStaleSending(): Promise<number> {
+    const staleBefore = new Date(Date.now() - STALE_SENDING_MS).toISOString();
+    const { data } = await admin
+      .from("notifications")
+      .update({ status: "queued" })
+      .eq("status", "sending")
+      .lt("sending_at", staleBefore)
+      .select("id");
+    return data?.length ?? 0;
+  }
+
+  // --- リマインダーの走査(ROB-04: now〜翌日末 JST を対象窓にする) ---
+  // 「実行時点の翌日」だけを見ると、前日の cron 実行後に作られた直前予約を取りこぼす。
+  // 当日のこれから始まる分まで含めることで、深夜作成の翌日予約も必ず 1 回は対象になる。
+  // 冪等性は「kind='reminder' が既にあればスキップ」で担保(窓が重なっても二重送信しない)。
   async function scanReminders(): Promise<number> {
+    const now = new Date();
     const tomorrow = formatInTimeZone(
-      new Date(Date.now() + 24 * 60 * 60 * 1000),
+      new Date(now.getTime() + 24 * 60 * 60 * 1000),
       TIME_ZONE,
       "yyyy-MM-dd",
     );
-    const from = new Date(`${tomorrow}T00:00:00+09:00`).toISOString();
+    const from = now.toISOString();
     const to = new Date(`${tomorrow}T23:59:59+09:00`).toISOString();
 
     const { data: sessions } = await admin
       .from("booking_sessions")
       .select(
-        "booking_id, booking:bookings!booking_sessions_booking_id_fkey(id, clinic_id, status)",
+        "booking_id, time_range, booking:bookings!booking_sessions_booking_id_fkey(id, clinic_id, status)",
       )
       .eq("status", "scheduled")
       .overlaps("time_range", `[${from},${to})`);
 
+    // overlaps は「開始済みで now を跨いでいる」セッションも拾う。
+    // 既に始まった予約にリマインダーは送らないため、開始が now より後のものだけ残す。
     const bookingIds = Array.from(
       new Set(
-        (sessions ?? []).filter((s) => s.booking?.status === "confirmed").map((s) => s.booking_id),
+        (sessions ?? [])
+          .filter((s) => {
+            if (s.booking?.status !== "confirmed") return false;
+            const r = parseRange(s.time_range as string);
+            return !!r && new Date(r.start).getTime() > now.getTime();
+          })
+          .map((s) => s.booking_id),
       ),
     );
     let count = 0;
@@ -99,9 +132,18 @@ export async function GET(request: Request) {
       .eq("status", "queued")
       .limit(50);
 
-    const MAX_ATTEMPTS = 3;
     let count = 0;
     for (const n of queued ?? []) {
+      // 行単位のクレーム(ROB-03)。queued のままの行だけを sending へ落とせる条件付き UPDATE。
+      // 0 行なら他プロセス(重複起動した cron)が先に取得済み → この実行では触らない。
+      const { data: claimed } = await admin
+        .from("notifications")
+        .update({ status: "sending", sending_at: new Date().toISOString() })
+        .eq("id", n.id)
+        .eq("status", "queued")
+        .select("id");
+      if (!claimed || claimed.length === 0) continue;
+
       const ctx = await buildContext(n.booking_id, n.clinic_id, n.kind);
       if (!ctx) {
         // 恒久エラー(参照先が消えた等)。再送しても直らないので即 failed で隔離。
