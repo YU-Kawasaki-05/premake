@@ -173,8 +173,64 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 </head>
 <body>
 <header class="top"><div class="wrap"><div class="bar"><span class="brand"><span class="dot"></span>premake 本番移行手順書</span><a href="00_目次.html">&#9776; 目次へ戻る</a></div></div></header>
-<div class="hero"><div class="wrap"><p class="stepno">STEP 8 / 8</p><h1>STEP 8 運用とバックアップ</h1><p class="lede">運用開始後に続ける作業。日次バックアップ、手動エクスポート、定期チェック、パスワード管理、障害時の連絡先を整えます。</p><div class="meta"><span class="chip time">運用中は随時</span><span class="chip">クリニック担当者</span></div></div></div>
-<div class="wrap"><section><h2>この STEP でやること</h2><p>本番運用を始めた<strong>後に続けていく作業</strong>です。データのバックアップ、定期的な確認、パスワード管理、障害時の連絡先を整えます。患者データを預かる以上、ここは省略できません。</p></section><section><h2>8-1. バックアップ(データを守る)</h2><h3>自動バックアップ(Supabase)</h3><p>Supabase の有料プラン(Pro)では<strong>毎日の自動バックアップ</strong>が有効になります。無料プランはバックアップが限定的なため、実患者データを扱う本番では<strong>Pro を推奨</strong>します。</p><ul class="disc"><li>確認場所: Supabase 画面 →「Database」→「Backups」。日次バックアップの一覧と、復元(Restore)操作があります。</li><li>より手厚くするなら、Point-in-Time Recovery(特定時点への復元)の有効化も検討します。</li></ul><h3>手動エクスポート(念のための控え)</h3><p>大きな変更の前や、定期的な保管用に、手動でデータの控え(ダンプ)を取ることもできます。</p><figure class="code"><pre class="single"><code>pnpm exec supabase db dump --linked -f backup_$(date +%Y%m%d).sql</code></pre><figcaption>本番データベースの中身を1つのファイルに書き出します(開発担当者向け)。出力ファイルには患者情報が含まれるため、<b>暗号化した安全な場所に保管</b>し、不要になったら確実に削除してください。</figcaption></figure><div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>エクスポートしたファイルの取り扱い</p><p>バックアップファイルは<strong>患者の個人情報そのもの</strong>です。共有ドライブに置きっぱなしにしない、パスワード付きで保管する、保管期間を決める、といった管理をしてください。</p></div></section><section><h2>8-2. 定期的に確認すること</h2><div class="tablewrap"><table><thead><tr><th>頻度</th><th>確認内容</th><th>場所</th></tr></thead><tbody><tr><td>毎日〜週1</td><td>定期実行が成功しているか(メールが遅延なく送られているか)</td><td>Vercel の Logs / Cron Jobs</td></tr><tr><td>週1</td><td>メール送信の失敗が無いか</td><td>Resend の Logs、Supabase の <code>notifications</code>(failed が無いか)</td></tr><tr><td>週1</td><td>バックアップが取れているか</td><td>Supabase の Backups</td></tr><tr><td>随時</td><td>スタッフの入退職に応じたアカウント整理</td><td>アプリのスタッフ管理</td></tr></tbody></table></div><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>メール送信失敗の注意</p><p>現状、送信に一時的に失敗したメールは<strong>自動で再送されません</strong>。重要な連絡が届かない事象に気づけるよう、上の週次チェックを習慣にしてください(改善予定は<a href="09_未対応事項と注意点.html">未対応事項</a>に記載)。</p></div></section><section><h2>8-3. パスワード・鍵の管理</h2><ul class="disc"><li><strong>パスワード管理ツールを使う</strong>: Supabase・Vercel・Resend のログイン、DB パスワード、各キーを保管。</li><li><strong>service_role キー・CRON_SECRET は秘密</strong>: 外部に共有しない。漏れた疑いがあれば各サービスで再発行し、Vercel の環境変数を更新して再デプロイ。</li><li><strong>アカウントは使い回さない・共有しない</strong>: 看護師ごとに個別アカウントを招待(誰が操作したか記録が残ります)。</li><li><strong>招待リンクの有効期限は7日</strong>: 期限切れは再発行。未使用リンクは放置しない。</li><li><strong>退職時はアカウントを無効化</strong>: アプリのスタッフ管理で対象者を無効(アーカイブ)にします。</li></ul></section><section><h2>8-4. 障害時の連絡先(記入して印刷・保管)</h2><p>「ログインできない」「メールが届かない」「画面が真っ白」等が起きたときのために、連絡先を埋めておきましょう。</p><div class="tablewrap"><table><thead><tr><th>項目</th><th>連絡先 / メモ(記入してください)</th></tr></thead><tbody><tr><td>開発担当者(アプリを作った人)</td><td>&nbsp;</td></tr><tr><td>Supabase の状況確認</td><td><code>status.supabase.com</code></td></tr><tr><td>Vercel の状況確認</td><td><code>vercel-status.com</code></td></tr><tr><td>Resend の状況確認</td><td><code>resend-status.com</code></td></tr><tr><td>本番アプリの URL</td><td>&nbsp;</td></tr><tr><td>ops(運営)アカウントのメール</td><td>&nbsp;(パスワードは書かない)</td></tr></tbody></table></div><div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>困ったときの初手</p><p>まず各サービスの「状況確認(status)」ページで障害が出ていないか確認します。サービス側が正常なら、Vercel の「Logs」でエラー内容を開発担当者に伝えると解決が早くなります。</p></div></section><section><h2>この STEP のチェックリスト</h2><ul class="check"><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">Supabase の自動バックアップが有効(Pro プラン)</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">手動エクスポートの取り方と保管ルールを決めた</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">週次の確認項目(定期実行・メール失敗・バックアップ)を運用に組み込んだ</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">パスワード・鍵をパスワード管理ツールに保管した</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">障害時の連絡先表を記入・印刷して保管した</span></span></label></li></ul></section></div>
+<div class="hero"><div class="wrap"><p class="stepno">STEP 8 / 8</p><h1>STEP 8 運用とバックアップ</h1><p class="lede">運用開始後に続ける作業。日次バックアップ、手動エクスポート、定期チェック(メール通知の送信状況・承認待ちの確認)、パスワード管理、障害時の連絡先を整えます。</p><div class="meta"><span class="chip time">運用中は随時</span><span class="chip">クリニック担当者</span></div></div></div>
+<div class="wrap">
+
+<section><h2>この STEP でやること</h2><p>本番運用を始めた<strong>後に続けていく作業</strong>です。データのバックアップ、定期的な確認、パスワード管理、障害時の連絡先を整えます。患者データを預かる以上、ここは省略できません。</p></section>
+
+<section><h2>8-1. バックアップ(データを守る)</h2>
+<h3>自動バックアップ(Supabase)</h3>
+<p>Supabase の有料プラン(Pro)では<strong>毎日の自動バックアップ</strong>が有効になります。無料プランはバックアップが限定的なため、実患者データを扱う本番では<strong>Pro を推奨</strong>します。</p>
+<ul class="disc"><li>確認場所: Supabase 画面 →「Database」→「Backups」。日次バックアップの一覧と、復元(Restore)操作があります。</li><li>より手厚くするなら、Point-in-Time Recovery(特定時点への復元)の有効化も検討します。</li></ul>
+<h3>手動エクスポート(念のための控え)</h3>
+<p>大きな変更の前や、定期的な保管用に、手動でデータの控え(ダンプ)を取ることもできます。</p>
+<figure class="code"><pre class="single"><code>pnpm exec supabase db dump --linked -f backup_$(date +%Y%m%d).sql</code></pre><figcaption>本番データベースの中身を1つのファイルに書き出します(開発担当者向け)。出力ファイルには患者情報が含まれるため、<b>暗号化した安全な場所に保管</b>し、不要になったら確実に削除してください。</figcaption></figure>
+<div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>エクスポートしたファイルの取り扱い</p><p>バックアップファイルは<strong>患者の個人情報そのもの</strong>です。共有ドライブに置きっぱなしにしない、パスワード付きで保管する、保管期間を決める、といった管理をしてください。</p></div>
+<div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>本番データベースに絶対にやってはいけないこと</p><p>本番のデータベースに対して <code class="inline">db reset</code>(初期化)や <strong>テスト用初期データ(seed)の流し込み</strong>を<strong>絶対に実行しないでください</strong>。前者は患者データが消え、後者は「誰でも知っているパスワード」の管理者アカウントという裏口を作ってしまいます。</p><p>現在は、テスト用データを本番に流そうとすると<strong>プログラム側で自動的に中断する安全装置</strong>が入っています。ただしこれは万一の保険です。<strong>運用ルールとしての「本番には流さない」を、二重の防御として引き続き徹底</strong>してください(詳細は <a href="02_本番データベース構築.html">STEP 2</a>)。</p></div>
+</section>
+
+<section><h2>8-2. 定期的に確認すること</h2>
+<div class="tablewrap"><table><thead><tr><th>頻度</th><th>確認内容</th><th>場所</th></tr></thead><tbody>
+<tr><td><strong>毎日</strong></td><td><strong>「承認待ち」の予約が放置されていないか</strong>(公開Web予約は院内が承認するまで確定しません。承認漏れ=予約の取りこぼしになります)</td><td>アプリの台帳(日ビュー)。予約を開いて「確定にする」</td></tr>
+<tr><td>毎日〜週1</td><td>定期実行が成功しているか(メールが遅延なく送られているか)</td><td>Vercel の Logs / Cron Jobs</td></tr>
+<tr><td><strong>週1</strong></td><td><strong>メール送信に「失敗」が無いか</strong>(下の「通知の送信状況の見方」を参照)</td><td>アプリの 設定 →「通知の送信状況」。あわせて Resend の Logs</td></tr>
+<tr><td>週1</td><td>バックアップが取れているか</td><td>Supabase の Backups</td></tr>
+<tr><td>月1</td><td>患者マスタに<strong>同じ人の二重登録</strong>が増えていないか(重複患者をまとめる機能はありません)</td><td>アプリの患者一覧。詳細は <a href="09_未対応事項と注意点.html">未対応事項 A-4</a></td></tr>
+<tr><td>随時</td><td>スタッフの入退職に応じたアカウント整理</td><td>アプリのスタッフ管理</td></tr>
+</tbody></table></div>
+
+<h3>「通知の送信状況」の見方 <span class="badge op">クリニック担当者</span></h3>
+<p>アプリの<strong>設定画面(院長のアカウントのみ)</strong>を開くと、いちばん下に <strong>「通知の送信状況」</strong> という一覧があります。ここで<strong>直近 50 件</strong>のメール通知の結果を、開発担当者に頼らず自分で確認できます。</p>
+<div class="tablewrap"><table><thead><tr><th>列</th><th>意味</th></tr></thead><tbody>
+<tr><td>種別</td><td>どの通知か。<strong>確定 / 受付 / 変更 / キャンセル / リマインダー</strong>(いずれも患者宛)と、<strong>院内新規 / 院内キャンセル</strong>(クリニック宛。「院内」と添えて表示されます)</td></tr>
+<tr><td>宛先</td><td>送信先のメールアドレス</td></tr>
+<tr><td>状態</td><td><strong>送信済み</strong>(成功)/ <strong>待機中</strong>(これから送られます)/ <strong>送信中</strong> / <strong>失敗</strong>(下の注意を参照)</td></tr>
+<tr><td>試行</td><td>送信を試した回数</td></tr>
+<tr><td>エラー</td><td>失敗した理由(メールサービスからの返答)。長い場合はマウスを乗せると全文が出ます</td></tr>
+<tr><td>日時</td><td>通知が作られた日時。送信済みの場合は「→」のあとに送信できた日時が並びます</td></tr>
+</tbody></table></div>
+<div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>「失敗」は自動再送されません — 週次で必ず確認してください</p>
+<p>一時的な送信失敗は<strong>最大 3 回まで自動で再送</strong>されます。ここで「<strong>失敗</strong>」と表示されているのは、<strong>その 3 回に達してしまったもの</strong>です。<strong>それ以上は自動で送られることはありません</strong>ので、放置すると患者に連絡が届かないままになります。</p>
+<p>「失敗」を見つけたときは、<strong>エラー欄の内容を確認したうえで、その患者に電話など別の方法で連絡</strong>してください。メールアドレスの打ち間違いが原因であれば、患者情報を修正します。同じ失敗が続く場合は、メールサービス(Resend)側の設定やドメイン認証(<a href="04_メール送信の設定.html">STEP 4</a>)を疑い、開発担当者に相談してください。</p>
+<p class="small muted">「待機中」が長く残り続ける場合は、メールを送る定期実行そのものが止まっている可能性があります。<a href="05_定期実行(リマインダー)の確認.html">STEP 5</a> の確認方法と、<code class="inline">CRON_SECRET</code> の設定を確認してください。</p></div>
+</section>
+
+<section><h2>8-3. パスワード・鍵の管理</h2><ul class="disc"><li><strong>パスワード管理ツールを使う</strong>: Supabase・Vercel・Resend のログイン、DB パスワード、各キーを保管。</li><li><strong>service_role キー・CRON_SECRET は秘密</strong>: 外部に共有しない。漏れた疑いがあれば各サービスで再発行し、Vercel の環境変数を更新して再デプロイ。</li><li><strong>アカウントは使い回さない・共有しない</strong>: 看護師ごとに個別アカウントを招待(誰が操作したか記録が残ります)。</li><li><strong>招待リンクの有効期限は7日</strong>: 期限切れは再発行。未使用リンクは放置しない。</li><li><strong>退職時はアカウントを無効化</strong>: アプリのスタッフ管理で対象者を無効(アーカイブ)にします。無効にしたスタッフは、患者向けの公開予約ページの指名候補にも出なくなります。</li></ul></section>
+
+<section><h2>8-4. 障害時の連絡先(記入して印刷・保管)</h2><p>「ログインできない」「メールが届かない」「画面が真っ白」等が起きたときのために、連絡先を埋めておきましょう。</p><div class="tablewrap"><table><thead><tr><th>項目</th><th>連絡先 / メモ(記入してください)</th></tr></thead><tbody><tr><td>開発担当者(アプリを作った人)</td><td>&nbsp;</td></tr><tr><td>Supabase の状況確認</td><td><code>status.supabase.com</code></td></tr><tr><td>Vercel の状況確認</td><td><code>vercel-status.com</code></td></tr><tr><td>Resend の状況確認</td><td><code>resend-status.com</code></td></tr><tr><td>本番アプリの URL</td><td>&nbsp;</td></tr><tr><td>ops(運営)アカウントのメール</td><td>&nbsp;(パスワードは書かない)</td></tr></tbody></table></div><div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>困ったときの初手</p><p>まず各サービスの「状況確認(status)」ページで障害が出ていないか確認します。サービス側が正常なら、Vercel の「Logs」でエラー内容を開発担当者に伝えると解決が早くなります。</p></div></section>
+
+<section><h2>この STEP のチェックリスト</h2><ul class="check">
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">Supabase の自動バックアップが有効(Pro プラン)</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">手動エクスポートの取り方と保管ルールを決めた</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">本番データベースに db reset・seed を実行しないことを、作業する全員で確認した</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">毎日の確認(「承認待ち」の予約が放置されていないか)を担当者と時間帯まで決めた</span><span class="ck-d">公開Web予約を使うため、承認漏れは予約の取りこぼしに直結します</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">週次の確認項目(定期実行・「通知の送信状況」の失敗・バックアップ)を運用に組み込んだ</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">設定 →「通知の送信状況」を開き、一覧が表示されることと「失敗」の見つけ方を確認した</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">パスワード・鍵をパスワード管理ツールに保管した</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">障害時の連絡先表を記入・印刷して保管した</span></span></label></li>
+</ul></section>
+
+</div>
 <div class="wrap"><nav class="pager"><a class="prev" href="07_公開前の動作確認チェックリスト.html"><span class="dir">&#8592; 前へ</span><span class="nm">STEP7 公開前チェック</span></a><a class="next" href="09_未対応事項と注意点.html"><span class="dir">次へ &#8594;</span><span class="nm">重要 未対応事項と注意点</span></a></nav></div>
 <footer class="foot"><div class="wrap">premake — クリニック予約・業務管理システム ／ 本番移行手順書。この手順書はブラウザで開いて読めます。順番に実行してください。</div></footer>
 </body>
