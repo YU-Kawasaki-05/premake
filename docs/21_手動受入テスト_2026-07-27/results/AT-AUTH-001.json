@@ -1,0 +1,97 @@
+{
+  "id": "AT-AUTH-001",
+  "priority": "P0",
+  "phase": "A",
+  "order": 1,
+  "title": "owner のメール+パスワードログイン → クリニックへ遷移",
+  "spec": "v2-01",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "院長が自分のアカウントで入れること。ここが通らないと院内業務が何も始まらないため P0(リリースゲート)。",
+  "startedAt": "2026-07-26T19:53:05.612Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "ログイン画面を開く",
+      "action": "http://localhost:3000/login を開く",
+      "expect": "見出し「スタッフログイン」が表示される",
+      "actual": "見出しの一致数=1",
+      "note": "画面上の文言で判定(見出しが無い＝別画面に飛んでいる可能性を排除)",
+      "checks": [
+        {
+          "label": "見出し「スタッフログイン」がある",
+          "ok": true,
+          "detail": "count=1"
+        }
+      ],
+      "evidence": [
+        "01_ログイン画面を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "認証情報を入力",
+      "action": "owner@demo.local / premake-dev を入力(パスワードはマスク表示)",
+      "expect": "入力値がフォームに反映される",
+      "actual": "email 欄=owner@demo.local",
+      "checks": [
+        {
+          "label": "email 欄に入力が反映",
+          "ok": true,
+          "detail": "owner@demo.local"
+        }
+      ],
+      "evidence": [
+        "02_認証情報を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "予約台帳へ遷移",
+      "action": "「ログイン」を押す",
+      "expect": "/demo(予約台帳)へ遷移し、クリニック名と owner 用ナビ 8 項目が表示される",
+      "actual": "url=/demo / クリニック名=2件 / ナビ=予約台帳・施術枠・患者・メニュー・部屋・担当・問診テンプレ・スタッフ・クリニック設定",
+      "note": "所属クリニックのうち最古の 1 件へ遷移する仕様。owner は demo のみ所属のため /demo が正。",
+      "checks": [
+        {
+          "label": "/demo へ遷移した",
+          "ok": true,
+          "detail": "url=/demo"
+        },
+        {
+          "label": "クリニック名「デモクリニック」が見える",
+          "ok": true,
+          "detail": "count=2"
+        },
+        {
+          "label": "owner 用ナビ 8 項目すべて表示(不足: なし)",
+          "ok": true,
+          "detail": "予約台帳・施術枠・患者・メニュー・部屋・担当・問診テンプレ・スタッフ・クリニック設定"
+        }
+      ],
+      "evidence": [
+        "03_予約台帳へ遷移.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "監査ログに auth.login が 1 件増え、actor_type=member で記録される",
+      "query": "select action, actor_type, actor_user_id is not null as has_actor from audit_logs where action = 'auth.login' order by created_at desc limit 1",
+      "expect": "action=auth.login / actor_type=member / actor_user_id が非 null / 件数が +1",
+      "actual": "件数 8→9 / 最新行=auth.login, member, t",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-26T19:53:07.745Z"
+}

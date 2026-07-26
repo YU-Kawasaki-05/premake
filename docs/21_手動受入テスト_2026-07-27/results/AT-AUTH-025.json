@@ -1,0 +1,79 @@
+{
+  "id": "AT-AUTH-025",
+  "priority": "P0",
+  "phase": "A",
+  "order": 2,
+  "title": "ロール別のナビ表示と owner 専用ページの制御",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "看護師に院長専用の設定を触らせないこと。権限境界が崩れると料金・スタッフ・公開設定を誰でも変更できてしまうため P0。",
+  "startedAt": "2026-07-26T19:53:07.746Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "owner のサイドバー",
+      "action": "owner でログインし /demo のサイドバーを確認",
+      "expect": "予約台帳/施術枠/患者 + 管理系 5 項目 = 8 項目",
+      "actual": "予約台帳・施術枠・患者・メニュー・部屋・担当・問診テンプレ・スタッフ・クリニック設定",
+      "checks": [
+        {
+          "label": "8 項目すべて表示",
+          "ok": true,
+          "detail": "8 項目"
+        }
+      ],
+      "evidence": [
+        "01_owner_のサイドバー.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "staff のサイドバー",
+      "action": "nurse1(staff)でログインし /demo のサイドバーを確認",
+      "expect": "予約台帳/施術枠/患者 のみ。管理系リンクは非表示",
+      "actual": "予約台帳・施術枠・患者",
+      "note": "owner 専用リンクの露出=0件",
+      "checks": [
+        {
+          "label": "staff 用 3 項目のみ",
+          "ok": true,
+          "detail": "表示=予約台帳・施術枠・患者 / 露出=なし"
+        }
+      ],
+      "evidence": [
+        "02_staff_のサイドバー.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "owner 専用 5 ページへ直アクセス",
+      "action": "staff のまま /demo/staff / /demo/settings / /demo/services / /demo/rooms / /demo/questionnaires を URL 直打ちで開く",
+      "expect": "すべて /demo(予約台帳)へリダイレクトされ、当該画面の内容は表示されない",
+      "actual": "/demo/staff→/demo / /demo/settings→/demo / /demo/services→/demo / /demo/rooms→/demo / /demo/questionnaires→/demo",
+      "note": "requireMember(slug,'owner') が非 owner を /{slug} へ送る第 2 層の防御。",
+      "checks": [
+        {
+          "label": "5 ページすべて /demo へ弾かれる",
+          "ok": true,
+          "detail": "全て弾かれた"
+        }
+      ],
+      "evidence": [
+        "03_owner_専用_5_ページへ直アクセス.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-26T19:53:13.690Z"
+}
