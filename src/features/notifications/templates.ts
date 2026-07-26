@@ -113,11 +113,13 @@ export function renderNotification(
         ),
       };
     case "reminder":
+      // 走査窓は「いま〜翌日末(JST)」なので当日分にも送られる(ROB-04)。
+      // 「明日」「前日」と断定せず、本文の日時を正とする文面にする。
       return {
-        subject: `【${ctx.clinicName}】ご予約前日のお知らせ`,
+        subject: `【${ctx.clinicName}】ご予約日のお知らせ`,
         html: wrap(
           "ご予約日が近づいています",
-          `${patientName} 様<br>明日のご予約のお知らせです。<br><br>
+          `${patientName} 様<br>ご予約の日時が近づいてまいりました。<br><br>
            メニュー: ${serviceName}<br>日時: ${whenStr}<br>予約番号: ${bookingNo}<br><br>
            ご都合が悪い場合は下記からご連絡ください。`,
           ctx.manageUrl,
