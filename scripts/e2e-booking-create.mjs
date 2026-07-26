@@ -51,6 +51,9 @@ async function pickSelect(triggerId, index = 0) {
   return n;
 }
 
+// 終了コードに反映する最終判定。例外で抜けた場合は false のままにする。
+let scriptOk = false;
+
 try {
   await p.goto(BASE + "/login", { waitUntil: "domcontentloaded" });
   await p.fill("#email", "owner@demo.local");
@@ -113,9 +116,13 @@ try {
   console.log("STEP 台帳反映:", (await p.getByText(uniq).count()) > 0 ? "OK(当日タブ)" : "未表示(日付タブ違いの可能性)");
 
   console.log("PAGEERRORS:", errs.length, errs.slice(0, 3));
+  scriptOk = createOk;
   console.log(createOk ? "\nBOOKING_CREATE_OK" : "\nBOOKING_CREATE_FAILED");
 } catch (e) {
   console.log("EXCEPTION:", String(e).slice(0, 300));
   await p.screenshot({ path: SHOT + "/booking-fail.png", fullPage: true }).catch(() => {});
+  console.log("ABORTED: 例外で中断したため、以降のチェックは実行されていません");
+  console.log("\nBOOKING_CREATE_FAILED");
 }
 await browser.close();
+process.exit(scriptOk ? 0 : 1);

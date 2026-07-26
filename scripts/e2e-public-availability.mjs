@@ -422,4 +422,4 @@ if (!aborted && results.length < MIN_CHECKS)
   console.log(`INCOMPLETE: チェック数 ${results.length} が期待 ${MIN_CHECKS} を下回っています`);
 const allGreen = fail === 0 && !aborted && results.length >= MIN_CHECKS;
 console.log(allGreen ? "AVAILABILITY_OK" : "AVAILABILITY_FAILED");
-process.exit(fail === 0 ? 0 : 1);
+process.exit(allGreen ? 0 : 1);
