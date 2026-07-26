@@ -13,6 +13,7 @@ import {
 } from "@/features/bookings/booking-status";
 import { parseRange } from "@/features/schedule/week";
 import type { SessionStep } from "@/features/services/session-template";
+import { formatDate } from "@/lib/datetime";
 import { BookingCreateDialog } from "./booking-create-dialog";
 import { BookingDetailDrawer } from "./booking-detail-drawer";
 
@@ -34,6 +35,12 @@ export type LedgerSession = {
     status: BookingStatus;
     booking_no: string;
     notes: string | null;
+    // 名寄せ(v2-16): patient_id が null かつ guest_* があるゲスト予約に紐付け導線を出す
+    patient_id: string | null;
+    guest_name: string | null;
+    guest_kana: string | null;
+    guest_phone: string | null;
+    guest_email: string | null;
     patient: { name: string } | null;
     service: { name: string } | null;
   } | null;
@@ -115,10 +122,10 @@ export function DayLedger({
         <div className="flex items-center gap-2">
           <h1 className="text-base font-semibold">予約台帳</h1>
           <span className="text-sm text-muted-foreground tabular-nums">
-            {formatJaDate(date)}
+            {formatDate(date)}
             {date === todayJst && (
               <span className="ml-1 rounded bg-[var(--primary-soft)] px-1.5 py-0.5 text-[11px] text-[var(--primary-strong)]">
-                今日
+                本日
               </span>
             )}
           </span>
@@ -130,7 +137,7 @@ export function DayLedger({
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/${slug}`}>今日</Link>
+            <Link href={`/${slug}`}>本日</Link>
           </Button>
           <Button variant="outline" size="icon" asChild aria-label="翌日">
             <Link href={`/${slug}?d=${shift(1)}`}>
@@ -265,11 +272,4 @@ function shiftDate(date: string, delta: number): string {
   d.setUTCDate(d.getUTCDate() + delta);
   const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
   return jst.toISOString().slice(0, 10);
-}
-
-function formatJaDate(date: string): string {
-  const d = new Date(`${date}T00:00:00+09:00`);
-  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-  const wd = ["日", "月", "火", "水", "木", "金", "土"][jst.getUTCDay()];
-  return `${jst.getUTCFullYear()}/${jst.getUTCMonth() + 1}/${jst.getUTCDate()}(${wd})`;
 }
