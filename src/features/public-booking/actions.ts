@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 import { layoutSessions, rangeLiteral } from "@/features/bookings/session-layout";
-import { enqueueNotification } from "@/features/notifications/enqueue";
+import { enqueueNotification, resolveClinicInternalEmail } from "@/features/notifications/enqueue";
 import type { SessionStep } from "@/features/services/session-template";
 import { recordAudit } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -12,7 +12,9 @@ import { generateBookingToken, hashBookingToken } from "./token";
 
 export type GuestBookingState = {
   error?: string;
-  done?: { bookingNo: string; manageToken: string; pending: boolean };
+  // BC-NEW-06: manageToken はトークン発行に失敗しても予約自体は成立するため optional。
+  // 未発行時は UI が「リンクはメールで届きます」を表示する。
+  done?: { bookingNo: string; manageToken?: string; pending: boolean };
 };
 
 const guestSchema = z.object({
@@ -20,6 +22,8 @@ const guestSchema = z.object({
   serviceId: z.uuid(),
   memberId: z.uuid(),
   roomId: z.uuid(),
+  // BC-NEW-07: 患者が指名したスタッフ(「指定なし」は空)。
+  nominatedMemberId: z.union([z.uuid(), z.literal("")]).optional(),
   startISO: z.string().datetime(),
   name: z.string().trim().min(1, "お名前を入力してください").max(60),
   kana: z.string().trim().max(60).optional(),
@@ -37,6 +41,7 @@ export async function createGuestBooking(
     serviceId: formData.get("serviceId"),
     memberId: formData.get("memberId"),
     roomId: formData.get("roomId"),
+    nominatedMemberId: formData.get("nominatedMemberId") || undefined,
     startISO: formData.get("startISO"),
     name: formData.get("name"),
     kana: formData.get("kana") || undefined,
@@ -69,6 +74,37 @@ export async function createGuestBooking(
     .maybeSingle();
   if (!service) return { error: "選択されたメニューは予約できません" };
 
+  // 公開経路の担当・部屋の妥当性(UI を迂回した直接 POST 対策。BC-NEW-02 / No.9 / No.34)。
+  // 在籍中(status=active)・公開指名対象(is_bookable)・当該サービスの担当割当あり・有効な部屋のみ許可。
+  // 院内予約(createBooking)には適用しない(No.36: 院内は非公開スタッフも指名可)。
+  const [{ data: member }, { data: assignment }, { data: room }] = await Promise.all([
+    admin
+      .from("clinic_members")
+      .select("id")
+      .eq("id", d.memberId)
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active")
+      .eq("is_bookable", true)
+      .maybeSingle(),
+    admin
+      .from("staff_service_assignments")
+      .select("id")
+      .eq("clinic_id", clinic.id)
+      .eq("member_id", d.memberId)
+      .eq("service_id", d.serviceId)
+      .maybeSingle(),
+    admin
+      .from("rooms")
+      .select("id")
+      .eq("id", d.roomId)
+      .eq("clinic_id", clinic.id)
+      .eq("status", "active")
+      .maybeSingle(),
+  ]);
+  if (!member || !assignment || !room) {
+    return { error: "選択された枠は予約できません。別の枠をお選びください" };
+  }
+
   // member/room がこのクリニックのものか、かつ指定 open 枠内に収まるか
   const startMs = Date.parse(d.startISO);
   const steps = service.session_template as unknown as SessionStep[];
@@ -76,7 +112,9 @@ export async function createGuestBooking(
     return { error: "このメニューは現在予約できません" };
   }
   const laid = layoutSessions(steps, d.startISO);
-  const endMs = Date.parse(laid[laid.length - 1].endISO);
+  // 収まり検証は表示終端でなく占有終端(バッファ込み)。UI(availableSlots)と同じ基準にし、
+  // 直接 POST で清掃バッファが open 枠外にはみ出す予約を弾く(No.33)
+  const endMs = Date.parse(laid[laid.length - 1].occupiedEndISO);
   if (startMs < Date.now()) return { error: "過去の時間は予約できません" };
 
   const { data: block } = await admin
@@ -86,7 +124,7 @@ export async function createGuestBooking(
     .eq("member_id", d.memberId)
     .eq("room_id", d.roomId)
     .eq("block_type", "open")
-    .overlaps("time_range", rangeLiteral(d.startISO, laid[laid.length - 1].endISO))
+    .overlaps("time_range", rangeLiteral(d.startISO, laid[laid.length - 1].occupiedEndISO))
     .maybeSingle();
   if (!block) return { error: "選択された時間は予約できません。別の枠をお選びください" };
   const br = parseRangeSafe(block.time_range as string);
@@ -104,7 +142,9 @@ export async function createGuestBooking(
       service_id: d.serviceId,
       status: autoConfirm ? "confirmed" : "requested",
       source: "web",
-      nominated_member_id: d.memberId,
+      // BC-NEW-07: 「指定なし」は指名を記録しない(null)。指名ありの経路では
+      // 空き枠が指名スタッフに限定されるため nominatedMemberId は memberId と一致する。
+      nominated_member_id: d.nominatedMemberId === d.memberId ? d.memberId : null,
       guest_name: d.name,
       guest_kana: d.kana || null,
       guest_email: d.email,
@@ -126,6 +166,7 @@ export async function createGuestBooking(
     member_id: d.memberId,
     room_id: d.roomId,
     time_range: rangeLiteral(s.startISO, s.endISO),
+    occupied_range: rangeLiteral(s.startISO, s.occupiedEndISO),
     schedule_block_id: block.id,
   }));
   const { error: sErr } = await admin.from("booking_sessions").insert(sessionRows);
@@ -138,14 +179,17 @@ export async function createGuestBooking(
     return { error: "予約の受付に失敗しました" };
   }
 
-  // 管理トークン(照会・キャンセル用)
+  // 管理トークン(照会・キャンセル用)。
+  // BC-NEW-06: 発行に失敗しても予約は成立済み。ここで中断すると枠がロックされ喪失するため、
+  // 失敗はログのみ残して完了画面へ進む(manage リンクはメール送信時に cron が再発行するため回復可能)。
   const { token, tokenHash } = generateBookingToken();
-  await admin.from("booking_access_tokens").insert({
+  const { error: tokErr } = await admin.from("booking_access_tokens").insert({
     booking_id: booking.id,
     token_hash: tokenHash,
     purpose: "manage",
     expires_at: new Date(endMs + 30 * 24 * 60 * 60 * 1000).toISOString(),
   });
+  if (tokErr) console.error("[public-booking] manage token insert failed", tokErr);
 
   await recordAudit({
     clinicId: clinic.id,
@@ -165,7 +209,24 @@ export async function createGuestBooking(
     kind: autoConfirm ? "booking_confirmed" : "booking_requested",
   });
 
-  return { done: { bookingNo: booking.booking_no, manageToken: token, pending: !autoConfirm } };
+  // @implements v2-23 院内(スタッフ)向け通知。manual/auto を問わず常に enqueue し、
+  // 承認漏れ=予約喪失(台帳 No.18)を防ぐ。宛先が解決できなければ enqueue 側でスキップ。
+  const internalEmail = await resolveClinicInternalEmail(clinic.id);
+  await enqueueNotification({
+    clinicId: clinic.id,
+    bookingId: booking.id,
+    recipientEmail: internalEmail,
+    recipientType: "member",
+    kind: "booking_created_internal",
+  });
+
+  return {
+    done: {
+      bookingNo: booking.booking_no,
+      manageToken: tokErr ? undefined : token,
+      pending: !autoConfirm,
+    },
+  };
 }
 
 export type ManagedBooking = {
@@ -192,7 +253,7 @@ export async function getManagedBooking(token: string): Promise<ManagedBooking |
   const { data: booking } = await admin
     .from("bookings")
     .select(
-      "booking_no, status, service:services(name), clinic:clinics(name, slug, cancel_deadline_hours), sessions:booking_sessions(time_range, status, seq)",
+      "booking_no, status, service:services!bookings_service_id_fkey(name), clinic:clinics(name, slug, cancel_deadline_hours), sessions:booking_sessions!booking_sessions_booking_id_fkey(time_range, status, seq)",
     )
     .eq("id", tok.booking_id)
     .maybeSingle();
@@ -281,7 +342,9 @@ export async function cancelByToken(token: string): Promise<{ error?: string; ok
 
   const { data: booking } = await admin
     .from("bookings")
-    .select("id, clinic_id, status, clinic:clinics(cancel_deadline_hours)")
+    .select(
+      "id, clinic_id, status, guest_email, patient:patients!bookings_patient_id_fkey(email), clinic:clinics(cancel_deadline_hours)",
+    )
     .eq("id", tok.booking_id)
     .maybeSingle();
   if (!booking) return { error: "予約が見つかりません" };
@@ -309,19 +372,14 @@ export async function cancelByToken(token: string): Promise<{ error?: string; ok
     }
   }
 
-  await admin
-    .from("bookings")
-    .update({
-      status: "cancelled",
-      cancelled_at: new Date().toISOString(),
-      cancel_reason: "患者キャンセル",
-    })
-    .eq("id", booking.id);
-  await admin
-    .from("booking_sessions")
-    .update({ status: "cancelled" })
-    .eq("booking_id", booking.id)
-    .eq("status", "scheduled");
+  // ヘッダの cancelled 更新とセッション解放を単一トランザクション(RPC)で原子的に行う。
+  // 分割すると片方失敗で枠(EXCLUDE)がロックされ再予約不能になる(BUG-03)。
+  const { error: cancelErr } = await admin.rpc("cancel_booking", {
+    p_booking_id: booking.id,
+    p_clinic_id: booking.clinic_id,
+    p_reason: "患者キャンセル",
+  });
+  if (cancelErr) return { error: "キャンセルに失敗しました。時間をおいてお試しください" };
 
   await recordAudit({
     clinicId: booking.clinic_id,
@@ -330,6 +388,25 @@ export async function cancelByToken(token: string): Promise<{ error?: string; ok
     targetType: "booking",
     targetId: booking.id,
   });
+
+  // @implements v2-23 キャンセル通知(No.22)。患者宛 + 院内宛を enqueue(Cron が送信)。
+  const patientEmail = booking.guest_email ?? booking.patient?.email ?? null;
+  await enqueueNotification({
+    clinicId: booking.clinic_id,
+    bookingId: booking.id,
+    recipientEmail: patientEmail,
+    recipientType: "patient",
+    kind: "booking_cancelled",
+  });
+  const internalEmail = await resolveClinicInternalEmail(booking.clinic_id);
+  await enqueueNotification({
+    clinicId: booking.clinic_id,
+    bookingId: booking.id,
+    recipientEmail: internalEmail,
+    recipientType: "member",
+    kind: "booking_cancelled_internal",
+  });
+
   return { ok: true };
 }
 

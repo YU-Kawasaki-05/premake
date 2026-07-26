@@ -7,7 +7,11 @@ import { getPublicClinic, getPublicServices } from "@/features/public-booking/da
 import { TIME_ZONE } from "@/lib/datetime";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const metadata: Metadata = { title: "ご予約" };
+export async function generateMetadata(props: PageProps<"/c/[slug]/reserve">): Promise<Metadata> {
+  const { slug } = await props.params;
+  const clinic = await getPublicClinic(slug);
+  return { title: { absolute: clinic ? `ご予約 | ${clinic.name}` : "ご予約" } };
+}
 
 // @implements v2-20 ゲスト予約フロー
 export default async function ReservePage(props: PageProps<"/c/[slug]/reserve">) {
@@ -28,25 +32,27 @@ export default async function ReservePage(props: PageProps<"/c/[slug]/reserve">)
 
   const slots = await availableSlots({
     clinicId: clinic.id,
+    serviceId: service.id,
     service,
     dateJst: date,
     nominatedMemberId: nominated,
   });
 
-  // 指名候補(allow_nomination かつ bookable なスタッフ)
-  let nominees: { id: string; name: string }[] = [];
+  // 指名候補(allow_nomination かつ bookable なスタッフ)。
+  // 公開文脈では profiles.full_name にフォールバックしない(本名露出防止 F8)。
+  // display_name 未設定のスタッフは指名チップに出さない(空き枠には「指定なし」経由で出せる)。
+  const nominees: { id: string; name: string }[] = [];
   if (service.allow_nomination) {
     const admin = createAdminClient();
     const { data } = await admin
       .from("clinic_members")
-      .select("id, display_name, profiles(full_name)")
+      .select("id, display_name")
       .eq("clinic_id", clinic.id)
       .eq("status", "active")
       .eq("is_bookable", true);
-    nominees = (data ?? []).map((m) => ({
-      id: m.id,
-      name: m.display_name || m.profiles?.full_name || "スタッフ",
-    }));
+    for (const m of data ?? []) {
+      if (m.display_name) nominees.push({ id: m.id, name: m.display_name });
+    }
   }
 
   return (

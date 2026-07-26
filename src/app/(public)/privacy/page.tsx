@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "プライバシーポリシー" };
+export const metadata: Metadata = { title: { absolute: "プライバシーポリシー" } };
 
 // 最小の法定ページ(β)。正式版は弁護士確認のうえ差し替える。
 export default function PrivacyPage() {

@@ -55,7 +55,7 @@ export async function createScheduleBlocks(
   _prev: ScheduleFormState,
   formData: FormData,
 ): Promise<ScheduleFormState> {
-  const { user, clinic, member } = await requireMember(slug);
+  const { user, clinic } = await requireMember(slug);
 
   const parsed = createBlockSchema.safeParse({
     memberId: formData.get("memberId"),
@@ -76,21 +76,18 @@ export async function createScheduleBlocks(
     return { error: "終了時刻は開始時刻より後にしてください" };
   }
 
-  // 権限: staff は自分の枠のみ登録可。owner は誰の枠でも可。
-  const isOwner = member.roles.includes("owner");
-  if (!isOwner && d.memberId !== member.id) {
-    return { error: "自分の施術枠のみ登録できます" };
-  }
-
+  // No.35: メンバー全員が同クリニックの任意スタッフの枠を作成できる(受付運用)。
+  // RLS はメンバー全員に許可済み。アプリ層では対象スタッフが当該クリニックの
+  // active メンバーであることのみ検証する(越境・退職者への割当を防止)。
   const supabase = await createClient();
 
-  // 対象 member と room がこのクリニックのものか検証(越境防止)
   const [{ data: targetMember }, { data: room }] = await Promise.all([
     supabase
       .from("clinic_members")
       .select("id")
       .eq("id", d.memberId)
       .eq("clinic_id", clinic.id)
+      .eq("status", "active")
       .maybeSingle(),
     supabase.from("rooms").select("id").eq("id", d.roomId).eq("clinic_id", clinic.id).maybeSingle(),
   ]);
@@ -143,9 +140,10 @@ export async function createScheduleBlocks(
 }
 
 export async function deleteScheduleBlock(slug: string, blockId: string) {
-  const { user, clinic, member } = await requireMember(slug);
+  const { user, clinic } = await requireMember(slug);
   const supabase = await createClient();
 
+  // No.35: メンバー全員が同クリニックの任意スタッフの枠を削除できる(受付運用)。
   const { data: block } = await supabase
     .from("schedule_blocks")
     .select("id, member_id")
@@ -153,11 +151,6 @@ export async function deleteScheduleBlock(slug: string, blockId: string) {
     .eq("clinic_id", clinic.id)
     .maybeSingle();
   if (!block) return { error: "施術枠が見つかりません" };
-
-  const isOwner = member.roles.includes("owner");
-  if (!isOwner && block.member_id !== member.id) {
-    return { error: "自分の施術枠のみ削除できます" };
-  }
 
   // 予約(booking_sessions)が紐づく枠は削除させない
   const { count } = await supabase

@@ -3,6 +3,29 @@
 -- パスワードは全て premake-dev
 
 -- ---------------------------------------------------------------
+-- 本番混入ガード(DB-N-2): fail-closed
+-- ---------------------------------------------------------------
+-- このシードは公知パスワード premake-dev の is_ops 全権アカウントを作る。`supabase db reset --linked`
+-- 等で本番/リンク先 DB に誤実行されると全権バックドアが生成されるため、ローカル開発スタックを
+-- 「積極的に確認」し、確認できなければ即中断する。
+do $$
+begin
+  if current_setting('app.settings.jwt_secret', true)
+     is distinct from 'super-secret-jwt-token-with-at-least-32-characters-long' then
+    raise exception
+      'seed.sql aborted: not a local Supabase dev stack. Refusing to seed known-password admin accounts into a non-local database.';
+  end if;
+end $$;
+-- 判定根拠: Supabase CLI のローカルスタックは JWT シークレットを既知の固定値
+--   'super-secret-jwt-token-with-at-least-32-characters-long' で起動する。これは
+--   `ALTER DATABASE postgres SET app.settings.jwt_secret = ...` として DB レベルに永続設定され
+--   (pg_db_role_setting の datname=postgres 行)、seed 実行を含むあらゆる postgres DB セッションから
+--   current_setting で確実に参照できる。.env.local の anon/service キーもこの秘密で署名されている。
+--   本番 Supabase は各プロジェクトでランダム生成された秘密を使うため、この固定値には決して一致しない。
+--   よって「この固定値に一致すること」をローカル確認の積極シグナルとし、is distinct from
+--   (未設定=NULL も含めて不一致扱い)で fail-closed に中断する。
+
+-- ---------------------------------------------------------------
 -- auth users(ローカル専用の直接 insert。profiles はトリガーで自動作成)
 -- ---------------------------------------------------------------
 insert into auth.users
@@ -168,15 +191,21 @@ values (
   '00000000-0000-4000-a000-000000000002'
 );
 
-insert into booking_sessions (clinic_id, booking_id, seq, kind, label, member_id, room_id, time_range)
+-- occupied_range は施術時間+バッファ(メニュー 眉: counseling buffer 0 / procedure buffer 15)。
+-- セッション1 = time_range と同値、セッション2 = 施術終了 13:00 + バッファ 15分 = 13:15 まで占有。
+insert into booking_sessions (clinic_id, booking_id, seq, kind, label, member_id, room_id, time_range, occupied_range)
 values
   ('10000000-0000-4000-a000-000000000001', '80000000-0000-4000-a000-000000000001', 1,
    'counseling', 'カウンセリング・医師診察',
    '20000000-0000-4000-a000-000000000002', '30000000-0000-4000-a000-000000000001',
+   tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '10:30') at time zone 'Asia/Tokyo',
+             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo', '[)'),
    tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '10:30') at time zone 'Asia/Tokyo',
              ((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo', '[)')),
   ('10000000-0000-4000-a000-000000000001', '80000000-0000-4000-a000-000000000001', 2,
    'procedure', '施術(1回目)',
    '20000000-0000-4000-a000-000000000002', '30000000-0000-4000-a000-000000000001',
    tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo',
-             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '13:00') at time zone 'Asia/Tokyo', '[)'));
+             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '13:00') at time zone 'Asia/Tokyo', '[)'),
+   tstzrange(((now() at time zone 'Asia/Tokyo')::date + 1 + time '11:00') at time zone 'Asia/Tokyo',
+             ((now() at time zone 'Asia/Tokyo')::date + 1 + time '13:15') at time zone 'Asia/Tokyo', '[)'));

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>重要 未対応事項と注意点 — premake 本番移行手順</title>
+<style>
+*{box-sizing:border-box;}
+:root{
+  --paper:#fbfaf8; --surface:#ffffff; --surface-2:#f4f2ee;
+  --ink:#1b201e; --ink-soft:#4c534f; --ink-faint:#8a8f8b;
+  --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#e9f2ee;
+  --bronze:#8a6d43;
+  --line:#e5e3de; --line-soft:#efedE8;
+  --ok:#1d5c4d; --ok-bg:#e7f2ec; --ok-line:#bfe0d1;
+  --warn:#8a5a00; --warn-bg:#fbf0d6; --warn-line:#e6cf94;
+  --crit:#a5342a; --crit-bg:#fae9e6; --crit-line:#eab6ad;
+  --info:#1e5a8a; --info-bg:#e7f0f8; --info-line:#b6d2ea;
+  --tip:#5a3d8a; --tip-bg:#f0ebf8; --tip-line:#cabce6;
+  --sans:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  line-height:1.85;font-size:16.5px;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px;}
+
+/* ヘッダ */
+header.top{background:var(--primary-strong);color:#fff;}
+header.top .bar{display:flex;align-items:center;justify-content:space-between;
+  min-height:52px;padding:8px 0;gap:12px;flex-wrap:wrap;}
+header.top a{color:#eaf2ef;text-decoration:none;font-size:14px;}
+header.top a:hover{text-decoration:underline;}
+.brand{font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:9px;font-size:15px;}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:#7bbda8;flex:none;}
+
+/* ヒーロー */
+.hero{padding:44px 0 30px;border-bottom:1px solid var(--line);}
+.stepno{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);
+  font-weight:700;margin:0 0 12px;}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(25px,4.5vw,36px);line-height:1.3;
+  margin:0 0 14px;letter-spacing:.01em;}
+.lede{font-size:17px;color:var(--ink-soft);max-width:64ch;margin:0;}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px;}
+.chip{font-size:12.5px;padding:5px 12px;border-radius:999px;background:var(--surface-2);
+  color:var(--ink-soft);border:1px solid var(--line);}
+.chip.time{background:var(--primary-soft);color:var(--primary-strong);border-color:transparent;font-weight:600;}
+
+/* セクション */
+section{padding:30px 0;border-bottom:1px solid var(--line-soft);}
+h2{font-family:var(--serif);font-size:23px;font-weight:600;margin:6px 0 14px;line-height:1.35;
+  padding-top:4px;}
+h3{font-size:17.5px;font-weight:700;margin:26px 0 10px;color:var(--primary-strong);}
+p{margin:12px 0;}
+a{color:var(--primary);}
+strong{font-weight:700;}
+.muted{color:var(--ink-soft);}
+.small{font-size:14px;}
+
+/* バッジ(誰向けの手順か) */
+.badge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:6px;
+  vertical-align:middle;margin-left:6px;letter-spacing:.02em;}
+.badge.dev{background:#e7edf8;color:#274b86;border:1px solid #c3d3ee;}
+.badge.op{background:var(--primary-soft);color:var(--primary-strong);border:1px solid #c3e0d4;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 0;font-size:13.5px;color:var(--ink-soft);}
+
+/* 手順リスト */
+ol.steps{counter-reset:st;list-style:none;padding:0;margin:16px 0;}
+ol.steps>li{position:relative;padding:2px 0 16px 46px;margin:0;}
+ol.steps>li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:0;
+  width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-weight:700;
+  font-size:14px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);}
+ol.steps>li::after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:2px;
+  background:var(--line);}
+ol.steps>li:last-child::after{display:none;}
+ol.steps>li .st-title{font-weight:700;display:block;margin-bottom:2px;}
+
+/* 通常の箇条書き */
+ul.disc{margin:12px 0;padding-left:22px;}
+ul.disc li{margin:6px 0;}
+
+/* コールアウト */
+.callout{border:1px solid var(--line);border-left-width:5px;border-radius:10px;
+  padding:14px 16px;margin:18px 0;background:var(--surface);}
+.callout .ct{font-weight:700;display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:15px;}
+.callout p{margin:6px 0;}
+.callout .ic{font-size:17px;line-height:1;}
+.callout.crit{border-color:var(--crit-line);border-left-color:var(--crit);background:var(--crit-bg);}
+.callout.crit .ct{color:var(--crit);}
+.callout.warn{border-color:var(--warn-line);border-left-color:var(--warn);background:var(--warn-bg);}
+.callout.warn .ct{color:var(--warn);}
+.callout.info{border-color:var(--info-line);border-left-color:var(--info);background:var(--info-bg);}
+.callout.info .ct{color:var(--info);}
+.callout.ok{border-color:var(--ok-line);border-left-color:var(--ok);background:var(--ok-bg);}
+.callout.ok .ct{color:var(--ok);}
+.callout.tip{border-color:var(--tip-line);border-left-color:var(--tip);background:var(--tip-bg);}
+.callout.tip .ct{color:var(--tip);}
+
+/* コードブロック */
+figure.code{margin:16px 0;}
+figure.code pre{background:#151a18;color:#eef3f0;border-radius:10px 10px 0 0;margin:0;
+  padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:14px;line-height:1.7;}
+figure.code pre.single{border-radius:10px;}
+figure.code code{font-family:var(--mono);white-space:pre;}
+figure.code figcaption{background:var(--surface-2);border:1px solid var(--line);border-top:none;
+  border-radius:0 0 10px 10px;padding:9px 14px;font-size:13.5px;color:var(--ink-soft);}
+figure.code figcaption b{color:var(--ink);}
+code.inline{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;
+  padding:1px 6px;font-family:var(--mono);font-size:.88em;color:var(--primary-strong);
+  word-break:break-word;}
+
+/* テーブル */
+.tablewrap{overflow-x:auto;margin:16px 0;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--surface);}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+th{background:var(--surface-2);font-weight:700;font-size:13.5px;}
+td code{font-family:var(--mono);font-size:13px;}
+tr:nth-child(even) td{background:#fbfaf7;}
+
+/* チェックリスト */
+ul.check{list-style:none;padding:0;margin:14px 0;}
+ul.check li{margin:0;border-bottom:1px dashed var(--line);}
+ul.check li:last-child{border-bottom:none;}
+ul.check label{display:flex;gap:11px;align-items:flex-start;padding:11px 4px;cursor:pointer;}
+ul.check input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--primary);}
+ul.check .ck-body{flex:1;}
+ul.check .ck-id{font-family:var(--mono);font-size:12px;color:var(--bronze);font-weight:700;}
+ul.check .ck-t{font-weight:600;}
+ul.check .ck-d{font-size:13.5px;color:var(--ink-soft);}
+
+/* 用語集 */
+dl.glossary{margin:14px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+dl.glossary>div{padding:12px 16px;border-bottom:1px solid var(--line-soft);background:var(--surface);}
+dl.glossary>div:last-child{border-bottom:none;}
+dl.glossary dt{font-weight:700;color:var(--primary-strong);margin:0 0 3px;}
+dl.glossary dd{margin:0;color:var(--ink-soft);font-size:14.5px;}
+
+/* 目次カード */
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin:20px 0;}
+a.card{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+  border-radius:12px;padding:15px 17px;background:var(--surface);transition:border-color .12s;}
+a.card:hover{border-color:var(--primary);}
+a.card .cnum{font-family:var(--mono);font-size:12.5px;color:var(--bronze);font-weight:700;letter-spacing:.05em;}
+a.card .ctitle{font-weight:700;font-size:17px;margin:3px 0 4px;color:var(--primary-strong);}
+a.card .cdesc{font-size:14px;color:var(--ink-soft);margin:0;}
+a.card .ctime{font-size:12.5px;color:var(--ink-faint);margin-top:6px;display:block;}
+
+/* フッタ ナビ */
+nav.pager{display:flex;justify-content:space-between;gap:12px;margin:30px 0;flex-wrap:wrap;}
+nav.pager a{flex:1;min-width:210px;text-decoration:none;border:1px solid var(--line);border-radius:10px;
+  padding:13px 15px;background:var(--surface);color:var(--ink);}
+nav.pager a:hover{border-color:var(--primary);}
+nav.pager .dir{font-size:12px;color:var(--ink-faint);display:block;}
+nav.pager .nm{font-weight:700;color:var(--primary-strong);}
+nav.pager a.next{text-align:right;}
+footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align:center;}
+
+/* 印刷 */
+@media print{
+  body{background:#fff;color:#000;font-size:11.5pt;}
+  header.top,nav.pager{display:none;}
+  section{border-color:#ccc;page-break-inside:avoid;}
+  .callout{page-break-inside:avoid;}
+  figure.code pre{background:#f2f2f2;color:#000;border:1px solid #999;}
+  figure.code figcaption{background:#fff;}
+  a{color:#000;text-decoration:none;}
+  a.card,nav.pager a{border-color:#ccc;}
+  h1,h2{page-break-after:avoid;}
+}
+@media (max-width:560px){ body{font-size:16px;} .hero{padding:32px 0 22px;} }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="bar"><span class="brand"><span class="dot"></span>premake 本番移行手順書</span><a href="00_目次.html">&#9776; 目次へ戻る</a></div></div></header>
+<div class="hero"><div class="wrap"><p class="stepno">公開前に必ずお読みください</p><h1>重要 未対応事項と注意点</h1><p class="lede">今回のリリースに含まれない機能と、本番前に必ず対応すべき事項を正直に列挙します。誤解と事故を防ぐための最重要ページです。</p><div class="meta"><span class="chip">全員必読</span><span class="chip time">目安 約15分</span></div></div></div>
+<div class="wrap"><section><h2>このページの目的</h2><p>公開前に必ずお読みください。ここでは、<strong>今回のリリースに含まれない機能</strong>と、<strong>本番前に必ず対応すべき事項</strong>を正直に列挙します。『使えると思っていた機能が実は無かった』という誤解を防ぐためのページです。</p><p>根拠は品質監査(<a href="../40_品質監査_2026-07-21/00_サマリ.md">サマリ</a>・<a href="../40_品質監査_2026-07-21/01_実装ギャップ台帳.md">実装ギャップ台帳</a>・<a href="../40_品質監査_2026-07-21/02_不具合レポート.md">不具合レポート</a>)です。</p></section><section><h2>A. 本番前に必ず対応すべき事項(未完のもの)</h2><div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>1. メール送信元がクリニック名になっていない(要・コード修正)</p><p>現状、送信元が開発用の仮アドレス <code class="inline">onboarding@resend.dev</code> に固定されています。患者に届くメールがクリニック名にならず、迷惑メールに入りやすい状態です。<strong>開発担当者に依頼し、認証済みドメインの差出人へ変更</strong>してください(STEP 4 参照)。これは設定画面ではなくプログラム修正が必要です。</p></div><div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>2. 法定ページ(利用規約・プライバシー)が暫定のβ版</p><p>プライバシーポリシー・利用規約は現在<strong>暫定のβ版</strong>で、正式な内容ではありません。特に患者向けの公開ページを出す場合や、診療情報を扱う運用では、<strong>弁護士の確認を受けた正式版に差し替え</strong>てください(医療広告・診療情報の取扱条項を含む)。院内運用のみでも、患者への案内文面は法務確認を推奨します。</p></div><div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>3. スタッフ権限の抜け道(脅威モデルとして認識)</p><p>技術的な指摘として、看護師(staff)権限のアカウントが、通常画面を経由せず直接データベース API を叩くと、本来 院長(owner)専用の操作(料金・メニュー変更、患者削除)ができてしまう余地があります(越境は自院内に限定)。悪用には技術知識が要りますが、<strong>本番前にアクセス制御(RLS)を owner 限定へ絞る改善を推奨</strong>します。当面は、信頼できるスタッフのみに staff 権限を付与してください。</p></div><div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>4. 不正アクセス対策(レート制限)が未実装</p><p>ログイン・(公開予約を使う場合の)ゲスト予約や照会に対する<strong>回数制限(レート制限)がありません</strong>。総当たり攻撃やいたずら送信のリスクがあります。特に<strong>公開Web予約を使う場合は本番前の対応を推奨</strong>します。</p></div><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>5. メールの差し込み値のエスケープ / 送信失敗の自動再送</p><p>(公開予約でゲスト名などを受け付ける場合)メール本文の差し込み値のエスケープ処理、および一時的な送信失敗の自動再送は未対応です。前者は開発担当者に確認を、後者は STEP 8 の週次チェックで補ってください。</p></div><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>6. テストデータ(seed)の本番混入ガード</p><p>手順(STEP 2)で『seed を本番に流さない』ことで回避していますが、プログラム側で本番実行を止める安全装置(ガード)は未実装です。運用として<strong>本番データベースに対する <code class="inline">db reset</code>・seed 実行を絶対に行わない</strong>ルールを徹底してください。</p></div></section><section><h2>B. 今回のリリースに含まれない機能(MVPから除外)</h2><p>次は<strong>『現状こういう扱い』</strong>という前提で運用してください。使えると誤解しないための一覧です。</p><div class="tablewrap"><table><thead><tr><th>機能</th><th>現状の扱い</th><th>使いたい場合</th></tr></thead><tbody><tr><td><strong>患者向け公開Web予約</strong></td><td>初期状態オフ。院内運用のみ推奨</td><td>オンにするなら、上の A(法定ページ・レート制限・エスケープ)に加え、『退職者/施術不可スタッフが候補に出る』『非公開スタッフの本名や枠が患者に見える』等の未対応も解消が必要</td></tr><tr><td><strong>オンライン問診</strong></td><td>未実装。<strong>紙で運用</strong>する前提</td><td>侵襲的施術の既往歴・アレルギー・妊娠確認は<strong>紙の問診で必ず取得</strong>。オンライン化は別途開発が必要(患者安全に直結)</td></tr><tr><td><strong>予約の変更(リスケ)</strong></td><td>未実装</td><td>日時・担当・部屋を変えるときは<strong>キャンセル→作り直し</strong>で対応</td></tr><tr><td><strong>院内(スタッフ)向け通知</strong></td><td>未実装</td><td>公開予約を受ける場合、「予約が入った」の院内通知が出ない。院内運用では看護師自身が作るため影響は限定的</td></tr><tr><td><strong>手動承認時の患者確定メール</strong></td><td>未送信</td><td>公開Web予約(手動承認)を使う場合のみ関係。院内運用では発生しない</td></tr><tr><td>週ビュー / 承認待ち専用画面 / Google ログイン 等</td><td>今回のスコープ外</td><td>仕様として除外済み(日ビュー・台帳で運用)</td></tr></tbody></table></div></section><section><h2>C. まとめ: 推奨する始め方</h2><div class="callout ok"><p class="ct"><span class="ic">&#10003;</span>『院内運用・公開予約オフ・問診は紙』で小さく始める</p><p>この形なら、中核フロー(看護師が予約→院内確認→当日施術→キャンセル)が成立し、上の未対応事項の多くは『公開予約を使わない限り実害が小さい』ものになります。運用が安定し、法務・追加開発の準備が整ってから、公開Web予約やオンライン問診の追加を検討するのが安全です。</p><p>ただし <strong>A-1(メール送信元)</strong> と、患者への案内文面・法定ページの<strong>法務確認(A-2)</strong>は、院内運用でも本番開始前に対応しておくことを強く推奨します。</p></div></section></div>
+<div class="wrap"><nav class="pager"><a class="prev" href="08_運用開始後の運用とバックアップ.html"><span class="dir">&#8592; 前へ</span><span class="nm">STEP8 運用とバックアップ</span></a><span></span></nav></div>
+<footer class="foot"><div class="wrap">premake — クリニック予約・業務管理システム ／ 本番移行手順書。この手順書はブラウザで開いて読めます。順番に実行してください。</div></footer>
+</body>
+</html>

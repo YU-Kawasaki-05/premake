@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "利用規約" };
+export const metadata: Metadata = { title: { absolute: "利用規約" } };
 
 // 最小の法定ページ(β)。正式版は弁護士確認のうえ差し替える。
 export default function TermsPage() {

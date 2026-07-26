@@ -92,6 +92,7 @@ export type Database = {
           kind: string;
           label: string | null;
           member_id: string | null;
+          occupied_range: unknown;
           room_id: string | null;
           schedule_block_id: string | null;
           seq: number;
@@ -107,6 +108,7 @@ export type Database = {
           kind?: string;
           label?: string | null;
           member_id?: string | null;
+          occupied_range: unknown;
           room_id?: string | null;
           schedule_block_id?: string | null;
           seq?: number;
@@ -122,6 +124,7 @@ export type Database = {
           kind?: string;
           label?: string | null;
           member_id?: string | null;
+          occupied_range?: unknown;
           room_id?: string | null;
           schedule_block_id?: string | null;
           seq?: number;
@@ -130,6 +133,20 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "booking_sessions_block_clinic_fk";
+            columns: ["schedule_block_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "schedule_blocks";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
+            foreignKeyName: "booking_sessions_booking_clinic_fk";
+            columns: ["booking_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "bookings";
+            referencedColumns: ["id", "clinic_id"];
+          },
           {
             foreignKeyName: "booking_sessions_booking_id_fkey";
             columns: ["booking_id"];
@@ -145,11 +162,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "booking_sessions_member_clinic_fk";
+            columns: ["member_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "clinic_members";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
             foreignKeyName: "booking_sessions_member_id_fkey";
             columns: ["member_id"];
             isOneToOne: false;
             referencedRelation: "clinic_members";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_sessions_room_clinic_fk";
+            columns: ["room_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "rooms";
+            referencedColumns: ["id", "clinic_id"];
           },
           {
             foreignKeyName: "booking_sessions_room_id_fkey";
@@ -244,6 +275,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "bookings_nominated_clinic_fk";
+            columns: ["nominated_member_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "clinic_members";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
             foreignKeyName: "bookings_nominated_member_id_fkey";
             columns: ["nominated_member_id"];
             isOneToOne: false;
@@ -251,11 +289,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "bookings_patient_clinic_fk";
+            columns: ["patient_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "patients";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
             foreignKeyName: "bookings_patient_id_fkey";
             columns: ["patient_id"];
             isOneToOne: false;
             referencedRelation: "patients";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookings_service_clinic_fk";
+            columns: ["service_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "services";
+            referencedColumns: ["id", "clinic_id"];
           },
           {
             foreignKeyName: "bookings_service_id_fkey";
@@ -459,6 +511,7 @@ export type Database = {
       };
       notifications: {
         Row: {
+          attempts: number;
           booking_id: string | null;
           clinic_id: string;
           created_at: string;
@@ -472,6 +525,7 @@ export type Database = {
           status: string;
         };
         Insert: {
+          attempts?: number;
           booking_id?: string | null;
           clinic_id: string;
           created_at?: string;
@@ -485,6 +539,7 @@ export type Database = {
           status?: string;
         };
         Update: {
+          attempts?: number;
           booking_id?: string | null;
           clinic_id?: string;
           created_at?: string;
@@ -624,6 +679,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "questionnaire_responses_booking_clinic_fk";
+            columns: ["booking_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "bookings";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
             foreignKeyName: "questionnaire_responses_booking_id_fkey";
             columns: ["booking_id"];
             isOneToOne: false;
@@ -636,6 +698,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "clinics";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "questionnaire_responses_template_clinic_fk";
+            columns: ["template_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "questionnaire_templates";
+            referencedColumns: ["id", "clinic_id"];
           },
           {
             foreignKeyName: "questionnaire_responses_template_id_fkey";
@@ -769,11 +838,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "schedule_blocks_member_clinic_fk";
+            columns: ["member_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "clinic_members";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
             foreignKeyName: "schedule_blocks_member_id_fkey";
             columns: ["member_id"];
             isOneToOne: false;
             referencedRelation: "clinic_members";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "schedule_blocks_room_clinic_fk";
+            columns: ["room_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "rooms";
+            referencedColumns: ["id", "clinic_id"];
           },
           {
             foreignKeyName: "schedule_blocks_room_id_fkey";
@@ -870,6 +953,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "services_category_clinic_fk";
+            columns: ["category_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "service_categories";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
             foreignKeyName: "services_category_id_fkey";
             columns: ["category_id"];
             isOneToOne: false;
@@ -889,6 +979,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "questionnaire_templates";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "services_template_clinic_fk";
+            columns: ["questionnaire_template_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "questionnaire_templates";
+            referencedColumns: ["id", "clinic_id"];
           },
         ];
       };
@@ -920,11 +1017,25 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "staff_service_assignments_member_clinic_fk";
+            columns: ["member_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "clinic_members";
+            referencedColumns: ["id", "clinic_id"];
+          },
+          {
             foreignKeyName: "staff_service_assignments_member_id_fkey";
             columns: ["member_id"];
             isOneToOne: false;
             referencedRelation: "clinic_members";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_service_assignments_service_clinic_fk";
+            columns: ["service_id", "clinic_id"];
+            isOneToOne: false;
+            referencedRelation: "services";
+            referencedColumns: ["id", "clinic_id"];
           },
           {
             foreignKeyName: "staff_service_assignments_service_id_fkey";
@@ -976,7 +1087,21 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      cancel_booking: {
+        Args: { p_booking_id: string; p_clinic_id: string; p_reason?: string };
+        Returns: undefined;
+      };
+      reschedule_booking: {
+        Args: {
+          p_booking_id: string;
+          p_clinic_id: string;
+          p_expected_status: string;
+          p_member_id: string;
+          p_room_id: string;
+          p_sessions: Json;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

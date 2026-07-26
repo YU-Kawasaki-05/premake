@@ -58,6 +58,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(10, 11),
+      occupied_range: range(10, 11),
     });
     expect(e1).toBeNull();
 
@@ -70,6 +71,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(10, 11), // 完全重複
+      occupied_range: range(10, 11),
     });
     expect(e2?.code).toBe("23P01");
   });
@@ -86,6 +88,7 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
         member_id: NURSE_1,
         room_id: ROOM_1,
         time_range: range(14, 15),
+        occupied_range: range(14, 15),
       })
       .select("id")
       .single();
@@ -104,8 +107,74 @@ describe.skipIf(!enabled)("予約セッションの二重取り防止(EXCLUDE)",
       member_id: NURSE_1,
       room_id: ROOM_1,
       time_range: range(14, 15),
+      occupied_range: range(14, 15),
     });
     expect(e2).toBeNull();
+  });
+
+  it("cancel_booking RPC がヘッダとセッションを原子的にキャンセルし枠を解放する(BUG-03)", async () => {
+    const b1 = await makeBooking();
+    const { error: e1 } = await admin.from("booking_sessions").insert({
+      clinic_id: CLINIC,
+      booking_id: b1,
+      seq: 1,
+      kind: "procedure",
+      member_id: NURSE_1,
+      room_id: ROOM_1,
+      time_range: range(16, 17),
+      occupied_range: range(16, 17),
+    });
+    expect(e1).toBeNull();
+
+    const { error: rpcErr } = await admin.rpc("cancel_booking", {
+      p_booking_id: b1,
+      p_clinic_id: CLINIC,
+      p_reason: "テスト取消",
+    });
+    expect(rpcErr).toBeNull();
+
+    // ヘッダは cancelled + 理由・時刻が入る
+    const { data: header } = await admin
+      .from("bookings")
+      .select("status, cancel_reason, cancelled_at")
+      .eq("id", b1)
+      .single();
+    expect(header?.status).toBe("cancelled");
+    expect(header?.cancel_reason).toBe("テスト取消");
+    expect(header?.cancelled_at).not.toBeNull();
+
+    // セッションも cancelled に解放されている(枠ロックが残らない)
+    const { data: sessions } = await admin
+      .from("booking_sessions")
+      .select("status")
+      .eq("booking_id", b1);
+    expect(sessions?.every((s) => s.status === "cancelled")).toBe(true);
+
+    // 解放された枠を別予約で再取得できる
+    const b2 = await makeBooking();
+    const { error: e2 } = await admin.from("booking_sessions").insert({
+      clinic_id: CLINIC,
+      booking_id: b2,
+      seq: 1,
+      kind: "procedure",
+      member_id: NURSE_1,
+      room_id: ROOM_1,
+      time_range: range(16, 17),
+      occupied_range: range(16, 17),
+    });
+    expect(e2).toBeNull();
+  });
+
+  it("cancel_booking RPC は他クリニック ID ではロールバックし予約を変更しない(BUG-03 テナント安全性)", async () => {
+    const b1 = await makeBooking();
+    const { error } = await admin.rpc("cancel_booking", {
+      p_booking_id: b1,
+      p_clinic_id: "10000000-0000-4000-a000-999999999999", // 存在しない/不一致クリニック
+    });
+    expect(error).not.toBeNull(); // no_data_found で例外 → トランザクション全体がロールバック
+
+    const { data } = await admin.from("bookings").select("status").eq("id", b1).single();
+    expect(data?.status).toBe("confirmed"); // キャンセルされていない
   });
 
   it("booking_no がトリガ/デフォルトで自動採番される", async () => {

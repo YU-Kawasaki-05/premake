@@ -40,7 +40,9 @@ export default async function LedgerPage(props: PageProps<"/[clinic]">) {
     supabase
       .from("booking_sessions")
       .select(
-        "id, seq, kind, label, member_id, room_id, time_range, status, booking:bookings(id, status, booking_no, notes, patient:patients(name), service:services(name))",
+        // 複合 FK(20260722000005)追加で bookings/patients/services への関係が各2本になり
+        // PostgREST の埋め込みが曖昧になるため、単一 FK を明示指定して従来の解決先を保つ
+        "id, seq, kind, label, member_id, room_id, time_range, status, booking:bookings!booking_sessions_booking_id_fkey(id, status, booking_no, notes, patient:patients!bookings_patient_id_fkey(name), service:services!bookings_service_id_fkey(name))",
       )
       .eq("clinic_id", clinic.id)
       .overlaps("time_range", rangeLit)

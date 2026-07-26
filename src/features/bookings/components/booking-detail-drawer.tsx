@@ -2,6 +2,7 @@
 
 // @implements v2-11 予約変更・キャンセル / v2-12 ステータス遷移
 
+import { formatInTimeZone } from "date-fns-tz";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -20,22 +21,35 @@ import {
   nextStatuses,
 } from "@/features/bookings/booking-status";
 import { parseRange } from "@/features/schedule/week";
+import { TIME_ZONE } from "@/lib/datetime";
+import { BookingRescheduleDialog } from "./booking-reschedule-dialog";
 import type { LedgerSession } from "./day-ledger";
+
+type Option = { id: string; name: string };
+type MemberOption = Option & { bookable: boolean };
+
+// リスケ可能なステータス(来院以降・完了・キャンセルは変更不可)
+const RESCHEDULABLE: BookingStatus[] = ["requested", "confirmed"];
 
 export function BookingDetailDrawer({
   slug,
   session,
   memberName,
+  rooms,
+  members,
   onClose,
 }: {
   slug: string;
   session: LedgerSession | null;
   memberName: string;
+  rooms: Option[];
+  members: MemberOption[];
   onClose: () => void;
 }) {
   const booking = session?.booking ?? null;
   const [pending, startTransition] = useTransition();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [rescheduling, setRescheduling] = useState(false);
 
   const [cancelState, cancelAction, cancelPending] = useActionState<BookingActionState, FormData>(
     cancelBooking.bind(null, slug),
@@ -56,6 +70,9 @@ export function BookingDetailDrawer({
   const status = booking.status as BookingStatus;
   const range = parseRange(session.time_range);
   const transitions = nextStatuses(status);
+  const canReschedule = RESCHEDULABLE.includes(status);
+  const rsDefaultDate = range ? formatInTimeZone(range.start, TIME_ZONE, "yyyy-MM-dd") : "";
+  const rsDefaultTime = range ? jstHhmm(range.start) : "";
 
   function changeStatus(next: BookingStatus) {
     startTransition(async () => {
@@ -120,6 +137,14 @@ export function BookingDetailDrawer({
             </div>
           )}
 
+          {canReschedule && (
+            <div className="border-t border-border pt-4">
+              <Button variant="outline" size="sm" onClick={() => setRescheduling(true)}>
+                予約を変更
+              </Button>
+            </div>
+          )}
+
           {status !== "cancelled" && status !== "done" && (
             <div className="border-t border-border pt-4">
               {confirmingCancel ? (
@@ -154,6 +179,26 @@ export function BookingDetailDrawer({
           )}
         </div>
       </SheetContent>
+
+      {canReschedule && (
+        <BookingRescheduleDialog
+          key={bookingId}
+          slug={slug}
+          bookingId={bookingId}
+          open={rescheduling}
+          onOpenChange={setRescheduling}
+          rooms={rooms}
+          members={members}
+          defaultDate={rsDefaultDate}
+          defaultTime={rsDefaultTime}
+          defaultMemberId={session.member_id}
+          defaultRoomId={session.room_id}
+          onRescheduled={() => {
+            setRescheduling(false);
+            onClose();
+          }}
+        />
+      )}
     </Sheet>
   );
 }

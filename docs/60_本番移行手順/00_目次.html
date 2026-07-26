@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>総合案内・目次 — premake 本番移行手順</title>
+<style>
+*{box-sizing:border-box;}
+:root{
+  --paper:#fbfaf8; --surface:#ffffff; --surface-2:#f4f2ee;
+  --ink:#1b201e; --ink-soft:#4c534f; --ink-faint:#8a8f8b;
+  --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#e9f2ee;
+  --bronze:#8a6d43;
+  --line:#e5e3de; --line-soft:#efedE8;
+  --ok:#1d5c4d; --ok-bg:#e7f2ec; --ok-line:#bfe0d1;
+  --warn:#8a5a00; --warn-bg:#fbf0d6; --warn-line:#e6cf94;
+  --crit:#a5342a; --crit-bg:#fae9e6; --crit-line:#eab6ad;
+  --info:#1e5a8a; --info-bg:#e7f0f8; --info-line:#b6d2ea;
+  --tip:#5a3d8a; --tip-bg:#f0ebf8; --tip-line:#cabce6;
+  --sans:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  line-height:1.85;font-size:16.5px;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px;}
+
+/* ヘッダ */
+header.top{background:var(--primary-strong);color:#fff;}
+header.top .bar{display:flex;align-items:center;justify-content:space-between;
+  min-height:52px;padding:8px 0;gap:12px;flex-wrap:wrap;}
+header.top a{color:#eaf2ef;text-decoration:none;font-size:14px;}
+header.top a:hover{text-decoration:underline;}
+.brand{font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:9px;font-size:15px;}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:#7bbda8;flex:none;}
+
+/* ヒーロー */
+.hero{padding:44px 0 30px;border-bottom:1px solid var(--line);}
+.stepno{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);
+  font-weight:700;margin:0 0 12px;}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(25px,4.5vw,36px);line-height:1.3;
+  margin:0 0 14px;letter-spacing:.01em;}
+.lede{font-size:17px;color:var(--ink-soft);max-width:64ch;margin:0;}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px;}
+.chip{font-size:12.5px;padding:5px 12px;border-radius:999px;background:var(--surface-2);
+  color:var(--ink-soft);border:1px solid var(--line);}
+.chip.time{background:var(--primary-soft);color:var(--primary-strong);border-color:transparent;font-weight:600;}
+
+/* セクション */
+section{padding:30px 0;border-bottom:1px solid var(--line-soft);}
+h2{font-family:var(--serif);font-size:23px;font-weight:600;margin:6px 0 14px;line-height:1.35;
+  padding-top:4px;}
+h3{font-size:17.5px;font-weight:700;margin:26px 0 10px;color:var(--primary-strong);}
+p{margin:12px 0;}
+a{color:var(--primary);}
+strong{font-weight:700;}
+.muted{color:var(--ink-soft);}
+.small{font-size:14px;}
+
+/* バッジ(誰向けの手順か) */
+.badge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:6px;
+  vertical-align:middle;margin-left:6px;letter-spacing:.02em;}
+.badge.dev{background:#e7edf8;color:#274b86;border:1px solid #c3d3ee;}
+.badge.op{background:var(--primary-soft);color:var(--primary-strong);border:1px solid #c3e0d4;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 0;font-size:13.5px;color:var(--ink-soft);}
+
+/* 手順リスト */
+ol.steps{counter-reset:st;list-style:none;padding:0;margin:16px 0;}
+ol.steps>li{position:relative;padding:2px 0 16px 46px;margin:0;}
+ol.steps>li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:0;
+  width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-weight:700;
+  font-size:14px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);}
+ol.steps>li::after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:2px;
+  background:var(--line);}
+ol.steps>li:last-child::after{display:none;}
+ol.steps>li .st-title{font-weight:700;display:block;margin-bottom:2px;}
+
+/* 通常の箇条書き */
+ul.disc{margin:12px 0;padding-left:22px;}
+ul.disc li{margin:6px 0;}
+
+/* コールアウト */
+.callout{border:1px solid var(--line);border-left-width:5px;border-radius:10px;
+  padding:14px 16px;margin:18px 0;background:var(--surface);}
+.callout .ct{font-weight:700;display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:15px;}
+.callout p{margin:6px 0;}
+.callout .ic{font-size:17px;line-height:1;}
+.callout.crit{border-color:var(--crit-line);border-left-color:var(--crit);background:var(--crit-bg);}
+.callout.crit .ct{color:var(--crit);}
+.callout.warn{border-color:var(--warn-line);border-left-color:var(--warn);background:var(--warn-bg);}
+.callout.warn .ct{color:var(--warn);}
+.callout.info{border-color:var(--info-line);border-left-color:var(--info);background:var(--info-bg);}
+.callout.info .ct{color:var(--info);}
+.callout.ok{border-color:var(--ok-line);border-left-color:var(--ok);background:var(--ok-bg);}
+.callout.ok .ct{color:var(--ok);}
+.callout.tip{border-color:var(--tip-line);border-left-color:var(--tip);background:var(--tip-bg);}
+.callout.tip .ct{color:var(--tip);}
+
+/* コードブロック */
+figure.code{margin:16px 0;}
+figure.code pre{background:#151a18;color:#eef3f0;border-radius:10px 10px 0 0;margin:0;
+  padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:14px;line-height:1.7;}
+figure.code pre.single{border-radius:10px;}
+figure.code code{font-family:var(--mono);white-space:pre;}
+figure.code figcaption{background:var(--surface-2);border:1px solid var(--line);border-top:none;
+  border-radius:0 0 10px 10px;padding:9px 14px;font-size:13.5px;color:var(--ink-soft);}
+figure.code figcaption b{color:var(--ink);}
+code.inline{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;
+  padding:1px 6px;font-family:var(--mono);font-size:.88em;color:var(--primary-strong);
+  word-break:break-word;}
+
+/* テーブル */
+.tablewrap{overflow-x:auto;margin:16px 0;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--surface);}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+th{background:var(--surface-2);font-weight:700;font-size:13.5px;}
+td code{font-family:var(--mono);font-size:13px;}
+tr:nth-child(even) td{background:#fbfaf7;}
+
+/* チェックリスト */
+ul.check{list-style:none;padding:0;margin:14px 0;}
+ul.check li{margin:0;border-bottom:1px dashed var(--line);}
+ul.check li:last-child{border-bottom:none;}
+ul.check label{display:flex;gap:11px;align-items:flex-start;padding:11px 4px;cursor:pointer;}
+ul.check input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--primary);}
+ul.check .ck-body{flex:1;}
+ul.check .ck-id{font-family:var(--mono);font-size:12px;color:var(--bronze);font-weight:700;}
+ul.check .ck-t{font-weight:600;}
+ul.check .ck-d{font-size:13.5px;color:var(--ink-soft);}
+
+/* 用語集 */
+dl.glossary{margin:14px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+dl.glossary>div{padding:12px 16px;border-bottom:1px solid var(--line-soft);background:var(--surface);}
+dl.glossary>div:last-child{border-bottom:none;}
+dl.glossary dt{font-weight:700;color:var(--primary-strong);margin:0 0 3px;}
+dl.glossary dd{margin:0;color:var(--ink-soft);font-size:14.5px;}
+
+/* 目次カード */
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin:20px 0;}
+a.card{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+  border-radius:12px;padding:15px 17px;background:var(--surface);transition:border-color .12s;}
+a.card:hover{border-color:var(--primary);}
+a.card .cnum{font-family:var(--mono);font-size:12.5px;color:var(--bronze);font-weight:700;letter-spacing:.05em;}
+a.card .ctitle{font-weight:700;font-size:17px;margin:3px 0 4px;color:var(--primary-strong);}
+a.card .cdesc{font-size:14px;color:var(--ink-soft);margin:0;}
+a.card .ctime{font-size:12.5px;color:var(--ink-faint);margin-top:6px;display:block;}
+
+/* フッタ ナビ */
+nav.pager{display:flex;justify-content:space-between;gap:12px;margin:30px 0;flex-wrap:wrap;}
+nav.pager a{flex:1;min-width:210px;text-decoration:none;border:1px solid var(--line);border-radius:10px;
+  padding:13px 15px;background:var(--surface);color:var(--ink);}
+nav.pager a:hover{border-color:var(--primary);}
+nav.pager .dir{font-size:12px;color:var(--ink-faint);display:block;}
+nav.pager .nm{font-weight:700;color:var(--primary-strong);}
+nav.pager a.next{text-align:right;}
+footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align:center;}
+
+/* 印刷 */
+@media print{
+  body{background:#fff;color:#000;font-size:11.5pt;}
+  header.top,nav.pager{display:none;}
+  section{border-color:#ccc;page-break-inside:avoid;}
+  .callout{page-break-inside:avoid;}
+  figure.code pre{background:#f2f2f2;color:#000;border:1px solid #999;}
+  figure.code figcaption{background:#fff;}
+  a{color:#000;text-decoration:none;}
+  a.card,nav.pager a{border-color:#ccc;}
+  h1,h2{page-break-after:avoid;}
+}
+@media (max-width:560px){ body{font-size:16px;} .hero{padding:32px 0 22px;} }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="bar"><span class="brand"><span class="dot"></span>premake 本番移行手順書</span><a href="00_目次.html">&#9776; 目次へ戻る</a></div></div></header>
+<div class="hero"><div class="wrap"><p class="stepno">はじめにお読みください</p><h1>総合案内・目次</h1><p class="lede">premake を本番環境で使い始めるまでの、非エンジニア向け手順書です。上から順番に進めてください。</p><div class="meta"><span class="chip">対象: クリニック担当者・発注者</span><span class="chip time">合計 半日〜1日</span></div></div></div>
+<div class="wrap"><section><h2>この手順書について</h2><p>この手順書は、<strong>premake(プリメイク)</strong>という「クリニックの予約・業務管理システム」を、テスト環境から<strong>本番環境(実際にクリニックで使う状態)</strong>へ移すための手順をまとめたものです。</p><p><strong>エンジニアリングにくわしくない方でも、上から順番どおりに進めれば実行できる</strong>ことを目指して書いています。専門用語には必ずやさしい説明を添え、入力するコマンド(パソコンへの命令文)には「これは何をするものか」を日本語で書いています。</p><div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>まず最初に知っておいてほしい、最も重要な注意</p><p>本番のデータベースには、テスト用の初期データ(seed)を<strong>絶対に流し込まないでください</strong>。テスト用データには「誰でも知っているパスワード」の管理者アカウントが含まれており、これを本番に入れると<strong>外部から不正にログインできる裏口(バックドア)</strong>ができてしまいます。詳しくは <a href="02_本番データベース構築.html">STEP 2</a> で必ず確認してください。</p></div></section><section><h2>premake とは(30秒で)</h2><p>premake は、1つのクリニック向けの、<strong>自由診療(保険がきかない施術)の予約と院内業務を管理するシステム</strong>です。今回の導入先では、主に<strong>看護師(受付)がパソコンやスマホで予約を登録・管理</strong>するために使います。クレジットカード決済の機能はありません。</p><p>中心となる業務の流れはシンプルです:</p><ul class="disc"><li>看護師が予約を作成する(電話予約を台帳に入れる、など)</li><li>クリニック側が内容を台帳で確認する</li><li>来院当日に「受付(チェックイン)」→「施術完了」と状態を進める</li><li>必要ならキャンセルする(枠が自動で空きに戻る)</li></ul></section><section><h2>本番移行の全体像</h2><p>「本番移行」とは、下の3つを用意し、つなぎ合わせる作業です。むずかしく見えますが、無料〜低額のクラウドサービスを組み合わせるだけで、サーバーを自前で持つ必要はありません。</p><div class="tablewrap"><table><thead><tr><th>役割</th><th>使うサービス</th><th>たとえるなら</th></tr></thead><tbody><tr><td>データの保管庫<br>(患者・予約・スタッフ)</td><td>Supabase(スーパーベース)</td><td>鍵つきの書類キャビネット</td></tr><tr><td>アプリ本体の公開</td><td>Vercel(バーセル)</td><td>お店(アプリ)を出す土地と建物</td></tr><tr><td>メールの送信</td><td>Resend(リゼンド)</td><td>郵便局</td></tr></tbody></table></div></section><section><h2>所要時間の目安</h2><p>初めての方で、合計 <strong>半日〜1日</strong> ほどを見込んでください。途中でサービス側の「メールで確認」「反映まで数分待つ」といった待ち時間が入ります。あわてず一つずつ進めれば大丈夫です。</p></section><section><h2>作業する人の役割について</h2><p>ほとんどの手順はクリニックの担当者ご自身で進められます。ただし、一部だけ<strong>開発担当者(このアプリを作った人・エンジニア)にお願いした方が安全な技術的作業</strong>があります。各手順の見出しの横に、次のバッジで「誰向けか」を示しています。</p><div class="legend"><span><span class="badge op">クリニック担当者</span> 画面をクリックして進める作業</span><span><span class="badge dev">開発担当者</span> コマンドやコード編集をともなう作業</span></div><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>開発担当者に頼む作業は少しだけです</p><p>具体的には「データベースの設計図の反映(STEP 2)」「メール送信元をクリニック名に変える(STEP 4)」の2か所が中心です。その他は画面操作で完結します。頼む相手がいない場合は、この手順書のコマンド部分をそのまま渡してください。</p></div></section><section><h2>始める前に決めておくこと</h2><div class="callout warn"><p class="ct"><span class="ic">&#9998;</span>判断ポイント: 患者向けの「Web予約ページ」を最初から公開しますか?</p><p>premake には、患者さん自身がインターネットから予約できる公開ページの機能もあります。しかし、<strong>初回導入では『看護師が予約を入れる院内運用のみ』で始めることを強くおすすめします</strong>(公開予約は初期状態でオフ)。公開ページを出すには、法定ページの弁護士確認・不正対策など追加の準備が必要になるためです。詳細は <a href="09_未対応事項と注意点.html">未対応事項と注意点</a> を参照してください。</p></div><p>また、施術前の<strong>問診(既往歴・アレルギー等)は、現状は紙で運用する前提</strong>です(オンライン問診機能は今回のリリースには含まれません)。</p></section><section><h2>手順一覧(必ず上から順番に)</h2><div class="callout warn"><p class="ct"><span class="ic">&#8681;</span>順番が大切です</p><p>各 STEP は前の STEP の結果を使います。飛ばさず、<strong>STEP 1 から順番に</strong>実行してください。最後の「未対応事項と注意点」は、公開前に<strong>必ず</strong>お読みください。</p></div><div class="cards"><a class="card" href="01_事前準備と必要なアカウント.html"><span class="cnum">STEP 1</span><div class="ctitle">事前準備と必要なアカウント</div><p class="cdesc">用語のやさしい説明と、作業前に用意するもの(Supabase・Vercel・Resend のアカウント、クレジットカード、ドメインの要否)を確認します。</p><span class="ctime">目安: 約30分</span></a><a class="card" href="02_本番データベース構築.html"><span class="cnum">STEP 2</span><div class="ctitle">本番データベース構築</div><p class="cdesc">患者や予約のデータを保管する本番用データベース(Supabase)を東京リージョンに作り、設計図を反映します。最重要の危険警告があります。</p><span class="ctime">目安: 約40分</span></a><a class="card" href="03_アプリのデプロイと環境変数.html"><span class="cnum">STEP 3</span><div class="ctitle">アプリのデプロイと環境変数</div><p class="cdesc">アプリをインターネットに公開(Vercel)し、動作に必要な設定値(環境変数)を登録します。</p><span class="ctime">目安: 約40分</span></a><a class="card" href="04_メール送信の設定.html"><span class="cnum">STEP 4</span><div class="ctitle">メール送信の設定</div><p class="cdesc">予約確認などのメールを送るための設定(Resend)。ドメイン認証と、送信元をクリニック名にする方法を扱います。</p><span class="ctime">目安: 約30分</span></a><a class="card" href="05_定期実行(リマインダー)の確認.html"><span class="cnum">STEP 5</span><div class="ctitle">定期実行(リマインダー)の確認</div><p class="cdesc">前日リマインダーやメール送信を自動で動かす仕組み(定期実行)が正しく動くかを確認します。</p><span class="ctime">目安: 約20分</span></a><a class="card" href="06_初期設定とデータ登録.html"><span class="cnum">STEP 6</span><div class="ctitle">初期設定とデータ登録</div><p class="cdesc">院長ログイン → 看護師の招待 → メニュー・部屋・担当・施術枠の登録まで。看護師が予約を始められる状態にします。</p><span class="ctime">目安: 約60分</span></a><a class="card" href="07_公開前の動作確認チェックリスト.html"><span class="cnum">STEP 7</span><div class="ctitle">公開前の動作確認チェックリスト</div><p class="cdesc">実際の運用を始める前に、ログイン・予約作成・通知などの中核フローが通るかをチェックボックスで確認します。</p><span class="ctime">目安: 約60分</span></a><a class="card" href="08_運用開始後の運用とバックアップ.html"><span class="cnum">STEP 8</span><div class="ctitle">運用開始後の運用とバックアップ</div><p class="cdesc">毎日のバックアップ、手動エクスポート、障害時の連絡先、パスワード管理など、始めた後に続ける作業です。</p><span class="ctime">目安: 随時</span></a><a class="card" href="09_未対応事項と注意点.html"><span class="cnum">重要</span><div class="ctitle">未対応事項と注意点</div><p class="cdesc">今は使えない/使わない機能と、本番前に必ず対応すべき事項を正直に列挙します。誤解を防ぐため最後に必ずお読みください。</p><span class="ctime">目安: 約15分</span></a></div></section></div>
+<div class="wrap"><nav class="pager"><span></span><a class="next" href="01_事前準備と必要なアカウント.html"><span class="dir">次へ &#8594;</span><span class="nm">STEP1 事前準備</span></a></nav></div>
+<footer class="foot"><div class="wrap">premake — クリニック予約・業務管理システム ／ 本番移行手順書。この手順書はブラウザで開いて読めます。順番に実行してください。</div></footer>
+</body>
+</html>

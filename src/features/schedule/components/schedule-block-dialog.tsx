@@ -34,14 +34,12 @@ export function ScheduleBlockDialog({
   members,
   rooms,
   currentMemberId,
-  isOwner,
   defaultDate,
 }: {
   slug: string;
   members: Option[];
   rooms: Option[];
   currentMemberId: string;
-  isOwner: boolean;
   defaultDate: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -88,8 +86,9 @@ export function ScheduleBlockDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="sb-member">担当スタッフ</Label>
-              <Select name="memberId" defaultValue={isOwner ? undefined : currentMemberId}>
-                <SelectTrigger id="sb-member" className="w-full" disabled={!isOwner}>
+              {/* No.35: メンバー全員が任意スタッフの枠を作成できる。既定は自分だが変更可。 */}
+              <Select name="memberId" defaultValue={currentMemberId}>
+                <SelectTrigger id="sb-member" className="w-full">
                   <SelectValue placeholder="選択" />
                 </SelectTrigger>
                 <SelectContent>

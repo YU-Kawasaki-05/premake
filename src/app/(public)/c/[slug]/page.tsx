@@ -9,7 +9,17 @@ const DOW_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 export async function generateMetadata(props: PageProps<"/c/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const clinic = await getPublicClinic(slug);
-  return { title: clinic ? `${clinic.name} | ご予約` : "ご予約" };
+  if (!clinic) return { title: { absolute: "ご予約" } };
+  const description = `${clinic.name}のご予約ページ。診療メニューのご確認とご予約はこちらから。`;
+  return {
+    title: { absolute: `${clinic.name} | ご予約` },
+    description,
+    openGraph: {
+      type: "website",
+      title: clinic.name,
+      description,
+    },
+  };
 }
 
 // @implements v2-19 クリニック公開ページ(医療広告: 提供主体明示・症例なしの最小構成)

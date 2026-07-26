@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PatientFormDialog } from "@/features/patients/components/patient-form-dialog";
+import { recordAudit } from "@/lib/audit";
 import { requireMember } from "@/lib/auth";
 import { formatDate } from "@/lib/datetime";
 import { sanitizeSearchTerm } from "@/lib/search";
@@ -14,7 +15,7 @@ export const metadata: Metadata = { title: "患者" };
 export default async function PatientsPage(props: PageProps<"/[clinic]/patients">) {
   const { clinic: slug } = await props.params;
   const sp = await props.searchParams;
-  const { clinic } = await requireMember(slug);
+  const { user, clinic } = await requireMember(slug);
   const supabase = await createClient();
 
   const rawQ = typeof sp.q === "string" ? sp.q.trim() : "";
@@ -27,6 +28,16 @@ export default async function PatientsPage(props: PageProps<"/[clinic]/patients"
     .limit(50);
   if (q) query = query.or(`name.ilike.%${q}%,kana.ilike.%${q}%,phone.ilike.%${q}%`);
   const { data: patients } = await query;
+
+  // @implements v2-15 / v2-04 患者一覧・検索の閲覧監査(要配慮 PII の閲覧ログ)
+  await recordAudit({
+    clinicId: clinic.id,
+    actorUserId: user.id,
+    actorType: "member",
+    action: q ? "patient.search" : "patient.list.view",
+    targetType: "patient",
+    diff: { count: patients?.length ?? 0, query: q || null },
+  });
 
   return (
     <div className="max-w-3xl">

@@ -5,6 +5,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { enqueueNotification } from "@/features/notifications/enqueue";
+import { parseRange } from "@/features/schedule/week";
 import type { SessionStep } from "@/features/services/session-template";
 import { recordAudit } from "@/lib/audit";
 import { requireMember } from "@/lib/auth";
@@ -51,6 +52,27 @@ const BOOKING_STATUSES = [
   "no_show",
 ] as const;
 
+/**
+ * BC-NEW-05: yyyy-mm-dd + HH:mm が JST の実在日時か検証する。
+ * regex を通っても暦上不正な値(例: 2026-13-40)は new Date() が Invalid になり、
+ * jstDateTimeToUtcISO の toISOString() が RangeError で落ちる。ここで事前に弾く。
+ */
+function isRealJstDateTime(date: string, time: string): boolean {
+  const [y, mo, da] = date.split("-").map(Number);
+  const [h, mi] = time.split(":").map(Number);
+  const ms = Date.parse(`${date}T${time}:00+09:00`);
+  if (Number.isNaN(ms)) return false;
+  // UTC インスタンス + 9h の UTC 各成分 = JST の壁時計。入力成分と一致すれば実在日時。
+  const jst = new Date(ms + 9 * 60 * 60 * 1000);
+  return (
+    jst.getUTCFullYear() === y &&
+    jst.getUTCMonth() + 1 === mo &&
+    jst.getUTCDate() === da &&
+    jst.getUTCHours() === h &&
+    jst.getUTCMinutes() === mi
+  );
+}
+
 const createSchema = z
   .object({
     // 患者: 既存 or 新規のいずれか
@@ -68,6 +90,10 @@ const createSchema = z
   .refine((v) => v.patientId || (v.newPatientName && v.newPatientName.trim().length > 0), {
     message: "患者を選択するか、新規患者名を入力してください",
     path: ["patientId"],
+  })
+  .refine((v) => isRealJstDateTime(v.startDate, v.startTime), {
+    message: "日付が不正です",
+    path: ["startDate"],
   });
 
 export async function createBooking(
@@ -195,6 +221,27 @@ export async function createBooking(
     return { error: "予約の作成に失敗しました" };
   }
 
+  // BC-NEW-04: 各セッションが収まる open な施術枠(schedule_block)を探して紐づける。
+  // v2-10「枠外への強制作成も可」を維持するため、見つからなければ null のまま作成継続。
+  const { data: openBlocks } = await supabase
+    .from("schedule_blocks")
+    .select("id, time_range")
+    .eq("clinic_id", clinic.id)
+    .eq("member_id", d.memberId)
+    .eq("room_id", d.roomId)
+    .eq("block_type", "open")
+    .overlaps("time_range", rangeLiteral(laid[0].startISO, laid[laid.length - 1].occupiedEndISO));
+
+  const blockForSession = (sStartISO: string, sEndISO: string): string | null => {
+    const s = Date.parse(sStartISO);
+    const e = Date.parse(sEndISO);
+    for (const b of openBlocks ?? []) {
+      const r = parseRange(b.time_range as string);
+      if (r && Date.parse(r.start) <= s && e <= Date.parse(r.end)) return b.id;
+    }
+    return null;
+  };
+
   // セッション作成(EXCLUDE 制約で部屋/スタッフ重複はエラー)
   const sessionRows = laid.map((s) => ({
     clinic_id: clinic.id,
@@ -205,6 +252,8 @@ export async function createBooking(
     member_id: d.memberId,
     room_id: d.roomId,
     time_range: rangeLiteral(s.startISO, s.endISO),
+    occupied_range: rangeLiteral(s.startISO, s.occupiedEndISO),
+    schedule_block_id: blockForSession(s.startISO, s.occupiedEndISO),
   }));
   const { error: sErr } = await supabase.from("booking_sessions").insert(sessionRows);
   if (sErr) {
@@ -250,6 +299,159 @@ export async function createBooking(
   return { bookingId: booking.id };
 }
 
+const rescheduleSchema = z
+  .object({
+    bookingId: z.uuid(),
+    memberId: z.uuid("担当を選択してください"),
+    roomId: z.uuid("部屋を選択してください"),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日付が不正です"),
+    startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "時刻が不正です"),
+  })
+  .refine((v) => isRealJstDateTime(v.startDate, v.startTime), {
+    message: "日付が不正です",
+    path: ["startDate"],
+  });
+
+// リスケ可能なステータス(来院以降・完了・キャンセルは変更不可)
+const RESCHEDULABLE = new Set<BookingStatus>(["requested", "confirmed"]);
+
+// @implements v2-11 予約変更(リスケ): 開始日時 + 担当・部屋の一括変更(全 scheduled セッションに適用)
+export async function rescheduleBooking(
+  slug: string,
+  _prev: BookingActionState,
+  formData: FormData,
+): Promise<BookingActionState> {
+  const { user, clinic } = await requireMember(slug);
+
+  const parsed = rescheduleSchema.safeParse({
+    bookingId: formData.get("bookingId"),
+    memberId: formData.get("memberId"),
+    roomId: formData.get("roomId"),
+    startDate: formData.get("startDate"),
+    startTime: formData.get("startTime"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "入力内容を確認してください" };
+  }
+  const d = parsed.data;
+
+  const startISO = jstDateTimeToUtcISO(d.startDate, d.startTime);
+  if (Date.parse(startISO) < Date.now()) {
+    return { error: "過去の日時には変更できません" };
+  }
+
+  const supabase = await createClient();
+
+  // 予約ヘッダ + 現行 scheduled セッション(旧値=監査 diff 用)を取得
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select(
+      "status, service_id, sessions:booking_sessions!booking_sessions_booking_id_fkey(seq, time_range, member_id, room_id, status)",
+    )
+    .eq("id", d.bookingId)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  if (!booking) return { error: "予約が見つかりません" };
+  if (!RESCHEDULABLE.has(booking.status as BookingStatus)) {
+    return { error: "この予約は変更できません" };
+  }
+
+  // メニュー(session_template)取得 + クリニック検証
+  const { data: service } = await supabase
+    .from("services")
+    .select("session_template")
+    .eq("id", booking.service_id)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  if (!service) return { error: "メニューが見つかりません" };
+
+  const steps = service.session_template as unknown as SessionStep[];
+  if (!Array.isArray(steps) || steps.length === 0 || steps.some((s) => !(s.duration_min > 0))) {
+    return { error: "メニューのセッション構成が不正です。メニュー設定を確認してください" };
+  }
+
+  // member / room のクリニック検証(越境防止)
+  const [{ data: member }, { data: room }] = await Promise.all([
+    supabase
+      .from("clinic_members")
+      .select("id")
+      .eq("id", d.memberId)
+      .eq("clinic_id", clinic.id)
+      .maybeSingle(),
+    supabase.from("rooms").select("id").eq("id", d.roomId).eq("clinic_id", clinic.id).maybeSingle(),
+  ]);
+  if (!member) return { error: "担当スタッフが見つかりません" };
+  if (!room) return { error: "部屋が見つかりません" };
+
+  // 新開始時刻からセッションを再配置し、RPC に渡す jsonb を組み立てる
+  const laid = layoutSessions(steps, startISO);
+  const sessionsPayload = laid.map((s) => ({
+    seq: s.seq,
+    time_range: rangeLiteral(s.startISO, s.endISO),
+    occupied_range: rangeLiteral(s.startISO, s.occupiedEndISO),
+  }));
+
+  // 旧値(監査 diff)。scheduled を seq 昇順で並べ先頭を代表値にする。
+  const oldScheduled = (booking.sessions ?? [])
+    .filter((s) => s.status === "scheduled")
+    .sort((a, b) => a.seq - b.seq);
+  const oldStartISO = oldScheduled[0]
+    ? (parseRange(oldScheduled[0].time_range as string)?.start ?? null)
+    : null;
+  const oldMemberId = oldScheduled[0]?.member_id ?? null;
+  const oldRoomId = oldScheduled[0]?.room_id ?? null;
+
+  const { error } = await supabase.rpc("reschedule_booking", {
+    p_booking_id: d.bookingId,
+    p_clinic_id: clinic.id,
+    p_expected_status: booking.status,
+    p_member_id: d.memberId,
+    p_room_id: d.roomId,
+    p_sessions: sessionsPayload,
+  });
+  if (error) {
+    if (error.code === "23P01") {
+      return { error: "指定の時間帯は部屋または担当が既に埋まっています" };
+    }
+    if (error.message.includes("status changed")) {
+      return { error: "他の操作と競合しました。画面を更新してやり直してください" };
+    }
+    console.error("[bookings] reschedule failed", error);
+    return { error: "予約の変更に失敗しました" };
+  }
+
+  await recordAudit({
+    clinicId: clinic.id,
+    actorUserId: user.id,
+    actorType: "member",
+    action: "booking.reschedule",
+    targetType: "booking",
+    targetId: d.bookingId,
+    diff: {
+      from: { startISO: oldStartISO, memberId: oldMemberId, roomId: oldRoomId },
+      to: { startISO, memberId: d.memberId, roomId: d.roomId },
+    },
+  });
+
+  // 変更後の内容で患者へ通知(ゲスト予約はゲストメール優先)
+  const { data: bk } = await supabase
+    .from("bookings")
+    .select("guest_email, patient:patients!bookings_patient_id_fkey(email)")
+    .eq("id", d.bookingId)
+    .eq("clinic_id", clinic.id)
+    .maybeSingle();
+  await enqueueNotification({
+    clinicId: clinic.id,
+    bookingId: d.bookingId,
+    recipientEmail: bk?.guest_email ?? bk?.patient?.email ?? null,
+    recipientType: "patient",
+    kind: "booking_rescheduled",
+  });
+
+  revalidatePath(`/${slug}`);
+  return { ok: true };
+}
+
 const statusSchema = z.enum(BOOKING_STATUSES);
 
 export async function updateBookingStatus(
@@ -279,12 +481,19 @@ export async function updateBookingStatus(
     return { error: "この予約ではそのステータスに変更できません" };
   }
 
-  const { error } = await supabase
+  // 楽観ロック: SELECT した status を UPDATE 条件に含め、更新行数で競合を検出する。
+  // 同時実行(別の受付が承認/キャンセル)で前提が変わっていたら 0 行になる。
+  const { data: updated, error } = await supabase
     .from("bookings")
     .update({ status: parsed.data })
     .eq("id", bookingId)
-    .eq("clinic_id", clinic.id);
+    .eq("clinic_id", clinic.id)
+    .eq("status", current.status)
+    .select("id");
   if (error) return { error: "ステータスの更新に失敗しました" };
+  if (!updated || updated.length === 0) {
+    return { error: "他の操作と競合しました。画面を更新してやり直してください" };
+  }
 
   await recordAudit({
     clinicId: clinic.id,
@@ -295,6 +504,25 @@ export async function updateBookingStatus(
     targetId: bookingId,
     diff: { from: current.status, to: parsed.data },
   });
+
+  // @implements v2-23 通知(患者)。manual 承認(requested→confirmed)が最も一般的な確定経路。
+  // ここで確定メールを積まないと、院内承認した予約の確定通知が患者に届かない。
+  if (current.status === "requested" && parsed.data === "confirmed") {
+    const { data: bk } = await supabase
+      .from("bookings")
+      .select("guest_email, patient:patients!bookings_patient_id_fkey(email)")
+      .eq("id", bookingId)
+      .eq("clinic_id", clinic.id)
+      .maybeSingle();
+    await enqueueNotification({
+      clinicId: clinic.id,
+      bookingId,
+      recipientEmail: bk?.guest_email ?? bk?.patient?.email ?? null,
+      recipientType: "patient",
+      kind: "booking_confirmed",
+    });
+  }
+
   revalidatePath(`/${slug}`);
   return { ok: true };
 }
@@ -326,26 +554,28 @@ export async function cancelBooking(
     .maybeSingle();
   if (!current) return { error: "予約が見つかりません" };
   if (current.status === "done") return { error: "完了済みの予約はキャンセルできません" };
+  // BC-NEW-03(v2-12): 不来院(no_show)は終端状態。cancelled への遷移を禁止する。
+  if (current.status === "no_show") return { error: "不来院の予約はキャンセルできません" };
   if (current.status === "cancelled") return { ok: true };
 
-  // ヘッダを cancelled に、未実施セッションも cancelled にする(枠を解放)
-  const { error } = await supabase
-    .from("bookings")
-    .update({
-      status: "cancelled",
-      cancel_reason: parsed.data.reason || null,
-      cancelled_at: new Date().toISOString(),
-    })
-    .eq("id", parsed.data.bookingId)
-    .eq("clinic_id", clinic.id);
-  if (error) return { error: "キャンセルに失敗しました" };
-
-  await supabase
-    .from("booking_sessions")
-    .update({ status: "cancelled" })
-    .eq("booking_id", parsed.data.bookingId)
-    .eq("clinic_id", clinic.id)
-    .eq("status", "scheduled");
+  // ヘッダの cancelled 更新とセッション解放を単一トランザクション(RPC)で原子的に行う。
+  // 分割すると片方失敗で枠(EXCLUDE)がロックされ再予約不能になる(BUG-03)。
+  const { error } = await supabase.rpc("cancel_booking", {
+    p_booking_id: parsed.data.bookingId,
+    p_clinic_id: clinic.id,
+    p_reason: parsed.data.reason,
+  });
+  if (error) {
+    // pre-check 後の競合で done になった場合、RPC の done ガードが 'booking % is done' を返す
+    if (error.message.includes("is done")) {
+      return { error: "完了済みの予約はキャンセルできません" };
+    }
+    // BC-NEW-03: pre-check 後の競合で no_show になった場合、RPC が 'booking % is no_show' を返す
+    if (error.message.includes("is no_show")) {
+      return { error: "不来院の予約はキャンセルできません" };
+    }
+    return { error: "キャンセルに失敗しました" };
+  }
 
   await recordAudit({
     clinicId: clinic.id,
@@ -360,7 +590,7 @@ export async function cancelBooking(
   // キャンセル通知(患者/ゲストのメールがあれば)
   const { data: bk } = await supabase
     .from("bookings")
-    .select("guest_email, patient:patients(email)")
+    .select("guest_email, patient:patients!bookings_patient_id_fkey(email)")
     .eq("id", parsed.data.bookingId)
     .eq("clinic_id", clinic.id)
     .maybeSingle();

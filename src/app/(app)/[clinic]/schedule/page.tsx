@@ -64,7 +64,6 @@ export default async function SchedulePage(props: PageProps<"/[clinic]/schedule"
       members={memberOptions}
       rooms={roomOptions}
       currentMemberId={member.id}
-      isOwner={member.roles.includes("owner")}
     />
   );
 }

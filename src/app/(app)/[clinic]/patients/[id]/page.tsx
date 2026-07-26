@@ -40,14 +40,16 @@ export default async function PatientDetailPage(props: PageProps<"/[clinic]/pati
     supabase
       .from("bookings")
       .select(
-        "id, booking_no, status, created_at, service:services(name), sessions:booking_sessions(time_range, status)",
+        "id, booking_no, status, created_at, service:services!bookings_service_id_fkey(name), sessions:booking_sessions!booking_sessions_booking_id_fkey(time_range, status)",
       )
       .eq("clinic_id", clinic.id)
       .eq("patient_id", id)
       .order("created_at", { ascending: false }),
     supabase
       .from("questionnaire_responses")
-      .select("id, submitted_at, template:questionnaire_templates(name), booking_id")
+      .select(
+        "id, submitted_at, template:questionnaire_templates!questionnaire_responses_template_id_fkey(name), booking_id",
+      )
       .eq("clinic_id", clinic.id)
       .in(
         "booking_id",

@@ -32,4 +32,5 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Biome(`pnpm lint`)。TypeScript strict、`any` 禁止
 - UI は `src/components/ui/`(shadcn 再テーマ済み)を使う。Tailwind 標準色の直書き禁止 — `docs/10_v2_仕様/04_デザインシステム.md` のトークン(CSS 変数)を使う
 - 日時は UTC 保存(tstzrange)・表示は Asia/Tokyo(date-fns-tz)。表示形式は `7/12(金) 13:00–15:30`
+- **PostgREST の関係埋め込みには FK ヒント必須**: bookings/patients/services/booking_sessions 等はテナント整合用の複合 FK(20260722000005)で FK が 2 本あるため、`patient:patients!bookings_patient_id_fkey(...)` のように単一 FK を明示しないと PGRST201(曖昧)で失敗する
 - コミットは User の明示指示があるときのみ

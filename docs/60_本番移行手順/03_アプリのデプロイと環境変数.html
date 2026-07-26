@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STEP 3 デプロイと環境変数 — premake 本番移行手順</title>
+<style>
+*{box-sizing:border-box;}
+:root{
+  --paper:#fbfaf8; --surface:#ffffff; --surface-2:#f4f2ee;
+  --ink:#1b201e; --ink-soft:#4c534f; --ink-faint:#8a8f8b;
+  --primary:#1d5c4d; --primary-strong:#164539; --primary-soft:#e9f2ee;
+  --bronze:#8a6d43;
+  --line:#e5e3de; --line-soft:#efedE8;
+  --ok:#1d5c4d; --ok-bg:#e7f2ec; --ok-line:#bfe0d1;
+  --warn:#8a5a00; --warn-bg:#fbf0d6; --warn-line:#e6cf94;
+  --crit:#a5342a; --crit-bg:#fae9e6; --crit-line:#eab6ad;
+  --info:#1e5a8a; --info-bg:#e7f0f8; --info-line:#b6d2ea;
+  --tip:#5a3d8a; --tip-bg:#f0ebf8; --tip-line:#cabce6;
+  --sans:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho",serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  line-height:1.85;font-size:16.5px;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:900px;margin:0 auto;padding:0 22px;}
+
+/* ヘッダ */
+header.top{background:var(--primary-strong);color:#fff;}
+header.top .bar{display:flex;align-items:center;justify-content:space-between;
+  min-height:52px;padding:8px 0;gap:12px;flex-wrap:wrap;}
+header.top a{color:#eaf2ef;text-decoration:none;font-size:14px;}
+header.top a:hover{text-decoration:underline;}
+.brand{font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:9px;font-size:15px;}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:#7bbda8;flex:none;}
+
+/* ヒーロー */
+.hero{padding:44px 0 30px;border-bottom:1px solid var(--line);}
+.stepno{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze);
+  font-weight:700;margin:0 0 12px;}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(25px,4.5vw,36px);line-height:1.3;
+  margin:0 0 14px;letter-spacing:.01em;}
+.lede{font-size:17px;color:var(--ink-soft);max-width:64ch;margin:0;}
+.meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px;}
+.chip{font-size:12.5px;padding:5px 12px;border-radius:999px;background:var(--surface-2);
+  color:var(--ink-soft);border:1px solid var(--line);}
+.chip.time{background:var(--primary-soft);color:var(--primary-strong);border-color:transparent;font-weight:600;}
+
+/* セクション */
+section{padding:30px 0;border-bottom:1px solid var(--line-soft);}
+h2{font-family:var(--serif);font-size:23px;font-weight:600;margin:6px 0 14px;line-height:1.35;
+  padding-top:4px;}
+h3{font-size:17.5px;font-weight:700;margin:26px 0 10px;color:var(--primary-strong);}
+p{margin:12px 0;}
+a{color:var(--primary);}
+strong{font-weight:700;}
+.muted{color:var(--ink-soft);}
+.small{font-size:14px;}
+
+/* バッジ(誰向けの手順か) */
+.badge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:6px;
+  vertical-align:middle;margin-left:6px;letter-spacing:.02em;}
+.badge.dev{background:#e7edf8;color:#274b86;border:1px solid #c3d3ee;}
+.badge.op{background:var(--primary-soft);color:var(--primary-strong);border:1px solid #c3e0d4;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 0;font-size:13.5px;color:var(--ink-soft);}
+
+/* 手順リスト */
+ol.steps{counter-reset:st;list-style:none;padding:0;margin:16px 0;}
+ol.steps>li{position:relative;padding:2px 0 16px 46px;margin:0;}
+ol.steps>li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:0;
+  width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-weight:700;
+  font-size:14px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);}
+ol.steps>li::after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:2px;
+  background:var(--line);}
+ol.steps>li:last-child::after{display:none;}
+ol.steps>li .st-title{font-weight:700;display:block;margin-bottom:2px;}
+
+/* 通常の箇条書き */
+ul.disc{margin:12px 0;padding-left:22px;}
+ul.disc li{margin:6px 0;}
+
+/* コールアウト */
+.callout{border:1px solid var(--line);border-left-width:5px;border-radius:10px;
+  padding:14px 16px;margin:18px 0;background:var(--surface);}
+.callout .ct{font-weight:700;display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:15px;}
+.callout p{margin:6px 0;}
+.callout .ic{font-size:17px;line-height:1;}
+.callout.crit{border-color:var(--crit-line);border-left-color:var(--crit);background:var(--crit-bg);}
+.callout.crit .ct{color:var(--crit);}
+.callout.warn{border-color:var(--warn-line);border-left-color:var(--warn);background:var(--warn-bg);}
+.callout.warn .ct{color:var(--warn);}
+.callout.info{border-color:var(--info-line);border-left-color:var(--info);background:var(--info-bg);}
+.callout.info .ct{color:var(--info);}
+.callout.ok{border-color:var(--ok-line);border-left-color:var(--ok);background:var(--ok-bg);}
+.callout.ok .ct{color:var(--ok);}
+.callout.tip{border-color:var(--tip-line);border-left-color:var(--tip);background:var(--tip-bg);}
+.callout.tip .ct{color:var(--tip);}
+
+/* コードブロック */
+figure.code{margin:16px 0;}
+figure.code pre{background:#151a18;color:#eef3f0;border-radius:10px 10px 0 0;margin:0;
+  padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:14px;line-height:1.7;}
+figure.code pre.single{border-radius:10px;}
+figure.code code{font-family:var(--mono);white-space:pre;}
+figure.code figcaption{background:var(--surface-2);border:1px solid var(--line);border-top:none;
+  border-radius:0 0 10px 10px;padding:9px 14px;font-size:13.5px;color:var(--ink-soft);}
+figure.code figcaption b{color:var(--ink);}
+code.inline{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;
+  padding:1px 6px;font-family:var(--mono);font-size:.88em;color:var(--primary-strong);
+  word-break:break-word;}
+
+/* テーブル */
+.tablewrap{overflow-x:auto;margin:16px 0;}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--surface);}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+th{background:var(--surface-2);font-weight:700;font-size:13.5px;}
+td code{font-family:var(--mono);font-size:13px;}
+tr:nth-child(even) td{background:#fbfaf7;}
+
+/* チェックリスト */
+ul.check{list-style:none;padding:0;margin:14px 0;}
+ul.check li{margin:0;border-bottom:1px dashed var(--line);}
+ul.check li:last-child{border-bottom:none;}
+ul.check label{display:flex;gap:11px;align-items:flex-start;padding:11px 4px;cursor:pointer;}
+ul.check input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--primary);}
+ul.check .ck-body{flex:1;}
+ul.check .ck-id{font-family:var(--mono);font-size:12px;color:var(--bronze);font-weight:700;}
+ul.check .ck-t{font-weight:600;}
+ul.check .ck-d{font-size:13.5px;color:var(--ink-soft);}
+
+/* 用語集 */
+dl.glossary{margin:14px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+dl.glossary>div{padding:12px 16px;border-bottom:1px solid var(--line-soft);background:var(--surface);}
+dl.glossary>div:last-child{border-bottom:none;}
+dl.glossary dt{font-weight:700;color:var(--primary-strong);margin:0 0 3px;}
+dl.glossary dd{margin:0;color:var(--ink-soft);font-size:14.5px;}
+
+/* 目次カード */
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin:20px 0;}
+a.card{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);
+  border-radius:12px;padding:15px 17px;background:var(--surface);transition:border-color .12s;}
+a.card:hover{border-color:var(--primary);}
+a.card .cnum{font-family:var(--mono);font-size:12.5px;color:var(--bronze);font-weight:700;letter-spacing:.05em;}
+a.card .ctitle{font-weight:700;font-size:17px;margin:3px 0 4px;color:var(--primary-strong);}
+a.card .cdesc{font-size:14px;color:var(--ink-soft);margin:0;}
+a.card .ctime{font-size:12.5px;color:var(--ink-faint);margin-top:6px;display:block;}
+
+/* フッタ ナビ */
+nav.pager{display:flex;justify-content:space-between;gap:12px;margin:30px 0;flex-wrap:wrap;}
+nav.pager a{flex:1;min-width:210px;text-decoration:none;border:1px solid var(--line);border-radius:10px;
+  padding:13px 15px;background:var(--surface);color:var(--ink);}
+nav.pager a:hover{border-color:var(--primary);}
+nav.pager .dir{font-size:12px;color:var(--ink-faint);display:block;}
+nav.pager .nm{font-weight:700;color:var(--primary-strong);}
+nav.pager a.next{text-align:right;}
+footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align:center;}
+
+/* 印刷 */
+@media print{
+  body{background:#fff;color:#000;font-size:11.5pt;}
+  header.top,nav.pager{display:none;}
+  section{border-color:#ccc;page-break-inside:avoid;}
+  .callout{page-break-inside:avoid;}
+  figure.code pre{background:#f2f2f2;color:#000;border:1px solid #999;}
+  figure.code figcaption{background:#fff;}
+  a{color:#000;text-decoration:none;}
+  a.card,nav.pager a{border-color:#ccc;}
+  h1,h2{page-break-after:avoid;}
+}
+@media (max-width:560px){ body{font-size:16px;} .hero{padding:32px 0 22px;} }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="bar"><span class="brand"><span class="dot"></span>premake 本番移行手順書</span><a href="00_目次.html">&#9776; 目次へ戻る</a></div></div></header>
+<div class="hero"><div class="wrap"><p class="stepno">STEP 3 / 8</p><h1>STEP 3 デプロイと環境変数</h1><p class="lede">アプリを Vercel でインターネットに公開し、動作に必要な環境変数(設定値)を登録します。安全のための CRON_SECRET も設定します。</p><div class="meta"><span class="chip time">目安 約40分</span><span class="chip">クリニック担当者</span></div></div></div>
+<div class="wrap"><section><h2>この STEP でやること</h2><p>アプリ本体を <strong>Vercel でインターネットに公開(デプロイ)</strong>し、動作に必要な<strong>環境変数(設定値)</strong>を登録します。ここまで来ると、ブラウザからアプリのログイン画面が開けるようになります。</p></section><section><h2>3-1. Vercel にアプリを公開する <span class="badge op">クリニック担当者</span></h2><ol class="steps"><li><span class="st-title">Vercel に登録・ログイン</span><code class="inline">vercel.com</code> でアカウント作成。アプリのプログラムがある GitHub アカウントで登録すると連携が簡単です。</li><li><span class="st-title">プロジェクトを取り込む(Import)</span>「Add New… → Project」から、アプリのリポジトリ(開発担当者に確認)を選び「Import」。</li><li><span class="st-title">設定はそのままでよい</span>Framework は自動で「Next.js」と認識されます。ビルド設定は既定のままで構いません(この段階では「Deploy」を押す前に、次の 3-2 の環境変数を先に入れると手戻りが減ります)。</li></ol><div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>先に環境変数を入れるのがコツ</p><p>アプリは環境変数がそろって初めて正しく動きます。<strong>3-2 の環境変数を登録してから「Deploy」</strong>を押すと、1回で正しく公開できます。もし先に公開してしまっても、3-2 を登録後に「再デプロイ(Redeploy)」すれば直ります。</p></div></section><section><h2>3-2. 環境変数(設定値)を登録する <span class="badge op">クリニック担当者</span></h2><p>Vercel のプロジェクト → 「Settings」→「Environment Variables」で、下の表の値を1つずつ登録します。対象環境は <strong>Production(本番)</strong> にチェックを入れてください。「名前(Key)」は<strong>一字一句そのまま</strong>正確に入力します。</p><div class="tablewrap"><table><thead><tr><th>名前(Key)</th><th>役割(やさしく)</th><th>入れる値・取得先</th></tr></thead><tbody><tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>データベースの住所</td><td>STEP 2 で控えた <b>Project URL</b></td></tr><tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>一般アクセス用の鍵</td><td>STEP 2 で控えた <b>anon public キー</b></td></tr><tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>全権の秘密鍵(サーバー内部でのみ使用)</td><td>STEP 2 で控えた <b>service_role キー</b>。<strong>秘密</strong></td></tr><tr><td><code>APP_URL</code></td><td>アプリの本番 URL。メールや招待リンクの生成に使う</td><td>このアプリの本番 URL(例 <code>https://your-clinic.vercel.app</code>)</td></tr><tr><td><code>RESEND_API_KEY</code></td><td>メール送信の鍵</td><td>STEP 4 で取得(この段階では空でも公開可。メールは STEP 4 完了後に有効化)</td></tr><tr><td><code>CRON_SECRET</code></td><td>定期実行を守る合言葉</td><td>下の 3-3 で作る強いランダム文字列</td></tr></tbody></table></div><div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>NEXT_PUBLIC_ で始まる2つは「公開後」に変えたら再デプロイが必要</p><p><code class="inline">NEXT_PUBLIC_...</code> の2つの値は、アプリを組み立てる時(ビルド時)に埋め込まれます。後から変更した場合は、Vercel の「Deployments」→ 最新 → 「Redeploy」で作り直してください。</p></div></section><section><h2>3-3. CRON_SECRET を強いランダム値にする(重要な安全対策)</h2><p><code class="inline">CRON_SECRET</code> は、前日リマインダーなどの<strong>定期実行を『関係者以外が叩けない』ようにする合言葉</strong>です。この値は必ず<strong>推測できない強いランダム文字列</strong>にしてください。</p><div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>なぜ必須か(SEC-01)</p><p>この合言葉を設定しないと、本番では定期実行の入口が<strong>拒否(fail-closed)</strong>され、リマインダー等が動きません。逆に弱い値や空だと、第三者が定期実行を勝手に呼び出し、大量のメール送信や不正な処理を誘発できてしまいます。<strong>必ず強い値を設定</strong>してください。</p></div><figure class="code"><pre class="single"><code>openssl rand -hex 32</code></pre><figcaption>強いランダム文字列(64文字の英数字)を作るコマンドです。開発担当者に頼むか、パソコンのターミナルで実行し、出てきた文字列を <code>CRON_SECRET</code> の値として登録します。オンラインのランダム生成サイトは避け、手元で作るのが安全です。</figcaption></figure><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>うれしい仕組み</p><p>Vercel は、<code class="inline">CRON_SECRET</code> を環境変数に登録しておくと、<strong>定期実行のときに自動でこの合言葉を付けて</strong>アプリを呼び出します。つまり値を登録するだけで、正規の定期実行は通り、部外者は弾かれる状態になります。</p></div></section><section><h2>3-4. APP_URL を本番 URL にする理由</h2><p><code class="inline">APP_URL</code> は、<strong>メール内のリンクや、スタッフ招待リンクを組み立てる時の土台の URL</strong> です。ここを本番 URL にしておかないと、初期値の <code class="inline">http://localhost:3000</code>(手元のパソコン)を指してしまい、<strong>患者やスタッフが受け取ったリンクを開けません</strong>。必ず本番 URL を設定してください。</p></section><section><h2>3-5. デプロイして動作を確認する</h2><ol class="steps"><li><span class="st-title">Deploy(または Redeploy)</span>環境変数を登録したら公開します。数分でビルドが終わります。</li><li><span class="st-title">本番 URL を開く</span>発行された URL(例 <code class="inline">https://your-clinic.vercel.app</code>)をブラウザで開きます。</li><li><span class="st-title">ログイン画面を確認</span>URL の末尾に <code class="inline">/login</code> を付けてログイン画面が表示されれば、公開は成功です。STEP 2 で作った ops アカウントでログインを試せます(ログイン後は <code class="inline">/ops</code> でクリニック管理画面へ)。</li></ol><div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>任意: 応答を速くする</p><p>Vercel のプロジェクト設定で、サーバー処理の地域(Function Region)を <strong>Tokyo(hnd1)</strong> にすると、東京の Supabase との通信が速くなります(必須ではありません)。</p></div></section><section><h2>この STEP のチェックリスト</h2><ul class="check"><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">Vercel にアプリを取り込み、公開(デプロイ)した</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">6つの環境変数をすべて Production に登録した</span><div class="ck-d">RESEND_API_KEY は STEP 4 後でも可</div></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">CRON_SECRET を強いランダム値にした</span><div class="ck-d">SEC-01・安全上必須</div></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">APP_URL を本番 URL にした</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">本番 URL の /login でログイン画面が開けた</span></span></label></li><li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">決まった本番 URL を STEP 2-5 の Supabase URL 設定に反映した</span></span></label></li></ul></section></div>
+<div class="wrap"><nav class="pager"><a class="prev" href="02_本番データベース構築.html"><span class="dir">&#8592; 前へ</span><span class="nm">STEP2 データベース構築</span></a><a class="next" href="04_メール送信の設定.html"><span class="dir">次へ &#8594;</span><span class="nm">STEP4 メール設定</span></a></nav></div>
+<footer class="foot"><div class="wrap">premake — クリニック予約・業務管理システム ／ 本番移行手順書。この手順書はブラウザで開いて読めます。順番に実行してください。</div></footer>
+</body>
+</html>

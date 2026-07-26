@@ -1,7 +1,9 @@
+import { timingSafeEqual } from "node:crypto";
 import { formatInTimeZone } from "date-fns-tz";
 import { NextResponse } from "next/server";
 import { env } from "@/env";
-import { renderNotification } from "@/features/notifications/templates";
+import { pickNotificationSessions } from "@/features/notifications/select-sessions";
+import { type NotificationKind, renderNotification } from "@/features/notifications/templates";
 import { generateBookingToken } from "@/features/public-booking/token";
 import { parseRange } from "@/features/schedule/week";
 import { TIME_ZONE } from "@/lib/datetime";
@@ -12,12 +14,21 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  // 認可: CRON_SECRET 設定時は Bearer 一致を要求(未設定=開発は許可)
-  if (env.CRON_SECRET) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${env.CRON_SECRET}`) {
+  // 認可: 本番相当では CRON_SECRET を必須とし、未設定なら fail-closed で拒否する。
+  // 開発(next dev = NODE_ENV=development)でのみ未設定を許可する。
+  const secret = env.CRON_SECRET;
+  if (secret) {
+    const auth = request.headers.get("authorization") ?? "";
+    // 定数時間比較(AUTH-3)。長さ不一致は timingSafeEqual が例外を投げるため先に弾く。
+    const expected = Buffer.from(`Bearer ${secret}`);
+    const provided = Buffer.from(auth);
+    const authorized = provided.length === expected.length && timingSafeEqual(provided, expected);
+    if (!authorized) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
+  } else if (process.env.NODE_ENV !== "development") {
+    console.error("[cron] CRON_SECRET is not set; refusing request in non-development environment");
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const admin = createAdminClient();
@@ -38,7 +49,9 @@ export async function GET(request: Request) {
 
     const { data: sessions } = await admin
       .from("booking_sessions")
-      .select("booking_id, booking:bookings(id, clinic_id, status)")
+      .select(
+        "booking_id, booking:bookings!booking_sessions_booking_id_fkey(id, clinic_id, status)",
+      )
       .eq("status", "scheduled")
       .overlaps("time_range", `[${from},${to})`);
 
@@ -59,7 +72,7 @@ export async function GET(request: Request) {
 
       const { data: booking } = await admin
         .from("bookings")
-        .select("id, clinic_id, guest_email, patient:patients(email)")
+        .select("id, clinic_id, guest_email, patient:patients!bookings_patient_id_fkey(email)")
         .eq("id", bookingId)
         .maybeSingle();
       const email = booking?.guest_email ?? booking?.patient?.email ?? null;
@@ -82,34 +95,56 @@ export async function GET(request: Request) {
   async function processQueue(): Promise<number> {
     const { data: queued } = await admin
       .from("notifications")
-      .select("id, clinic_id, booking_id, recipient_email, kind")
+      .select("id, clinic_id, booking_id, recipient_email, kind, attempts")
       .eq("status", "queued")
       .limit(50);
 
+    const MAX_ATTEMPTS = 3;
     let count = 0;
     for (const n of queued ?? []) {
       const ctx = await buildContext(n.booking_id, n.clinic_id, n.kind);
       if (!ctx) {
+        // 恒久エラー(参照先が消えた等)。再送しても直らないので即 failed で隔離。
         await admin
           .from("notifications")
           .update({ status: "failed", error: "context not found" })
           .eq("id", n.id);
         continue;
       }
-      const { subject, html } = renderNotification(
-        n.kind as Parameters<typeof renderNotification>[0],
-        ctx,
-      );
-      const res = await sendEmail({ to: n.recipient_email, subject, html });
-      await admin
-        .from("notifications")
-        .update({
-          status: res.ok ? "sent" : "failed",
-          sent_at: res.ok ? new Date().toISOString() : null,
-          error: res.error ?? null,
-        })
-        .eq("id", n.id);
-      if (res.ok) count++;
+      const rendered = renderNotification(n.kind as Parameters<typeof renderNotification>[0], ctx);
+      if (!rendered) {
+        // 未知 kind は failed にして隔離。次回以降に再取得されず、他の通知送信も止めない
+        await admin
+          .from("notifications")
+          .update({ status: "failed", error: `unknown notification kind: ${n.kind}` })
+          .eq("id", n.id);
+        continue;
+      }
+      const res = await sendEmail({
+        to: n.recipient_email,
+        subject: rendered.subject,
+        html: rendered.html,
+        fromName: ctx.clinicName,
+      });
+      if (res.ok) {
+        await admin
+          .from("notifications")
+          .update({ status: "sent", sent_at: new Date().toISOString(), error: null })
+          .eq("id", n.id);
+        count++;
+      } else {
+        // 送信失敗はリトライ対象(No.20)。attempts をインクリメントし、上限到達で恒久 failed。
+        // 上限未満は queued のまま残し、次回 cron で自動再送する。
+        const nextAttempts = n.attempts + 1;
+        await admin
+          .from("notifications")
+          .update({
+            status: nextAttempts >= MAX_ATTEMPTS ? "failed" : "queued",
+            attempts: nextAttempts,
+            error: res.error ?? null,
+          })
+          .eq("id", n.id);
+      }
     }
     return count;
   }
@@ -119,16 +154,16 @@ export async function GET(request: Request) {
     const { data: booking } = await admin
       .from("bookings")
       .select(
-        "booking_no, guest_name, patient:patients(name), service:services(name), clinic:clinics(name, slug), sessions:booking_sessions(time_range, status, seq)",
+        "booking_no, status, guest_name, patient:patients!bookings_patient_id_fkey(name), service:services!bookings_service_id_fkey(name), clinic:clinics(name, slug), sessions:booking_sessions!booking_sessions_booking_id_fkey(time_range, status, seq)",
       )
       .eq("id", bookingId)
       .eq("clinic_id", clinicId)
       .maybeSingle();
-    if (!booking || !booking.clinic) return null;
+    if (!booking?.clinic) return null;
 
-    const active = (booking.sessions ?? [])
-      .filter((s) => s.status === "scheduled")
-      .sort((a, b) => a.seq - b.seq);
+    // booking_cancelled はキャンセル後に全セッションが cancelled になるため、
+    // scheduled 限定だと日時が出せない。pickNotificationSessions が cancelled を補う(NT-NEW-2)。
+    const active = pickNotificationSessions(kind as NotificationKind, booking.sessions ?? []);
     const fr = active[0] ? parseRange(active[0].time_range as string) : null;
     const lr = active[active.length - 1]
       ? parseRange(active[active.length - 1].time_range as string)
@@ -136,15 +171,27 @@ export async function GET(request: Request) {
 
     // 管理リンクが要る種別は都度トークンを再発行
     let manageUrl: string | undefined;
-    if (kind !== "booking_cancelled") {
+    let dashboardUrl: string | undefined;
+    let requiresApproval: boolean | undefined;
+    if (kind === "booking_created_internal" || kind === "booking_cancelled_internal") {
+      // 院内向け。患者用 manage トークンは発行せず、院内ダッシュボードへ誘導する
+      dashboardUrl = `${env.APP_URL}/${booking.clinic.slug}`;
+      requiresApproval =
+        kind === "booking_created_internal" ? booking.status === "requested" : undefined;
+    } else if (kind !== "booking_cancelled") {
       const { token, tokenHash } = generateBookingToken();
-      await admin.from("booking_access_tokens").insert({
+      // トークン insert 失敗を検査。失敗時はリンク切れメールを送らないよう manageUrl を未定義のままにする(NT-NEW-4)
+      const { error: tokErr } = await admin.from("booking_access_tokens").insert({
         booking_id: bookingId,
         token_hash: tokenHash,
         purpose: "manage",
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       });
-      manageUrl = `${env.APP_URL}/c/${booking.clinic.slug}/manage/${token}`;
+      if (tokErr) {
+        console.error("[cron] manage token insert failed; sending mail without link", tokErr);
+      } else {
+        manageUrl = `${env.APP_URL}/c/${booking.clinic.slug}/manage/${token}`;
+      }
     }
 
     return {
@@ -155,6 +202,8 @@ export async function GET(request: Request) {
       endISO: lr?.end ?? null,
       bookingNo: booking.booking_no,
       manageUrl,
+      dashboardUrl,
+      requiresApproval,
     };
   }
 }
