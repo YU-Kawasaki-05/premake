@@ -1,0 +1,67 @@
+{
+  "id": "AT-PUB-023",
+  "priority": "P0",
+  "phase": "B",
+  "order": 123,
+  "title": "患者が予約番号とメールアドレスで自分の予約を照会する",
+  "spec": "v2-22",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "患者がログインなしで自分の予約を確認・キャンセルするための入口。ここが使えないと問い合わせが電話に集中する。",
+  "startedAt": "2026-07-27T12:50:55.663Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "照会ページを開く",
+      "action": "公開ページの「予約の確認・変更・キャンセルはこちら」から /c/demo/lookup を開く",
+      "expect": "予約番号とメールアドレスの入力欄がある",
+      "actual": "番号欄=1 / メール欄=1",
+      "checks": [
+        {
+          "label": "予約番号の入力欄がある",
+          "ok": true
+        },
+        {
+          "label": "メールアドレスの入力欄がある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_照会ページを開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "正しい組み合わせで照会",
+      "action": "予約番号 B-260727-CB81 と at-pub@example.com を入力して照会",
+      "expect": "自分の予約の管理画面が開き、日時とメニューが表示される",
+      "actual": "遷移先=/c/demo/manage/ObXysePkESCgWYIyRJ2t0-2Lm_UeuxWWLHmGWxSDhYY / 予約番号の表示=true",
+      "note": "管理画面の URL には推測できないトークンが入る(番号だけでは開けない)。",
+      "checks": [
+        {
+          "label": "管理画面へ遷移する",
+          "ok": true,
+          "detail": "/c/demo/manage/ObXysePkESCgWYIyRJ2t0-2Lm_UeuxWWLHmGWxSDhYY"
+        },
+        {
+          "label": "予約番号が表示される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_正しい組み合わせで照会.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:50:59.332Z"
+}

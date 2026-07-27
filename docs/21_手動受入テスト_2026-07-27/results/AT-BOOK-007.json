@@ -1,0 +1,135 @@
+{
+  "id": "AT-BOOK-007",
+  "priority": "P0",
+  "phase": "A",
+  "order": 9,
+  "title": "既存患者を検索して院内予約を作成する",
+  "spec": "v2-10",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "受付が電話や来院で受けた予約を台帳に登録する、最も頻度の高い操作。ここが確実に動かないと業務が成立しないため P0。",
+  "startedAt": "2026-07-27T02:21:49.187Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "新規予約ダイアログを開く",
+      "action": "台帳の「新規予約」を押す",
+      "expect": "患者・メニュー・担当・部屋・日時を入力するダイアログが開く",
+      "actual": "ダイアログ=1個",
+      "checks": [
+        {
+          "label": "ダイアログが開く",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_新規予約ダイアログを開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "既存患者を検索して選ぶ",
+      "action": "患者検索に「山田」と入力して検索 → 候補から選択",
+      "expect": "既存患者「山田 花子」が選択済みとして表示される",
+      "actual": "選択後の表示に「山田 花子」=1件",
+      "note": "部分一致検索。検索語は SQL インジェクション対策のためサーバー側で無害化される(AT-PAT 系で別途検証)。",
+      "checks": [
+        {
+          "label": "患者が選択される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_既存患者を検索して選ぶ.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "メニュー・担当・部屋・日時を指定",
+      "action": "メニュー=メディカルピーリング / 担当=鈴木 / 部屋=施術室 2 / 2026-07-30 14:00",
+      "expect": "選択内容がフォームに反映される",
+      "actual": "日付=2026-07-30 時刻=14:00",
+      "checks": [
+        {
+          "label": "日付が入る",
+          "ok": true
+        },
+        {
+          "label": "時刻が入る",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "03_メニュー_担当_部屋_日時を指定.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 4,
+      "label": "予約が作成される",
+      "action": "「予約を作成」を押す",
+      "expect": "成功のトーストが出てダイアログが閉じ、予約が 1 件増える",
+      "actual": "toast=true / ダイアログ閉=false / エラー=[] / 予約 1→2",
+      "checks": [
+        {
+          "label": "エラーなく作成される",
+          "ok": true,
+          "detail": "エラーなし"
+        },
+        {
+          "label": "予約が 1 件増える",
+          "ok": true,
+          "detail": "1→2"
+        }
+      ],
+      "evidence": [
+        "04_予約が作成される.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 5,
+      "label": "台帳に反映される",
+      "action": "台帳を 2026-07-30 に切り替える",
+      "expect": "14:00 の枠に患者名のチップが出る",
+      "actual": "チップ=1件",
+      "checks": [
+        {
+          "label": "台帳に表示される",
+          "ok": true,
+          "detail": "count=1"
+        }
+      ],
+      "evidence": [
+        "05_台帳に反映される.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "予約が confirmed / source=staff で保存され、開始時刻が JST でずれない",
+      "query": "select b.status, b.source, to_char(lower(s.occupied_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') from bookings b join booking_sessions s on s.booking_id = b.id where b.clinic_id = '10000000-0000-4000-a000-000000000001' and b.notes like '%AT検証 既存患者%' order by s.seq limit 1",
+      "expect": "status=confirmed / source=staff / 2026-07-30 14:00",
+      "actual": "confirmed / staff / 2026-07-30 14:00",
+      "ok": true
+    },
+    {
+      "label": "患者宛の確定メールが送信待ちに積まれる(患者に email があるため)",
+      "query": "select n.kind, n.recipient_type, n.status, n.recipient_email from notifications n join bookings b on b.id = n.booking_id where b.notes like '%AT検証 既存患者%' order by n.kind",
+      "expect": "booking_confirmed / recipient_type=patient / status=queued / 宛先=hanako@example.com",
+      "actual": "booking_confirmed:patient:queued:hanako@example.com",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:21:58.651Z"
+}

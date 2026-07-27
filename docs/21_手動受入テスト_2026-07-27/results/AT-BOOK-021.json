@@ -1,0 +1,44 @@
+{
+  "id": "AT-BOOK-021",
+  "priority": "P0",
+  "phase": "A",
+  "order": 15,
+  "title": "同時に 2 件の予約要求が来ても二重予約にならない",
+  "spec": "v2-12",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "電話とインターネットから同じ枠へ同時に申し込まれる状況。アプリの事前チェックだけでは防げないため、データベース側で直列化されている必要がある。",
+  "notes": "人の手でブラウザを 2 つ操作しても『完全に同時』は作れないため、データベースへ同時に書き込みを発射して実測している(代替検証)。",
+  "startedAt": "2026-07-27T02:23:11.989Z",
+  "steps": [],
+  "dbChecks": [
+    {
+      "label": "同じ部屋・同じ時間帯への追加書き込みはデータベースが拒否する(排他制約 EXCLUDE)",
+      "query": "insert into booking_sessions (同一 room_id / 同一 occupied_range) — アプリを通さず直接書き込み",
+      "expect": "23P01(exclusion violation)で拒否される",
+      "actual": "拒否された: Error: ERROR: conflicting key value violates exclusion constraint \"booking_sessions_room_overlap\" DETAIL: Key (room_id, occupied_range)=(30000000-0000-4000-a000-000000000002, [\"2026-07-30 05:00:00+00\",\"2026-07-30 05:55:00+00\")) conflicts with existing key (roo",
+      "ok": true
+    },
+    {
+      "label": "排他制約が booking_sessions に定義されている",
+      "query": "select conname from pg_constraint where contype = 'x' and conrelid = 'booking_sessions'::regclass",
+      "expect": "部屋用・担当用の 2 本",
+      "actual": "booking_sessions_room_overlap / booking_sessions_staff_overlap",
+      "ok": true
+    },
+    {
+      "label": "自動テストでの同時実行検証(参考)",
+      "query": "pnpm test:db — tests/ 配下の EXCLUDE 制約テスト",
+      "expect": "56 チェック green",
+      "actual": "2026-07-27 実行: 9 ファイル / 56 passed",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": null,
+  "partialReason": "画面操作では同時性を作れないため、データベースへの同時書き込みで代替検証しています。ブラウザ 2 枚での実操作は本番相当環境での確認項目として残ります。",
+  "aborted": false,
+  "verdict": "PARTIAL",
+  "finishedAt": "2026-07-27T02:23:12.262Z"
+}

@@ -1,0 +1,37 @@
+{
+  "id": "AT-NTF-006",
+  "priority": "P0",
+  "phase": "A",
+  "order": 28,
+  "title": "キャンセル時に患者へキャンセル通知が送られる",
+  "spec": "v2-23",
+  "refs": [
+    "20_受け入れテスト/06_通知・運営・法定.md"
+  ],
+  "intent": "キャンセルを患者に伝え損ねると、患者が来院してしまう。P0。",
+  "startedAt": "2026-07-27T02:42:42.848Z",
+  "steps": [],
+  "dbChecks": [
+    {
+      "label": "キャンセル操作(AT-BOOK-013)で積まれた通知が送信済みになっている",
+      "query": "select n.kind, n.recipient_type, n.status, n.recipient_email from notifications n where n.clinic_id = '10000000-0000-4000-a000-000000000001' and n.kind = 'booking_cancelled' order by n.created_at desc limit 3",
+      "expect": "booking_cancelled / patient / sent",
+      "actual": "booking_cancelled:patient:sent:hanako@example.com",
+      "ok": true
+    },
+    {
+      "label": "キャンセル通知の本文",
+      "query": "evidence/_emails/booking_cancelled.html",
+      "expect": "予約番号・日時が入り、管理リンクは含まない(キャンセル済みのため)",
+      "actual": "本文は保存しない設計(送信時に組み立てる)",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:42:42.964Z"
+}

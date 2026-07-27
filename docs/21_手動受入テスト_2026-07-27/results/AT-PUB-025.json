@@ -1,0 +1,100 @@
+{
+  "id": "AT-PUB-025",
+  "priority": "P0",
+  "phase": "B",
+  "order": 125,
+  "title": "患者が自分でキャンセルでき、枠が解放される",
+  "spec": "v2-22",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "電話をかけずにキャンセルできること。キャンセルされた枠がすぐ他の患者に開放され、院内にも通知が届くこと。",
+  "startedAt": "2026-07-27T12:51:05.276Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "管理画面を開く",
+      "action": "予約番号 B-260727-CB81 で管理画面に入る",
+      "expect": "キャンセルの入口と、キャンセル期限(24 時間前まで)の案内がある",
+      "actual": "キャンセルボタン=1個 / 期限の記載=true",
+      "checks": [
+        {
+          "label": "キャンセルの入口がある",
+          "ok": true
+        },
+        {
+          "label": "キャンセル期限が案内されている",
+          "ok": true,
+          "detail": "24 時間"
+        }
+      ],
+      "evidence": [
+        "01_管理画面を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "確認を求められる",
+      "action": "「予約をキャンセル」を押す",
+      "expect": "いきなり実行されず、確認のステップが入る",
+      "actual": "確認の表示=true",
+      "checks": [
+        {
+          "label": "確認ステップがある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_確認を求められる.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "キャンセルが完了する",
+      "action": "「キャンセルする」で確定",
+      "expect": "キャンセル済みの表示になり、枠が解放される",
+      "actual": "画面=「デモクリニック 予約番号 B-260727-CB81 メニュー メディカルピーリング 日時 7/29(水) 10:00–」 / DB: status=cancelled 生きている枠=0",
+      "checks": [
+        {
+          "label": "状態がキャンセルになる",
+          "ok": true,
+          "detail": "cancelled"
+        },
+        {
+          "label": "押さえていた枠が解放される",
+          "ok": true,
+          "detail": "0 件"
+        }
+      ],
+      "evidence": [
+        "03_キャンセルが完了する.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "患者と院内の双方に通知が積まれる",
+      "query": "select kind, recipient_type from notifications where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' order by created_at",
+      "expect": "booking_cancelled(patient) と booking_cancelled_internal(member)",
+      "actual": "booking_requested:patient / booking_created_internal:member / booking_cancelled:patient / booking_cancelled_internal:member",
+      "ok": true
+    },
+    {
+      "label": "患者によるキャンセルが監査ログに残る",
+      "query": "select action, actor_type from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action like '%guest_cancel%' order by created_at desc limit 1",
+      "expect": "booking.guest_cancel / actor_type=guest",
+      "actual": "booking.guest_cancel / guest",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:51:11.429Z"
+}

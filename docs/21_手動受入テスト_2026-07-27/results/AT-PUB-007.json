@@ -1,0 +1,45 @@
+{
+  "id": "AT-PUB-007",
+  "priority": "P1",
+  "phase": "B",
+  "order": 107,
+  "title": "存在しないクリニックの URL は 404 になる",
+  "spec": "v2-19",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "URL を推測して他のクリニックの存在を探れないようにする。エラーの出方で情報が漏れないことも確認する。",
+  "startedAt": "2026-07-27T12:29:29.446Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "存在しない slug を開く",
+      "action": "/c/no-such-clinic-xyz を開く",
+      "expect": "404 が返り、他クリニックの情報は一切出ない",
+      "actual": "HTTP 404 / 本文の冒頭=「」",
+      "checks": [
+        {
+          "label": "404 が返る",
+          "ok": true,
+          "detail": "HTTP 404"
+        },
+        {
+          "label": "他クリニックの名称が出ない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_存在しない_slug_を開く.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:29:29.754Z"
+}

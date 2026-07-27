@@ -1,0 +1,62 @@
+{
+  "id": "AT-PUB-009",
+  "priority": "P1",
+  "phase": "B",
+  "order": 109,
+  "title": "スマートフォンの画面幅で公開ページ・予約画面が崩れない",
+  "spec": "v2-19",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "患者の大半はスマートフォンから予約する。横スクロールが出たり、ボタンが押せない状態だと予約が完了しない。",
+  "notes": "表示速度(LCP)の基準判定は開発サーバーでは行えないため、ここでは見た目と操作可能性のみを確認している。",
+  "startedAt": "2026-07-27T12:56:32.293Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "公開ページ(iPhone 相当の幅)",
+      "action": "画面幅 390px で /c/demo を表示",
+      "expect": "横スクロールが発生せず、内容が読める",
+      "actual": "横方向のはみ出し=false",
+      "checks": [
+        {
+          "label": "横スクロールが出ない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_公開ページ_iPhone_相当の幅_.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "予約画面(iPhone 相当の幅)",
+      "action": "同じ幅で予約画面を開き、空き枠のボタンの大きさを測る",
+      "expect": "横スクロールがなく、枠のボタンが指で押せる大きさ(高さ 32px 以上)",
+      "actual": "はみ出し=false / ボタン高さ=38px",
+      "checks": [
+        {
+          "label": "横スクロールが出ない",
+          "ok": true
+        },
+        {
+          "label": "枠のボタンが押せる大きさ",
+          "ok": true,
+          "detail": "38px"
+        }
+      ],
+      "evidence": [
+        "02_予約画面_iPhone_相当の幅_.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "naReason": null,
+  "partialReason": "表示速度(LCP)の基準達成は開発サーバーでは判定できません。本番ビルドでの参考計測は別途行います。",
+  "aborted": false,
+  "verdict": "PARTIAL",
+  "finishedAt": "2026-07-27T12:56:34.641Z"
+}

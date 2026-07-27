@@ -1,0 +1,63 @@
+{
+  "id": "AT-PUB-015",
+  "priority": "P1",
+  "phase": "B",
+  "order": 115,
+  "title": "連絡先の入力チェック(必須・メール形式)",
+  "spec": "v2-20",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "連絡先が取れない申込が入ると、確定連絡もリマインダーも送れない。入口で止める必要がある。",
+  "startedAt": "2026-07-27T12:42:14.673Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "何も入力せずに送信",
+      "action": "連絡先を空のまま「この内容で予約する」",
+      "expect": "送信されず、入力を促される",
+      "actual": "フォームが残っている=true",
+      "checks": [
+        {
+          "label": "送信されない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_何も入力せずに送信.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "メールアドレスの形式が不正",
+      "action": "メール欄に「not-an-email」を入れて送信",
+      "expect": "送信されず、予約は作られない",
+      "actual": "フォームが残っている=true / 予約 16→16",
+      "note": "画面側の入力型チェックに加え、サーバー側でも zod で検証している。",
+      "checks": [
+        {
+          "label": "送信されない",
+          "ok": true
+        },
+        {
+          "label": "予約が増えていない",
+          "ok": true,
+          "detail": "16→16"
+        }
+      ],
+      "evidence": [
+        "02_メールアドレスの形式が不正.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:42:18.895Z"
+}

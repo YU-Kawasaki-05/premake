@@ -133,8 +133,7 @@ function ServiceForm({
               ))}
             </SelectContent>
           </Select>
-          {/* Select は value="none" を送るので、action 側で "" 扱いにするため hidden 補正は不要
-              (action は uuid 以外を "" として解釈) */}
+          {/* Select は未選択を value="none" で送る。action 側の optionalUuid() が undefined へ正規化する */}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="svc-questionnaire">問診テンプレ</Label>

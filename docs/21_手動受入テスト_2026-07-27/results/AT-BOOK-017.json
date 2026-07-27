@@ -1,0 +1,108 @@
+{
+  "id": "AT-BOOK-017",
+  "priority": "P1",
+  "phase": "A",
+  "order": 18,
+  "title": "インターネット予約の承認(承認待ち → 確定)",
+  "spec": "v2-13",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "手動承認モードでは、患者の申込は「承認待ち」で入り、院内が確定して初めて予約が成立する。承認漏れは患者を待たせる事故になる。",
+  "startedAt": "2026-07-27T02:36:43.315Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "患者が公開ページで空き枠を見る",
+      "action": "患者として /c/demo/reserve を開き、空き枠のある日を探す",
+      "expect": "空き枠(時刻ボタン)が表示される",
+      "actual": "2026-07-28 に 16 枠",
+      "checks": [
+        {
+          "label": "空き枠が表示される",
+          "ok": true,
+          "detail": "2026-07-28"
+        }
+      ],
+      "evidence": [
+        "01_患者が公開ページで空き枠を見る.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "患者が申し込む",
+      "action": "枠を選び、氏名・かな・電話・メールを入力して「この内容で予約する」",
+      "expect": "申込が受け付けられ、状態は「承認待ち」になる(手動承認モードのため即確定はしない)",
+      "actual": "予約番号=B-260727-3658 / 状態=requested",
+      "checks": [
+        {
+          "label": "予約が作られる",
+          "ok": true,
+          "detail": "B-260727-3658"
+        },
+        {
+          "label": "状態が承認待ち(requested)",
+          "ok": true,
+          "detail": "requested"
+        }
+      ],
+      "evidence": [
+        "02_患者が申し込む.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "院内が承認待ちの予約を開く",
+      "action": "台帳(2026-07-28)で申込のチップ(患者マスタ未紐付けのため「(患者未設定)」と表示)を開く",
+      "expect": "「確定にする」ボタンが表示される",
+      "actual": "チップ=1件 / 確定ボタン=true",
+      "note": "承認待ち一覧の画面は無く、台帳のチップから承認する導線(既知の制限 No.6)。",
+      "checks": [
+        {
+          "label": "確定ボタンがある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "03_院内が承認待ちの予約を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 4,
+      "label": "確定にする",
+      "action": "「確定にする」を押す",
+      "expect": "状態が確定に変わり、チップの色が確定色になる",
+      "actual": "状態=confirmed",
+      "checks": [
+        {
+          "label": "状態が確定になる",
+          "ok": true,
+          "detail": "confirmed"
+        }
+      ],
+      "evidence": [
+        "04_確定にする.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "確定時に患者への確定メールが積まれる",
+      "query": "select n.kind, n.recipient_type, n.status from notifications n join bookings b on b.id = n.booking_id where b.guest_email = 'at-guest@example.com' order by n.created_at",
+      "expect": "booking_confirmed(patient)が含まれる",
+      "actual": "booking_requested:patient:queued / booking_created_internal:member:queued / booking_confirmed:patient:queued",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:36:52.002Z"
+}

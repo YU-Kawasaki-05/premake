@@ -1,0 +1,79 @@
+{
+  "id": "AT-BOOK-001",
+  "priority": "P1",
+  "phase": "A",
+  "order": 4,
+  "title": "予約台帳 日ビューの表示(時間 × 部屋グリッド・JST)",
+  "spec": "v2-09",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "受付が当日の予定を一目で把握できること。ここが読めないと現場が回らない。",
+  "startedAt": "2026-07-26T19:53:15.779Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "台帳(日ビュー)を開く",
+      "action": "nurse1 で /demo を開く",
+      "expect": "部屋レーン(施術室1/2)と時間軸(10:00〜19:00)のグリッドが JST で描画される",
+      "actual": "部屋レーン=施術室 1・施術室 2 / 時間ラベル=10:00・12:00・15:00・18:00",
+      "note": "seed の部屋名を DB から取り、その文字列が画面にあることで照合している(ハードコードしない)。",
+      "checks": [
+        {
+          "label": "部屋レーンが DB の部屋数(2)分ある",
+          "ok": true,
+          "detail": "施術室 1・施術室 2"
+        },
+        {
+          "label": "時間軸ラベルが 4 点以上見える",
+          "ok": true,
+          "detail": "10:00・12:00・15:00・18:00"
+        }
+      ],
+      "evidence": [
+        "01_台帳_日ビュー_を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "予約チップの表示を確認",
+      "action": "台帳を 2026-07-28 に切り替える",
+      "expect": "患者名「山田 花子」と開始時刻 10:30 のチップが表示される",
+      "actual": "患者名=2件 / 時刻=1件",
+      "note": "DB の値(患者名・JST 開始時刻)を期待値に使い、画面表示と突き合わせている。",
+      "checks": [
+        {
+          "label": "患者名が表示される",
+          "ok": true,
+          "detail": "count=2"
+        },
+        {
+          "label": "JST の開始時刻が表示される",
+          "ok": true,
+          "detail": "count=1"
+        }
+      ],
+      "evidence": [
+        "02_予約チップの表示を確認.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "seed の確定予約が存在し、開始時刻が JST で取得できる",
+      "query": "select b.booking_no, p.name, to_char(lower(s.occupied_range) at time zone 'Asia/Tokyo', 'YYYY-MM-DD HH24:MI') as start_jst from bookings b join patients p on p.id = b.patient_id join booking_sessions s on s.booking_id = b.id where b.clinic_id = '10000000-0000-4000-a000-000000000001' and b.status = 'confirmed' order by lower(s.occupied_range) limit 1",
+      "expect": "confirmed の予約が 1 件以上",
+      "actual": "B-260727-EF2D / 山田 花子 / 2026-07-28 10:30",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-26T19:53:19.526Z"
+}

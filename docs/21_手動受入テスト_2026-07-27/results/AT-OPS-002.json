@@ -1,0 +1,97 @@
+{
+  "id": "AT-OPS-002",
+  "priority": "P0",
+  "phase": "C",
+  "order": 201,
+  "title": "運営がクリニックを新規作成し、院長の招待リンクを発行する",
+  "spec": "v2-25",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "本番導入の最初の一手。ここで作られたクリニックと招待リンクが、院長がシステムに入る唯一の入口になる。",
+  "notes": "検証用に作成したクリニックは、ケースの最後に削除して環境を元へ戻している。",
+  "startedAt": "2026-07-27T12:56:11.123Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "運営画面を開く",
+      "action": "ops アカウントでログインして /ops を開く",
+      "expect": "クリニックの一覧と作成の入口がある",
+      "actual": "既存クリニック=1 件",
+      "checks": [
+        {
+          "label": "クリニック作成の入口がある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_運営画面を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "クリニック情報を入力",
+      "action": "名称「AT検証 新規クリニック」/ URL 用の識別子「at-newclinic」/ 院長のメールアドレスを入力",
+      "expect": "入力が反映される",
+      "actual": "名称=AT検証 新規クリニック / slug=at-newclinic",
+      "note": "識別子は公開ページの URL(/c/<識別子>)になる。後から変えると患者に案内した URL が切れるため慎重に決める。",
+      "checks": [
+        {
+          "label": "識別子が入力される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_クリニック情報を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "作成され、招待リンクが表示される",
+      "action": "「作成」を押す",
+      "expect": "クリニックが作られ、院長へ渡す招待リンクが画面に出る",
+      "actual": "クリニック 1→2 / 招待リンク=表示された",
+      "note": "メールが設定されていない環境でも、この画面のリンクを直接渡せば院長は参加できる。",
+      "checks": [
+        {
+          "label": "クリニックが作られる",
+          "ok": true,
+          "detail": "at-newclinic / AT検証 新規クリニック"
+        },
+        {
+          "label": "招待リンクが画面に出る",
+          "ok": true,
+          "detail": "http://localhost:3000/invite/cdwRyDpZR7tLwaKQnQBWibITVw3TrDOvm564Zn9_C1E"
+        }
+      ],
+      "evidence": [
+        "03_作成され_招待リンクが表示される.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "院長(owner)としての招待が未受諾の状態で発行される",
+      "query": "select array_to_string(i.roles, ','), i.accepted_at is null as pending, i.email from invitations i join clinics c on c.id = i.clinic_id where c.slug = 'at-newclinic'",
+      "expect": "roles に owner を含む / 未受諾",
+      "actual": "owner / t / at-owner@example.com",
+      "ok": true
+    },
+    {
+      "label": "検証用クリニックを削除して環境を元に戻した",
+      "query": "delete from clinics where slug = 'at-newclinic'",
+      "expect": "残り 1 件",
+      "actual": "1 件",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:56:17.702Z"
+}

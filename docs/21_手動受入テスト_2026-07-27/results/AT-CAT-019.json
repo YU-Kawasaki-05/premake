@@ -1,0 +1,111 @@
+{
+  "id": "AT-CAT-019",
+  "priority": "P0",
+  "phase": "A",
+  "order": 8,
+  "title": "施術枠(受付枠)の確保 → 公開予約の空き枠に反映",
+  "spec": "v2-08",
+  "refs": [
+    "20_受け入れテスト/02_メニュー・リソース・枠.md"
+  ],
+  "intent": "受付枠は「患者がインターネットから予約できる時間帯」そのもの。ここが作れないと公開予約が成立しないため P0。",
+  "startedAt": "2026-07-26T20:07:45.430Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "施術枠(週ビュー)を開く",
+      "action": "nurse1(看護師)で /demo/schedule を開く",
+      "expect": "週ビューと「施術枠を追加」ボタンが表示される(staff も操作可)",
+      "actual": "追加ボタン=1個",
+      "checks": [
+        {
+          "label": "「施術枠を追加」ボタンがある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_施術枠_週ビュー_を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "枠の条件を入力",
+      "action": "担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-30 13:00〜17:00",
+      "expect": "ダイアログに入力が反映される",
+      "actual": "日付=2026-07-30 開始=13:00 終了=17:00",
+      "checks": [
+        {
+          "label": "日付が入力される",
+          "ok": true,
+          "detail": "2026-07-30"
+        },
+        {
+          "label": "開始 13:00",
+          "ok": true
+        },
+        {
+          "label": "終了 17:00",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_枠の条件を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "枠が週ビューに現れる",
+      "action": "ダイアログの「登録」を押す",
+      "expect": "枠が 1 件増え、週ビューに表示される",
+      "actual": "toast=false / 枠 0→1 件",
+      "checks": [
+        {
+          "label": "枠が 1 件増える",
+          "ok": true,
+          "detail": "0→1"
+        }
+      ],
+      "evidence": [
+        "03_枠が週ビューに現れる.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 4,
+      "label": "公開予約ページに新メニューが出る",
+      "action": "患者が見る /c/demo/reserve を開く",
+      "expect": "作成したメニュー「検証用 メニューA」が選択肢に出る(公開かつ担当割当済みのため)",
+      "actual": "メニューの一致=2件",
+      "note": "受付枠は「メニュー × 担当 × 部屋 × 時間」が全て揃って初めて空き枠になる。ここは公開側の入口が開いたことの確認。",
+      "checks": [
+        {
+          "label": "新メニューが公開ページに出る",
+          "ok": true,
+          "detail": "count=2"
+        }
+      ],
+      "evidence": [
+        "04_公開予約ページに新メニューが出る.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "schedule_blocks に受付枠として保存され、JST の時刻がずれない",
+      "query": "select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'a26665d2-58c1-4786-86cb-bd126616a6b1' order by lower(time_range) desc limit 1",
+      "expect": "block_type=open / 2026-07-30 13:00 〜 2026-07-30 17:00 (JST)",
+      "actual": "open / 2026-07-30 13:00 / 2026-07-30 17:00",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-26T20:07:59.192Z"
+}

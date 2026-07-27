@@ -1,0 +1,48 @@
+{
+  "id": "AT-PUB-029",
+  "priority": "P0",
+  "phase": "B",
+  "order": 129,
+  "title": "データベースへ直接アクセスしても患者情報は読めない(RLS)",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "公開ページで使う鍵(anon key)はブラウザに配られるため、第三者の手に渡る前提で考える必要がある。その鍵でデータベースを直接叩いても、患者・予約が読めてはいけない。",
+  "startedAt": "2026-07-27T12:42:21.090Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "公開用の鍵でデータベースを直接叩く",
+      "action": "ブラウザに配られる anon key で patients / bookings / booking_sessions / clinic_members / audit_logs / notifications を取得しようとする",
+      "expect": "どのテーブルも 0 件、または権限エラー。1 行も返らない",
+      "actual": "patients:HTTP401(非配列) / bookings:HTTP401(非配列) / booking_sessions:HTTP401(非配列) / clinic_members:HTTP401(非配列) / audit_logs:HTTP401(非配列) / notifications:HTTP401(非配列)",
+      "note": "デフォルト拒否の行レベルセキュリティ(RLS)。anon 向けのポリシーを 1 つも作っていないため、鍵が漏れても読めない。",
+      "checks": [
+        {
+          "label": "患者情報を含むテーブルが 1 行も読めない",
+          "ok": true,
+          "detail": "全テーブル 0 行"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "業務テーブルの RLS が有効になっている",
+      "query": "select relname, relrowsecurity from pg_class where relname in ('patients','bookings','booking_sessions','notifications','audit_logs')",
+      "expect": "すべて有効(t)",
+      "actual": "audit_logs=true / booking_sessions=true / bookings=true / notifications=true / patients=true",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:42:21.248Z"
+}

@@ -1,0 +1,56 @@
+{
+  "id": "AT-NTF-020",
+  "priority": "P0",
+  "phase": "D",
+  "order": 301,
+  "title": "メールの送信失敗にクリニックが気づける",
+  "spec": "v2-23",
+  "refs": [
+    "20_受け入れテスト/06_通知・運営・法定.md"
+  ],
+  "intent": "送れなかったメールに誰も気づかないのが最悪の状態。予約確定の連絡が届かないまま当日を迎えることになる。",
+  "notes": "失敗の状態を作るため、送信待ちの通知を 1 件だけ「失敗」に書き換えて画面表示を確認し、終了後に元へ戻している。",
+  "startedAt": "2026-07-27T12:57:47.364Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "設定画面の「通知の送信状況」を見る",
+      "action": "owner で /demo/settings を開く(送信に失敗した通知が 1 件ある状態)",
+      "expect": "失敗した通知が一覧に表示され、状態が分かる",
+      "actual": "失敗を示す表示=true",
+      "note": "オーナーが日次で確認する想定の画面。失敗が埋もれないよう状態が明示される必要がある。",
+      "checks": [
+        {
+          "label": "失敗が画面から分かる",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_設定画面の_通知の送信状況_を見る.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "検証用に変更した通知を元に戻した",
+      "query": "select status from notifications where id = 'e1797e5b-4542-41f1-9b99-3558b02fd246'",
+      "expect": "queued",
+      "actual": "queued",
+      "ok": true
+    },
+    {
+      "label": "自動再送の仕組み(上限 3 回)",
+      "query": "select coalesce(max(attempts), 0) from notifications where clinic_id = '10000000-0000-4000-a000-000000000001'",
+      "expect": "送信失敗時は 3 回まで自動で再試行し、超えると failed として残る",
+      "actual": "現在の最大試行回数=0",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:57:51.189Z"
+}

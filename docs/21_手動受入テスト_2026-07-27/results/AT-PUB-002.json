@@ -1,0 +1,48 @@
+{
+  "id": "AT-PUB-002",
+  "priority": "P0",
+  "phase": "B",
+  "order": 102,
+  "title": "自由診療であることと副作用リスクが記載される",
+  "spec": "v2-19",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "自由診療(保険適用外)であること、副作用が起こりうることの明示は医療広告の必須要件。これが無いと公開できない。",
+  "startedAt": "2026-07-27T12:29:22.123Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "注意書きの記載を確認",
+      "action": "公開ページ下部の注意書きを読む",
+      "expect": "「自由診療」の明示と、副作用(発赤・腫れ等)についての記載がある",
+      "actual": "自由診療=true / 副作用=true / 個人差=true",
+      "checks": [
+        {
+          "label": "「自由診療」の記載がある",
+          "ok": true
+        },
+        {
+          "label": "副作用についての記載がある",
+          "ok": true
+        },
+        {
+          "label": "効果に個人差がある旨の記載がある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_注意書きの記載を確認.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:29:23.229Z"
+}

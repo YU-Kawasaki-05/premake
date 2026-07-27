@@ -1,0 +1,89 @@
+{
+  "id": "AT-AUTH-015",
+  "priority": "P0",
+  "phase": "C",
+  "order": 202,
+  "title": "院長がスタッフを招待する",
+  "spec": "v2-03",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "看護師・受付が業務に入るための唯一の導線。招待できないと院長 1 人でしか使えない。",
+  "startedAt": "2026-07-27T12:56:17.703Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "スタッフ管理を開く",
+      "action": "owner で /demo/staff を開く",
+      "expect": "在籍スタッフの一覧と招待の入口がある",
+      "actual": "既存の招待=0 件",
+      "checks": [
+        {
+          "label": "招待の入口がある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_スタッフ管理を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "招待するメールアドレスと役割を入力",
+      "action": "at-invitee@example.com をスタッフとして招待",
+      "expect": "入力が反映される",
+      "actual": "メール=at-invitee@example.com",
+      "checks": [
+        {
+          "label": "メールが入力される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_招待するメールアドレスと役割を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "招待が作られ、リンクが表示される",
+      "action": "招待を送信",
+      "expect": "招待が 1 件増え、渡せるリンクが表示される",
+      "actual": "招待 0→1 / リンク=表示",
+      "note": "メール送信が設定されていない環境では、このリンクを直接伝える運用になる。",
+      "checks": [
+        {
+          "label": "招待が 1 件増える",
+          "ok": true,
+          "detail": "0→1"
+        },
+        {
+          "label": "招待リンクが表示される",
+          "ok": true,
+          "detail": "http://localhost:3000/invite/EbnWQzLIVhHZT4HM76ULH3goqVeM4zTSnT48nv-1OIM"
+        }
+      ],
+      "evidence": [
+        "03_招待が作られ_リンクが表示される.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "招待が未受諾の状態で保存され、有効期限がある",
+      "query": "select email, array_to_string(roles, ','), accepted_at is null as pending, expires_at > now() as valid from invitations where clinic_id = '10000000-0000-4000-a000-000000000001' and email = 'at-invitee@example.com'",
+      "expect": "未受諾 / 期限が未来",
+      "actual": "at-invitee@example.com / staff / t / t",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:56:23.620Z"
+}

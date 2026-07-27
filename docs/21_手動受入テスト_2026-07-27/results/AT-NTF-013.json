@@ -1,0 +1,79 @@
+{
+  "id": "AT-NTF-013",
+  "priority": "P0",
+  "phase": "A",
+  "order": 29,
+  "title": "前日リマインダーが送られ、二重に送られない",
+  "spec": "v2-24",
+  "refs": [
+    "20_受け入れテスト/06_通知・運営・法定.md"
+  ],
+  "intent": "無断キャンセル(ノーショー)を減らす主要機能。二重に届くと患者の信頼を損ねるため、重複防止まで含めて P0。",
+  "startedAt": "2026-07-27T02:42:42.965Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "1 回目の定期実行",
+      "action": "定期実行を呼ぶ(明日までの確定予約を探してリマインダーを積み、そのまま送信する)",
+      "expect": "対象があればリマインダーが作られ、送信済みになる",
+      "actual": "対象候補=3 件 / 応答={\"ok\":true,\"recovered\":0,\"reminded\":2,\"sent\":2} / reminder 通知=2 件",
+      "note": "走査の窓は「いま 〜 翌日の終わり(JST)」。深夜に入った当日予約も取りこぼさないよう 2026-07-26 に拡大済み。",
+      "checks": [
+        {
+          "label": "定期実行が成功する",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "リマインダーが作られる",
+          "ok": true,
+          "detail": "2 件"
+        }
+      ],
+      "evidence": [
+        "01_1_回目の定期実行.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "2 回目の定期実行(重複しないことの確認)",
+      "action": "もう一度、間を空けずに定期実行を呼ぶ",
+      "expect": "同じ予約に 2 通目のリマインダーは作られない",
+      "actual": "応答={\"ok\":true,\"recovered\":0,\"reminded\":0,\"sent\":0} / reminder 通知=2→2 件",
+      "note": "処理中フラグ(sending)で行を確保してから送るため、多重起動でも二重送信しない。途中で落ちた分は 10 分後に自動回収される。",
+      "checks": [
+        {
+          "label": "リマインダーが増えない",
+          "ok": true,
+          "detail": "2→2"
+        },
+        {
+          "label": "2 回目の reminded は 0",
+          "ok": true,
+          "detail": "reminded=0"
+        }
+      ],
+      "evidence": [
+        "02_2_回目の定期実行_重複しないことの確認_.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "1 予約につきリマインダーは 1 通だけ",
+      "query": "select b.booking_no, count(*) from notifications n join bookings b on b.id = n.booking_id where n.kind = 'reminder' group by b.booking_no having count(*) > 1",
+      "expect": "重複 0 件",
+      "actual": "重複なし",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:42:46.491Z"
+}

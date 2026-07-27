@@ -1,0 +1,93 @@
+{
+  "id": "AT-CAT-010",
+  "priority": "P1",
+  "phase": "A",
+  "order": 5,
+  "title": "部屋の作成(施術室の登録)",
+  "spec": "v2-06",
+  "refs": [
+    "20_受け入れテスト/02_メニュー・リソース・枠.md"
+  ],
+  "intent": "予約は「部屋 × 時間」で重複を防いでいるため、部屋が登録されていないと予約が 1 件も作れない。本番の初期設定で最初に通る操作。",
+  "startedAt": "2026-07-26T20:07:27.390Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "部屋・担当設定を開く",
+      "action": "owner で /demo/rooms を開く",
+      "expect": "既存の部屋一覧と「部屋を追加」ボタンが表示される",
+      "actual": "既存 2 室 / 追加ボタン=1個",
+      "checks": [
+        {
+          "label": "「部屋を追加」ボタンがある",
+          "ok": true,
+          "detail": "owner のみ操作可"
+        }
+      ],
+      "evidence": [
+        "01_部屋_担当設定を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "部屋名を入力",
+      "action": "ダイアログで部屋名「検証用 処置室A」を入力",
+      "expect": "ダイアログ「部屋を追加」が開き、入力が反映される",
+      "actual": "入力値=検証用 処置室A",
+      "checks": [
+        {
+          "label": "入力が反映",
+          "ok": true,
+          "detail": "検証用 処置室A"
+        }
+      ],
+      "evidence": [
+        "02_部屋名を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "一覧に追加された",
+      "action": "ダイアログの「追加」を押す",
+      "expect": "ダイアログが閉じ、一覧に新しい部屋が表示される",
+      "actual": "一覧の一致=1件",
+      "note": "画面の一覧表示と、次の DB 裏取りの両方で確認している。",
+      "checks": [
+        {
+          "label": "一覧に表示される",
+          "ok": true,
+          "detail": "count=1"
+        }
+      ],
+      "evidence": [
+        "03_一覧に追加された.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "rooms に status=active の行が 1 件増える",
+      "query": "select name, status from rooms where clinic_id = '10000000-0000-4000-a000-000000000001' and name = '検証用 処置室A'",
+      "expect": "件数 2→3 / status=active",
+      "actual": "件数 2→3 / 行=検証用 処置室A, active",
+      "ok": true
+    },
+    {
+      "label": "監査ログに room.create が記録される",
+      "query": "select action, actor_type from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action = 'room.create' order by created_at desc limit 1",
+      "expect": "action=room.create / actor_type=member",
+      "actual": "room.create, member",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-26T20:07:32.502Z"
+}

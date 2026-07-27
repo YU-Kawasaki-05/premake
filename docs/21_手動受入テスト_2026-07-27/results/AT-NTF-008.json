@@ -1,0 +1,62 @@
+{
+  "id": "AT-NTF-008",
+  "priority": "P0",
+  "phase": "A",
+  "order": 31,
+  "title": "院内にも通知が届く(新規申込・患者都合のキャンセル)",
+  "spec": "v2-23",
+  "refs": [
+    "20_受け入れテスト/06_通知・運営・法定.md"
+  ],
+  "intent": "インターネット経由の申込に院内が気づけないと承認が遅れる。院内宛の通知はクリニック設定のメールアドレスへ送られる。",
+  "startedAt": "2026-07-27T02:42:46.492Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "院内宛の通知を設定画面で確認",
+      "action": "owner で /demo/settings の「通知の送信状況」を見る",
+      "expect": "院内宛(クリニックのメールアドレス)の通知が並ぶ",
+      "actual": "クリニックのメール=info@demo.local / 院内宛の通知 1 件",
+      "note": "院内宛の宛先はクリニック設定のメールアドレス。本番では受信できるアドレスを設定する必要がある。",
+      "checks": [
+        {
+          "label": "院内宛の通知がある",
+          "ok": true,
+          "detail": "1 件"
+        },
+        {
+          "label": "宛先がクリニックのメールアドレス",
+          "ok": true,
+          "detail": "info@demo.local"
+        }
+      ],
+      "evidence": [
+        "01_院内宛の通知を設定画面で確認.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "インターネット申込 → 院内宛の「新しい予約」通知が積まれている",
+      "query": "select kind, recipient_type, recipient_email, status from notifications where clinic_id = '10000000-0000-4000-a000-000000000001' and recipient_type = 'member' order by created_at desc limit 5",
+      "expect": "booking_created_internal(member)が含まれる",
+      "actual": "booking_created_internal:member:info@demo.local:sent",
+      "ok": true
+    },
+    {
+      "label": "院内宛のメールに患者用の管理リンクが混ざらない",
+      "query": "tests/at-evidence-emails.test.ts — 院内向け 2 種に /manage/ が含まれないことを検証",
+      "expect": "含まれない(患者のキャンセル用リンクが院内に漏れない)",
+      "actual": "検証済み(2 種とも合格)",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:42:49.503Z"
+}

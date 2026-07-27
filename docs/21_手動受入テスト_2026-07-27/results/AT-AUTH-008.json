@@ -1,0 +1,42 @@
+{
+  "id": "AT-AUTH-008",
+  "priority": "P0",
+  "phase": "A",
+  "order": 3,
+  "title": "未ログインで保護ルートへ直アクセス → /login",
+  "spec": "v2-01",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "URL を知っているだけで患者情報が見えないこと。個人情報保護の最低線であり、破れていれば即リリース不可。",
+  "startedAt": "2026-07-26T19:53:13.691Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "保護ルート 5 本へ未ログインでアクセス",
+      "action": "cookie なしで /demo / /demo/settings / /demo/staff / /demo/patients / /ops を開く",
+      "expect": "すべて /login へリダイレクト。保護ページの本文(クリニック名・患者名・メンバー名)は HTML に一切含まれない",
+      "actual": "/demo→/login(漏れ:0) / /demo/settings→/login(漏れ:0) / /demo/staff→/login(漏れ:0) / /demo/patients→/login(漏れ:0) / /ops→/login(漏れ:0)",
+      "note": "リダイレクト先の確認だけでなく、レスポンス HTML に保護対象の文字列が含まれないことまで検査している。",
+      "checks": [
+        {
+          "label": "5 本すべて /login へ、かつ本文露出なし",
+          "ok": true,
+          "detail": "全て遮断"
+        }
+      ],
+      "evidence": [
+        "01_保護ルート_5_本へ未ログインでアクセス.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-26T19:53:15.778Z"
+}
