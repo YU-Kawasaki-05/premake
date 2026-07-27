@@ -73,6 +73,45 @@ const LIMITS = [
 
 const VERDICT_LABEL = { PASS: "合格", PARTIAL: "一部制限あり", NA: "検証不能", FAIL: "不合格" };
 
+/**
+ * 「最優先 MVP パス」(docs/20_受け入れテスト/00_最優先MVPパス.md)の実行順 1〜32 と、
+ * 本書のどのケースで確認したかの対応。統合したものは coveredBy に実施ケースを書く。
+ */
+const COVERAGE = [
+  { n: 1, id: "AT-AUTH-001", by: "AT-AUTH-001" },
+  { n: 2, id: "AT-AUTH-025", by: "AT-AUTH-025" },
+  { n: 3, id: "AT-AUTH-008", by: "AT-AUTH-008" },
+  { n: 4, id: "AT-BOOK-001", by: "AT-BOOK-001" },
+  { n: 5, id: "AT-CAT-010", by: "AT-CAT-010" },
+  { n: 6, id: "AT-CAT-001", by: "AT-CAT-001" },
+  { n: 7, id: "AT-CAT-012", by: "AT-CAT-012" },
+  { n: 8, id: "AT-CAT-019", by: "AT-CAT-019" },
+  { n: 9, id: "AT-BOOK-007", by: "AT-BOOK-007" },
+  { n: 10, id: "AT-BOOK-008", by: "AT-BOOK-008" },
+  { n: 11, id: "AT-BOOK-009", by: "AT-BOOK-009" },
+  { n: 12, id: "AT-BOOK-010", by: "AT-BOOK-010" },
+  { n: 13, id: "AT-BOOK-018", by: "AT-BOOK-018" },
+  { n: 14, id: "AT-BOOK-019", by: "AT-BOOK-019" },
+  { n: 15, id: "AT-BOOK-021", by: "AT-BOOK-021", note: "画面では同時性を作れないため DB への同時書き込みで代替検証" },
+  { n: 16, id: "AT-BOOK-023", by: "AT-BOOK-023" },
+  { n: 17, id: "AT-BOOK-002", by: "AT-BOOK-002" },
+  { n: 18, id: "AT-BOOK-017", by: "AT-BOOK-017" },
+  { n: 19, id: "AT-BOOK-016", by: "AT-BOOK-015", note: "不正な遷移の拒否は状態遷移ケースの中で確認(完了後にボタンが出ない/操作できない)" },
+  { n: 20, id: "AT-BOOK-015", by: "AT-BOOK-015" },
+  { n: 21, id: "AT-BOOK-025", by: "AT-BOOK-015 + AT-BOOK-007", note: "電話予約→当日 done の通しは、作成ケースと状態遷移ケースの連続で確認" },
+  { n: 22, id: "AT-BOOK-013", by: "AT-BOOK-013" },
+  { n: 23, id: "AT-BOOK-022", by: "AT-BOOK-013", note: "キャンセル後に同じ枠へ再予約できることを同ケース内で確認" },
+  { n: 24, id: "AT-BOOK-014", by: "AT-BOOK-015", note: "完了後はキャンセル操作自体が出ないことを確認" },
+  { n: 25, id: "AT-BOOK-012", by: "AT-BOOK-012" },
+  { n: 26, id: "AT-NTF-004", by: "AT-NTF-004" },
+  { n: 27, id: "AT-NTF-003", by: "AT-BOOK-017", note: "承認 → 患者への確定メールが積まれることを承認ケース内で確認" },
+  { n: 28, id: "AT-NTF-006", by: "AT-NTF-006" },
+  { n: 29, id: "AT-NTF-013", by: "AT-NTF-013" },
+  { n: 30, id: "AT-NTF-016", by: "AT-NTF-013", note: "二重送信防止は同ケースの 2 回目実行で確認" },
+  { n: 31, id: "AT-NTF-008", by: "AT-NTF-008" },
+  { n: 32, id: "AT-NTF-014", by: "AT-NTF-014" },
+];
+
 function esc(s) {
   return String(s ?? "")
     .replace(/&/g, "&amp;")
@@ -238,6 +277,30 @@ const phaseSections = PHASES.map((p) => {
 
 const openIssues = allIssues.filter((i) => i.status !== "fixed");
 const fixedIssues = allIssues.filter((i) => i.status === "fixed");
+const byId = new Map(cases.map((c) => [c.id, c]));
+const coverageRows = COVERAGE.map((r) => {
+  const done = byId.get(r.by.split(" + ")[0]);
+  const v = done?.verdict;
+  return `<tr class="${v ? "" : "row-todo"}">
+    <td>${r.n}</td><td><code>${esc(r.id)}</code></td>
+    <td>${v ? verdictChip(v) : '<span class="vd vd-na">未実施</span>'}</td>
+    <td>${r.by === r.id ? "—" : `<a href="#${esc(r.by.split(" + ")[0])}">${esc(r.by)}</a> で確認`}${r.note ? `<br><span class="cov-note">${esc(r.note)}</span>` : ""}</td>
+  </tr>`;
+}).join("");
+const coveredCount = COVERAGE.filter((r) => byId.has(r.by.split(" + ")[0])).length;
+const coverageSection = `<section id="coverage">
+  <h2>最優先 MVP パス 32 ケースの消化状況</h2>
+  <p class="sec-sub">自分たちで「これが全部通ればリリース判定できる」と定義した <code>docs/20_受け入れテスト/00_最優先MVPパス.md</code> の実行順 1〜32 との対応です。
+  内容が重なるケースは 1 つにまとめて確認しており、その場合はどこで確認したかを書いています(飛ばしたわけではありません)。</p>
+  <div class="chips" style="margin-bottom:16px">
+    <span class="chip big ${coveredCount === COVERAGE.length ? "ok" : "warn"}">消化 ${coveredCount} / ${COVERAGE.length}</span>
+  </div>
+  <div class="table-scroll"><table>
+    <thead><tr><th>順</th><th>台帳のテスト ID</th><th>判定</th><th>備考</th></tr></thead>
+    <tbody>${coverageRows}</tbody>
+  </table></div>
+</section>`;
+
 const issuesSection = allIssues.length
   ? `<section id="issues"><h2>検出した問題</h2>
      <p class="sec-sub">見つかったものは隠さず全部載せています。この作業内で直したものは「修正済み」、判断や別作業が必要なものは「未解決」に分けています。</p>
@@ -396,6 +459,8 @@ tr:last-child td{border-bottom:none}
 .dbwrap{margin-top:20px;border-top:1px solid var(--line-soft);padding-top:12px}
 .dbwrap summary{cursor:pointer;font-weight:600;font-size:14.5px}
 .db code{font-size:11.5px;white-space:pre-wrap}
+.cov-note{font-size:12px;color:var(--ink-faint)}
+.row-todo{opacity:.6}
 .issue-shot{margin-top:12px;max-width:520px}
 .issue-shot-cap{font-size:12px;color:inherit;opacity:.85;margin:0 0 6px}
 .limit{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
@@ -423,7 +488,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     ${PHASES.filter((p) => cases.some((c) => c.phase === p.key))
       .map((p) => `<a href="#phase-${p.key}">フェーズ${p.key}</a>`)
       .join("")}
-    <a href="#issues">問題</a><a href="#limits">未検証</a>
+    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a>
   </nav>
   <button class="toggle" id="tg" type="button">◐ テーマ</button>
 </div></header>
@@ -471,6 +536,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <p>${count("FAIL") ? `不合格 ${count("FAIL")} 件があります。詳細は「検出した問題」を参照してください。` : "実施済みのケースはすべて合格しています。ただし本書は作成途中であり、未実施のフェーズが残っている場合は最終判定になりません(サマリのケース数を参照)。"}</p></div>
 </section>
 
+${coverageSection}
 ${phaseSections}
 ${issuesSection}
 ${limitsSection}

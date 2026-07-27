@@ -1,0 +1,50 @@
+{
+  "id": "AT-BOOK-010",
+  "priority": "P0",
+  "phase": "A",
+  "order": 12,
+  "title": "他クリニックのデータが混入しない(テナント越境の防止)",
+  "spec": "v2-02 / v2-10",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "複数クリニックが同じシステムを使うため、他院の患者・部屋・スタッフが自院の予約に混ざったら重大な情報事故。リリースゲート。",
+  "notes": "この環境にはクリニックが 1 つしかないため、検証用の第 2 クリニックを一時的に作って越境を試み、終了後に削除している。",
+  "startedAt": "2026-07-27T02:22:29.545Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "部屋の選択肢に他院が出ないことを確認",
+      "action": "新規予約ダイアログの「部屋」を開いて選択肢を見る",
+      "expect": "自院(デモクリニック)の部屋だけが並び、「他院の部屋」は出ない",
+      "actual": "選択肢=施術室 1・施術室 2・検証用 処置室A",
+      "note": "画面に出ないだけでなく、この後 DB レベルでも越境を拒否することを確認する。",
+      "checks": [
+        {
+          "label": "他院の部屋が選択肢に無い",
+          "ok": true,
+          "detail": "施術室 1・施術室 2・検証用 処置室A"
+        }
+      ],
+      "evidence": [
+        "01_部屋の選択肢に他院が出ないことを確認.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "他院の部屋 ID を含むセッションはデータベースが拒否する(複合外部キー)",
+      "query": "insert into booking_sessions (... room_id = 他院の部屋 ..., clinic_id = デモクリニック ...)",
+      "expect": "外部キー違反で拒否される",
+      "actual": "拒否された: Error: ERROR: insert or update on table \"booking_sessions\" violates foreign key constraint \"booking_sessions_room_clinic_fk\" DETAIL: Key (room_id, clinic_id)=(38f23074-7f97-4bb9-af6d-1b7f747ef78d, 1",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:22:33.851Z"
+}

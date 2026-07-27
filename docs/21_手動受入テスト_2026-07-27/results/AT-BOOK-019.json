@@ -1,0 +1,73 @@
+{
+  "id": "AT-BOOK-019",
+  "priority": "P0",
+  "phase": "A",
+  "order": 14,
+  "title": "同じ担当者・同じ時間の二重予約を防ぐ(部屋が違っても)",
+  "spec": "v2-12",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "同じスタッフを同じ時間に 2 件へ割り当てると当日に必ず事故になる。部屋が別でも防ぐ必要がある。",
+  "startedAt": "2026-07-27T02:22:52.969Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "1 件目を作成",
+      "action": "鈴木 / 施術室 1 / 2026-07-30 12:30 で予約を作成",
+      "expect": "正常に作成される",
+      "actual": "エラー=[]",
+      "checks": [
+        {
+          "label": "1 件目は作成できる",
+          "ok": true,
+          "detail": "エラーなし"
+        }
+      ],
+      "evidence": [
+        "01_1_件目を作成.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "同じ時間に 2 件目を作成しようとする",
+      "action": "別の患者を、同じ 鈴木 / 別部屋(施術室 2) / 2026-07-30 12:30 で作成",
+      "expect": "重複として拒否され、2 件目は作られない",
+      "actual": "エラー=[\"指定の時間帯は部屋または担当が既に埋まっています。別の時間を選んでください\"] / 予約 4→5(+1 が正)",
+      "note": "アプリの判定ではなくデータベースの排他制約(EXCLUDE)で弾いている。同時アクセスでもすり抜けない。",
+      "checks": [
+        {
+          "label": "エラーが表示される",
+          "ok": true,
+          "detail": "指定の時間帯は部屋または担当が既に埋まっています。別の時間を選んでください"
+        },
+        {
+          "label": "予約は 1 件しか増えていない",
+          "ok": true,
+          "detail": "4→5"
+        }
+      ],
+      "evidence": [
+        "02_同じ時間に_2_件目を作成しようとする.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "同じ担当者・同じ時間帯に重なるセッションは 1 件だけ",
+      "query": "select count(*) from booking_sessions s join bookings b on b.id = s.booking_id where b.clinic_id = '10000000-0000-4000-a000-000000000001' and b.status <> 'cancelled' and s.member_id = (select id from clinic_members where clinic_id = '10000000-0000-4000-a000-000000000001' and coalesce(nullif(display_name,''),'') like '鈴木%') and s.occupied_range && tstzrange(('2026-07-30T12:30:00+09:00')::timestamptz, ('2026-07-30T12:30:00+09:00')::timestamptz + interval '30 min')",
+      "expect": "1 件",
+      "actual": "1 件",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:23:11.988Z"
+}

@@ -1,0 +1,109 @@
+{
+  "id": "AT-BOOK-013",
+  "priority": "P0",
+  "phase": "A",
+  "order": 22,
+  "title": "予約のキャンセル(理由の記録・枠の解放・患者への通知)",
+  "spec": "v2-11",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "キャンセルで枠が解放されないと、空いているのに次の患者を入れられない。通知が飛ばないと患者が来院してしまう。",
+  "startedAt": "2026-07-27T02:37:07.020Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "キャンセル対象の予約を作成",
+      "action": "山田 花子 / 鈴木 / 施術室 2 / 2026-07-31 16:00",
+      "expect": "予約が作成される",
+      "actual": "予約番号=B-260727-2CBA",
+      "checks": [
+        {
+          "label": "作成できる",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_キャンセル対象の予約を作成.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "キャンセル理由を入力",
+      "action": "「予約をキャンセル」→ 理由「患者都合(受け入れテスト)」を入力",
+      "expect": "理由の入力欄と「キャンセルを確定」が出る",
+      "actual": "入力=患者都合(受け入れテスト)",
+      "checks": [
+        {
+          "label": "理由が入力できる",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_キャンセル理由を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "キャンセルが確定する",
+      "action": "「キャンセルを確定」を押す",
+      "expect": "予約がキャンセル状態になり、台帳から確定チップが消える",
+      "actual": "状態=cancelled / 理由=患者都合(受け入れテスト)",
+      "checks": [
+        {
+          "label": "状態がキャンセルになる",
+          "ok": true,
+          "detail": "cancelled"
+        }
+      ],
+      "evidence": [
+        "03_キャンセルが確定する.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 4,
+      "label": "解放された枠に別の予約を入れる",
+      "action": "キャンセルした枠と同じ 鈴木 / 施術室 2 / 2026-07-31 16:00 に、別の患者で予約",
+      "expect": "重複エラーにならず作成できる(枠が確実に解放されている)",
+      "actual": "予約番号=B-260727-F4F6",
+      "note": "キャンセルは専用の処理で原子的に行われ、枠の解放と状態変更が同時に確定する。",
+      "checks": [
+        {
+          "label": "同じ枠に再予約できる",
+          "ok": true,
+          "detail": "B-260727-F4F6"
+        }
+      ],
+      "evidence": [
+        "04_解放された枠に別の予約を入れる.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "キャンセル理由が記録され、押さえていた枠がすべて解放される",
+      "query": "select b.status, b.cancel_reason, (select count(*) from booking_sessions s where s.booking_id = b.id and s.status <> 'cancelled') as alive from bookings b where b.id = '180292a3-0ec9-4f4f-90a1-8d92fe9d84f5'",
+      "expect": "status=cancelled / 理由が保存 / 生きているセッション 0 件",
+      "actual": "cancelled / 患者都合(受け入れテスト) / 0",
+      "ok": true
+    },
+    {
+      "label": "患者へのキャンセル通知が積まれる",
+      "query": "select kind, recipient_type, status from notifications where booking_id = '180292a3-0ec9-4f4f-90a1-8d92fe9d84f5' order by created_at",
+      "expect": "booking_cancelled(patient)",
+      "actual": "booking_confirmed:patient:queued / booking_cancelled:patient:queued",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:37:24.276Z"
+}

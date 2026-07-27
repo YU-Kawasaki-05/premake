@@ -68,11 +68,20 @@ export async function rest(path, init) {
  */
 export function sql(query) {
   if (!IS_LOCAL) throw new Error("sql() はローカル限定");
-  const out = execFileSync(
-    "docker",
-    ["exec", "-i", "supabase_db_premake", "psql", "-U", "postgres", "-d", "postgres", "-t", "-A", "-F", "\t", "-c", query],
-    { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
-  );
+  let out;
+  try {
+    out = execFileSync(
+      "docker",
+      ["exec", "-i", "supabase_db_premake", "psql", "-U", "postgres", "-d", "postgres", "-t", "-A", "-F", "\t", "-c", query],
+      { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
+    );
+  } catch (e) {
+    // psql のエラー本文(制約名など)は stderr にしか出ない。判定に使えるよう message へ載せ替える
+    const detail = String(e.stderr ?? "").trim() || String(e.message ?? e);
+    const err = new Error(detail);
+    err.stderr = detail;
+    throw err;
+  }
   return out
     .trim()
     .split("\n")
@@ -144,6 +153,36 @@ export async function submitDialog(page, names = ["追加", "保存", "登録", 
     }
   }
   throw new Error(`送信ボタンが見つからない(候補: ${names.join(" / ")})`);
+}
+
+/**
+ * 台帳から予約を 1 件作る(前提づくり用)。
+ * @returns 採番された予約番号(失敗時 null)
+ */
+export async function createBookingViaUI(page, { patient, service, member, room, date, time, notes }) {
+  await page.goto(`${BASE}/demo`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(600);
+  await page.getByRole("button", { name: "新規予約" }).first().click();
+  await page.waitForTimeout(600);
+  await page.getByLabel("患者検索").fill(patient);
+  await page.getByRole("button", { name: "検索" }).click();
+  await page.waitForTimeout(800);
+  await page.locator("ul li button").first().click();
+  await page.waitForTimeout(250);
+  await selectOption(page, "bk-service", service);
+  await selectOption(page, "bk-member", member);
+  await selectOption(page, "bk-room", room);
+  await page.fill("#bk-date", date);
+  await page.fill("#bk-time", time);
+  await page.fill("#bk-notes", notes);
+  await page.getByRole("button", { name: "予約を作成" }).click();
+  for (let i = 0; i < 16; i++) {
+    await page.waitForTimeout(400);
+    if ((await page.getByRole("dialog").count()) === 0) break;
+  }
+  return sqlOne(
+    `select booking_no from bookings where clinic_id = '${DEMO_CLINIC_ID}' and notes = '${notes.replace(/'/g, "''")}' limit 1`,
+  );
 }
 
 /** toast(sonner)の文言が出るまで待つ。出たら true */

@@ -1,0 +1,102 @@
+{
+  "id": "AT-BOOK-012",
+  "priority": "P1",
+  "phase": "A",
+  "order": 25,
+  "title": "予約の変更(日時・担当・部屋)と変更後の重複チェック",
+  "spec": "v2-11",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "「1 時間ずらしたい」は日常的に発生する。変更後にも重複チェックが働かないと、ずらした先で二重予約になる。",
+  "startedAt": "2026-07-27T02:37:24.277Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "変更する予約を開く",
+      "action": "予約(B-260727-BDBB, 2026-07-31 13:00)のチップを開く",
+      "expect": "「予約を変更」ボタンが表示される(来院以降・完了・キャンセルでは出ない)",
+      "actual": "変更ボタン=1個 / 現在の開始=13:00",
+      "checks": [
+        {
+          "label": "「予約を変更」がある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_変更する予約を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "新しい時刻を指定",
+      "action": "変更ダイアログで開始時刻を 17:00 にする",
+      "expect": "変更内容が入力できる",
+      "actual": "新しい時刻=17:00",
+      "checks": [
+        {
+          "label": "時刻が入力される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_新しい時刻を指定.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "変更が反映される",
+      "action": "「変更を保存」を押す",
+      "expect": "台帳の表示位置が 17:00 に移動する",
+      "actual": "開始 13:00 → 17:00",
+      "checks": [
+        {
+          "label": "17:00 に変更される",
+          "ok": true,
+          "detail": "13:00→17:00"
+        }
+      ],
+      "evidence": [
+        "03_変更が反映される.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 4,
+      "label": "埋まっている時間へ移そうとする",
+      "action": "別の予約(B-260727-1A7C, 2026-07-31 14:30)を、いま埋めた 田中 / 施術室 1 / 17:00 へ変更しようとする",
+      "expect": "重複として拒否される",
+      "actual": "エラー=[\"指定の時間帯は部屋または担当が既に埋まっています\"]",
+      "note": "変更時も作成時と同じ排他制約で判定される。",
+      "checks": [
+        {
+          "label": "重複が拒否される",
+          "ok": true,
+          "detail": "指定の時間帯は部屋または担当が既に埋まっています"
+        }
+      ],
+      "evidence": [
+        "04_埋まっている時間へ移そうとする.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "変更を知らせる通知が積まれる",
+      "query": "select kind, recipient_type from notifications where booking_id = '18d9617b-f21c-446b-b3da-abd543c00afc' order by created_at",
+      "expect": "booking_rescheduled が含まれる",
+      "actual": "booking_confirmed:patient / booking_rescheduled:patient",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:37:46.226Z"
+}

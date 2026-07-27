@@ -1,0 +1,83 @@
+{
+  "id": "AT-BOOK-008",
+  "priority": "P0",
+  "phase": "A",
+  "order": 10,
+  "title": "新規患者を登録しながら予約を作成する(電話受付の想定)",
+  "spec": "v2-10 / v2-15",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "初診の電話予約。患者マスタに無い相手をその場で登録しながら予約する導線で、受付の実務そのもの。",
+  "startedAt": "2026-07-27T02:21:58.652Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "新規患者の情報を入力",
+      "action": "「新規患者」に切り替え、氏名「AT検証初診 太郎」/ かな / 電話番号を入力(メールは入力しない)",
+      "expect": "新規患者の入力欄に値が入る",
+      "actual": "氏名=AT検証初診 太郎 / 電話=090-0000-7777",
+      "note": "電話予約ではメールを聞かないことが多い。メール無しでも予約できることと、通知が積まれないことを確認する。",
+      "checks": [
+        {
+          "label": "氏名が入る",
+          "ok": true
+        },
+        {
+          "label": "電話が入る",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_新規患者の情報を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "患者と予約が同時に作られる",
+      "action": "メニュー・担当・部屋・2026-07-30 15:30 を指定して「予約を作成」",
+      "expect": "患者マスタに 1 件追加され、予約も作成される",
+      "actual": "患者 2→3 / エラー=[]",
+      "checks": [
+        {
+          "label": "エラーなく作成される",
+          "ok": true,
+          "detail": "エラーなし"
+        },
+        {
+          "label": "患者が 1 件増える",
+          "ok": true,
+          "detail": "2→3"
+        }
+      ],
+      "evidence": [
+        "02_患者と予約が同時に作られる.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "患者が登録され、予約と紐づく",
+      "query": "select p.name, coalesce(p.email,'NULL'), p.phone, b.status from bookings b join patients p on p.id = b.patient_id where b.clinic_id = '10000000-0000-4000-a000-000000000001' and b.notes like '%AT検証 新規患者%'",
+      "expect": "name=AT検証初診 太郎 / email=NULL / status=confirmed",
+      "actual": "AT検証初診 太郎 / NULL / 090-0000-7777 / confirmed",
+      "ok": true
+    },
+    {
+      "label": "メール未登録の患者には確定メールを積まない",
+      "query": "select count(*) from notifications n join bookings b on b.id = n.booking_id where b.notes like '%AT検証 新規患者%' and n.recipient_type = 'patient'",
+      "expect": "0 件(宛先が無いので送りようがない)",
+      "actual": "0 件",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:22:05.819Z"
+}

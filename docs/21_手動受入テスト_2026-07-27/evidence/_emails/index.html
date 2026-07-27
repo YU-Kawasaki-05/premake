@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>メール本文の証跡</title>
+<style>body{font-family:system-ui,sans-serif;margin:32px;line-height:1.8;color:#1b201e}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #e5e3de;padding:8px 12px;text-align:left}
+th{background:#f4f2ee}code{font-family:ui-monospace,monospace;font-size:12.5px}</style>
+<h1>メール本文の証跡(全 7 種)</h1>
+<p>この環境では実際のメール送信を行わないため、送信処理が組み立てる本文をそのまま書き出したものです。
+差出人の表示名はクリニック名になります。到達性・迷惑メール判定は本番設定後の確認項目です。</p>
+<table><thead><tr><th>種別</th><th>宛先</th><th>送信タイミング</th><th>件名</th><th>本文</th></tr></thead>
+<tbody><tr><td><code>booking_confirmed</code></td><td>患者</td><td>予約が確定したとき(院内作成・承認どちらも)</td><td>【デモクリニック】ご予約が確定しました</td><td><a href="booking_confirmed.html">本文を見る</a></td></tr>
+<tr><td><code>booking_requested</code></td><td>患者</td><td>インターネットから申し込み、院内の承認待ちになったとき</td><td>【デモクリニック】ご予約を受け付けました(確認中)</td><td><a href="booking_requested.html">本文を見る</a></td></tr>
+<tr><td><code>booking_rescheduled</code></td><td>患者</td><td>日時・担当・部屋が変更されたとき</td><td>【デモクリニック】ご予約内容が変更になりました</td><td><a href="booking_rescheduled.html">本文を見る</a></td></tr>
+<tr><td><code>booking_cancelled</code></td><td>患者</td><td>予約がキャンセルされたとき</td><td>【デモクリニック】ご予約をキャンセルしました</td><td><a href="booking_cancelled.html">本文を見る</a></td></tr>
+<tr><td><code>reminder</code></td><td>患者</td><td>来院日の前日(定期実行で送信)</td><td>【デモクリニック】ご予約日のお知らせ</td><td><a href="reminder.html">本文を見る</a></td></tr>
+<tr><td><code>booking_created_internal</code></td><td>院内</td><td>インターネットから新しい申込が入ったとき</td><td>【予約システム】新しい予約が入りました(要確認)</td><td><a href="booking_created_internal.html">本文を見る</a></td></tr>
+<tr><td><code>booking_cancelled_internal</code></td><td>院内</td><td>患者が自分でキャンセルしたとき</td><td>【予約システム】予約がキャンセルされました</td><td><a href="booking_cancelled_internal.html">本文を見る</a></td></tr></tbody></table>

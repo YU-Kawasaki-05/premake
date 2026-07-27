@@ -1,0 +1,84 @@
+{
+  "id": "AT-NTF-004",
+  "priority": "P1",
+  "phase": "A",
+  "order": 26,
+  "title": "溜まったメールが定期実行でまとめて送信される",
+  "spec": "v2-23 / v2-24",
+  "refs": [
+    "20_受け入れテスト/06_通知・運営・法定.md"
+  ],
+  "intent": "premake ではすべてのメールがいったん送信待ちの列に並び、1 時間ごとの定期実行がまとめて送る。この仕組みが動かないと確定メールもキャンセル通知も 1 通も届かない。",
+  "notes": "この環境では実際の送信は行われず、送信処理のログにのみ出力される。到達性の確認は Resend 設定後の作業。",
+  "startedAt": "2026-07-27T02:42:33.211Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "送信状況の一覧を見る(送信前)",
+      "action": "予約を 1 件作成(B-260727-F136)したうえで、owner で /demo/settings の「通知の送信状況」を確認",
+      "expect": "作成で積まれた確定メールが「送信待ち」として並ぶ",
+      "actual": "送信待ち 1 件 / 画面の通知関連表示=19箇所",
+      "note": "クリニック設定画面に一覧がある。オーナーが送信失敗に気づけるようにするための画面。",
+      "checks": [
+        {
+          "label": "送信待ちの通知が存在する",
+          "ok": true,
+          "detail": "1 件"
+        },
+        {
+          "label": "設定画面に通知の表示がある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_送信状況の一覧を見る_送信前_.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "定期実行を動かす",
+      "action": "定期実行の入口(GET /api/cron)を呼ぶ = Vercel が 1 時間ごとに行う処理と同じ",
+      "expect": "送信待ちだった通知が「送信済み」に変わる",
+      "actual": "応答={\"ok\":true,\"recovered\":0,\"reminded\":0,\"sent\":1} / 状態別=sent:18",
+      "checks": [
+        {
+          "label": "定期実行が成功する",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "送信件数が 1 件以上",
+          "ok": true,
+          "detail": "sent=1"
+        }
+      ],
+      "evidence": [
+        "02_定期実行を動かす.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "送信待ちが残らず、失敗が 0 件",
+      "query": "select status, count(*) from notifications where clinic_id = '10000000-0000-4000-a000-000000000001' group by status",
+      "expect": "queued=0 / failed=0",
+      "actual": "{\"sent\":18}",
+      "ok": true
+    },
+    {
+      "label": "組み立てられたメール本文(7 種)",
+      "query": "AT_EVIDENCE=1 pnpm exec vitest run tests/at-evidence-emails.test.ts",
+      "expect": "確定・受付・変更・キャンセル・リマインダー・院内 2 種 = 7 種すべてがレンダリングできる",
+      "actual": "evidence/_emails/index.html に保存(件名・宛先・本文を確認可能)",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": null,
+  "partialReason": "実際にメールが届くかはこの環境では確認できません(送信キー未設定)。ここでは『送信待ち → 送信済み』への遷移と、組み立てられた本文の内容までを確認しています。",
+  "aborted": false,
+  "verdict": "PARTIAL",
+  "finishedAt": "2026-07-27T02:42:42.845Z"
+}

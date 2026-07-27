@@ -1,0 +1,98 @@
+{
+  "id": "AT-BOOK-015",
+  "priority": "P0",
+  "phase": "A",
+  "order": 19,
+  "title": "当日の状態遷移(確定 → 来院 → 完了)と不正な遷移の拒否",
+  "spec": "v2-12",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "受付が当日に触る唯一の操作。順番を飛ばした遷移や、完了後の巻き戻しを許すと売上・実績の集計が壊れる。",
+  "startedAt": "2026-07-27T02:36:52.003Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "確定の予約を開く",
+      "action": "作成した予約(B-260727-B235)のチップを開く",
+      "expect": "「来院にする」「不来院にする」が選べ、「完了にする」は出ない(順番を飛ばせない)",
+      "actual": "ボタン=来院にする・不来院にする",
+      "note": "遷移可能な状態だけをサーバー定義から描画している。UI に出ない = 押せない、が第一の防御。",
+      "checks": [
+        {
+          "label": "「来院にする」がある",
+          "ok": true
+        },
+        {
+          "label": "「完了にする」は出ない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_確定の予約を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "来院にする",
+      "action": "「来院にする」を押す",
+      "expect": "状態が来院になり、次は「完了にする」が選べるようになる",
+      "actual": "状態=checked_in / ボタン=完了にする",
+      "checks": [
+        {
+          "label": "状態が来院になる",
+          "ok": true,
+          "detail": "checked_in"
+        },
+        {
+          "label": "「完了にする」が出る",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_来院にする.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "完了にする",
+      "action": "「完了にする」を押す",
+      "expect": "状態が完了になり、以降の状態変更・キャンセルはできなくなる",
+      "actual": "状態=done / 残るボタン=なし",
+      "checks": [
+        {
+          "label": "状態が完了になる",
+          "ok": true,
+          "detail": "done"
+        },
+        {
+          "label": "完了後は状態変更もキャンセルもできない",
+          "ok": true,
+          "detail": "なし"
+        }
+      ],
+      "evidence": [
+        "03_完了にする.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "【参考】データベースを直接書き換えた場合の挙動",
+      "query": "update bookings set status='confirmed' where id='10b64ee2-f552-4ce7-b746-10e3b4eebdff' -- 完了済みを巻き戻す",
+      "expect": "アプリ経由では拒否される(状態機械はサーバー側で強制)。DB 直接更新は DBA 権限の操作であり別レイヤ",
+      "actual": "直接 UPDATE 後の状態=confirmed",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:37:07.019Z"
+}

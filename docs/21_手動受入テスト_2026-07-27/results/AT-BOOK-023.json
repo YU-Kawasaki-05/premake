@@ -1,0 +1,75 @@
+{
+  "id": "AT-BOOK-023",
+  "priority": "P1",
+  "phase": "A",
+  "order": 16,
+  "title": "複数ステップのメニューが自動で連続配置される(バッファ込み)",
+  "spec": "v2-14",
+  "refs": [
+    "20_受け入れテスト/03_予約台帳・予約管理.md"
+  ],
+  "intent": "アートメイクのように「カウンセリング → 施術」と続くメニューは、1 回の予約で複数の枠を押さえる必要がある。後片付けのバッファ時間も部屋を占有していなければ次の予約が重なる。",
+  "startedAt": "2026-07-27T02:23:12.263Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "複数ステップのメニューで予約",
+      "action": "メニュー=アートメイク 眉 / 田中 / 施術室 2 / 2026-07-30 10:00 で作成",
+      "expect": "1 回の操作で、カウンセリングと施術の 2 枠が連続して確保される",
+      "actual": "エラー=[]",
+      "note": "メニュー定義: [{\"kind\": \"counseling\", \"label\": \"カウンセリング・医師診察\", \"buffer_min\": 0, \"duration_min\": 30}, {\"kind\": \"procedure\", \"label\": \"施術(1回目)\", \"buffer_min\": 15, \"duration_min\": 120}]",
+      "checks": [
+        {
+          "label": "作成できる",
+          "ok": true,
+          "detail": "エラーなし"
+        }
+      ],
+      "evidence": [
+        "01_複数ステップのメニューで予約.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "台帳で 2 つの枠を確認",
+      "action": "台帳を 2026-07-30 に切り替える",
+      "expect": "同じ患者のチップが 2 つ(カウンセリング / 施術)並ぶ",
+      "actual": "高橋 直美 のチップ=2件",
+      "checks": [
+        {
+          "label": "チップが 2 つ以上ある",
+          "ok": true,
+          "detail": "count=2"
+        }
+      ],
+      "evidence": [
+        "02_台帳で_2_つの枠を確認.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "セッションが 2 行に展開され、施術は連続した時間に配置される",
+      "query": "select s.seq, s.kind, to_char(lower(s.time_range) at time zone 'Asia/Tokyo','HH24:MI') as t_start, to_char(upper(s.time_range) at time zone 'Asia/Tokyo','HH24:MI') as t_end, to_char(upper(s.occupied_range) at time zone 'Asia/Tokyo','HH24:MI') as occ_end from booking_sessions s join bookings b on b.id = s.booking_id where b.clinic_id = '10000000-0000-4000-a000-000000000001' and b.notes like '%AT検証 複数セッション%' order by s.seq",
+      "expect": "2 行 / 1 行目の終了 = 2 行目の開始",
+      "actual": "seq1 counseling 10:00-10:30(占有 10:30まで) / seq2 procedure 10:30-12:30(占有 12:45まで)",
+      "ok": true
+    },
+    {
+      "label": "後片付けのバッファ時間も部屋の占有に含まれる",
+      "query": "occupied_range(占有) と time_range(施術) の終了時刻を比較",
+      "expect": "占有終了 > 施術終了(バッファ分だけ長い)",
+      "actual": "施術終了 12:30 / 占有終了 12:45",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T02:23:21.285Z"
+}
