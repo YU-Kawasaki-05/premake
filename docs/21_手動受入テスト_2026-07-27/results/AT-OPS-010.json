@@ -1,0 +1,49 @@
+{
+  "id": "AT-OPS-010",
+  "priority": "P1",
+  "phase": "D",
+  "order": 302,
+  "title": "運営が利用状況(予約数・キャンセル率など)を確認できる",
+  "spec": "v2-26",
+  "refs": [
+    "20_受け入れテスト/06_通知・運営・法定.md"
+  ],
+  "intent": "導入後に「本当に使われているか」を判断するための数字。週 2 日未満の稼働なら撤退シグナル、と自分たちで基準を決めている。",
+  "startedAt": "2026-07-27T12:57:51.190Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "利用計測の画面を開く",
+      "action": "運営アカウントで /ops/metrics を開く",
+      "expect": "クリニックごとの予約数・経路別・キャンセル率などが表示される",
+      "actual": "HTTP 200 / DB 実績: Web 3 件 / 院内 13 件 / キャンセル 2 件",
+      "checks": [
+        {
+          "label": "画面が開ける",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "クリニック名が表示される",
+          "ok": true
+        },
+        {
+          "label": "数値が表示されている",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_利用計測の画面を開く.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:57:55.587Z"
+}

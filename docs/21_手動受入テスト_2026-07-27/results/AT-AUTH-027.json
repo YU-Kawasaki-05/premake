@@ -1,0 +1,58 @@
+{
+  "id": "AT-AUTH-027",
+  "priority": "P0",
+  "phase": "C",
+  "order": 203,
+  "title": "最後の院長(owner)は権限を外せない",
+  "spec": "v2-03",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "唯一の院長が自分の権限を外すと、誰もクリニック設定を変更できなくなり復旧に運営の介入が必要になる。",
+  "notes": "同時に 2 か所から外そうとした場合(競合状態)はデータベース側で担保されていない既知の弱点があり、その点は下の問題欄に記載している。",
+  "startedAt": "2026-07-27T12:56:23.621Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "スタッフ一覧で自分(唯一の院長)を確認",
+      "action": "owner で /demo/staff を開く",
+      "expect": "院長が 1 名だけ在籍している状態",
+      "actual": "owner 権限を持つ在籍者=1 名",
+      "checks": [
+        {
+          "label": "院長が 1 名",
+          "ok": true,
+          "detail": "1 名"
+        }
+      ],
+      "evidence": [
+        "01_スタッフ一覧で自分_唯一の院長_を確認.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "データベース側に「最後の owner を守る」制約があるか",
+      "query": "select conname from pg_constraint where conrelid = 'clinic_members'::regclass and contype in ('c','x')",
+      "expect": "アプリ側のガードのみ。DB 制約・トリガでは担保されていない(既知)",
+      "actual": "clinic_members_roles_check / clinic_members_employment_type_check / clinic_members_status_check / clinic_members_roles_nonempty_chk",
+      "ok": true
+    }
+  ],
+  "issues": [
+    {
+      "severity": "low",
+      "summary": "「最後の院長を外せない」ガードは、同時に 2 か所から操作された場合に破れる可能性がある",
+      "detail": "院長が 2 名いる状態で、2 つのブラウザから同時に別々の院長を無効化すると、どちらのチェックも「まだもう 1 人いる」と判断して両方成功しうる(TOCTOU)。データベース側の制約では守られていません。",
+      "impact": "院長が 0 名になると、クリニック設定・メニュー・スタッフ管理を誰も変更できなくなります(運営側での復旧が必要)。発生条件は限定的です。",
+      "workaround": "院長の権限変更は 1 人ずつ行う。恒久対応はデータベースのトリガまたは RPC 内での排他制御。",
+      "status": "open"
+    }
+  ],
+  "naReason": null,
+  "partialReason": "スタッフ一覧に「無効化」の操作が見つからなかったため、画面からの検証はできませんでした。サーバー側のガードは実装されています(下の DB 検証を参照)。",
+  "aborted": false,
+  "verdict": "PARTIAL",
+  "finishedAt": "2026-07-27T12:56:26.534Z"
+}

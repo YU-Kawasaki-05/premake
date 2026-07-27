@@ -1,0 +1,74 @@
+{
+  "id": "AT-CLN-001",
+  "priority": "P0",
+  "phase": "C",
+  "order": 204,
+  "title": "クリニック設定(公開予約の可否・承認方式・キャンセル期限)を変更する",
+  "spec": "v2-04 / v2-19",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "運用方針そのものを決める設定。ここを間違えると、意図せず予約を受け付けたり、直前キャンセルを許してしまう。",
+  "startedAt": "2026-07-27T12:56:26.535Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "クリニック設定を開く",
+      "action": "owner で /demo/settings を開く",
+      "expect": "オンライン予約の可否・承認方式・キャンセル期限の設定がある",
+      "actual": "現在: 公開予約=t / 承認=manual / 期限=24時間",
+      "checks": [
+        {
+          "label": "オンライン予約の設定がある",
+          "ok": true
+        },
+        {
+          "label": "承認方式の設定がある",
+          "ok": true
+        },
+        {
+          "label": "キャンセル期限の設定がある",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_クリニック設定を開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "キャンセル期限を 48 時間に変更",
+      "action": "キャンセル期限を 48 に変更して保存",
+      "expect": "保存され、患者向けの案内文にも反映される",
+      "actual": "DB の値=48 時間",
+      "checks": [
+        {
+          "label": "設定が保存される",
+          "ok": true,
+          "detail": "48"
+        }
+      ],
+      "evidence": [
+        "02_キャンセル期限を_48_時間に変更.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "検証後に元の設定へ戻した",
+      "query": "select cancel_deadline_hours from clinics where id = '10000000-0000-4000-a000-000000000001'",
+      "expect": "24 時間",
+      "actual": "24 時間",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:56:32.181Z"
+}

@@ -134,6 +134,7 @@ tr:last-child td{border-bottom:none}
 .dbwrap summary{cursor:pointer;font-weight:600;font-size:14.5px}
 .db code{font-size:11.5px;white-space:pre-wrap}
 .cov-note{font-size:12px;color:var(--ink-faint)}
+.rest-cell{color:var(--warn)}
 .row-todo{opacity:.6}
 .issue-shot{margin-top:12px;max-width:520px}
 .issue-shot-cap{font-size:12px;color:inherit;opacity:.85;margin:0 0 6px}
@@ -159,8 +160,8 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <span class="brand"><span class="dot"></span>premake 受け入れテスト 画面証跡</span>
   <nav>
     <a href="#summary">サマリ</a><a href="#read">読み方</a>
-    <a href="#phase-A">フェーズA</a><a href="#phase-B">フェーズB</a>
-    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a>
+    <a href="#phase-A">フェーズA</a><a href="#phase-B">フェーズB</a><a href="#phase-C">フェーズC</a><a href="#phase-D">フェーズD</a>
+    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
   </nav>
   <button class="toggle" id="tg" type="button">◐ テーマ</button>
 </div></header>
@@ -171,12 +172,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <h1>本番投入前の受け入れテスト — 画面証跡つき報告書</h1>
   <p class="lede">クリニックで実際に使う操作を、ブラウザを動かして 1 手順ずつ確認した記録です。各手順のスクリーンショットを画面が移り変わる順に並べ、<b>何を期待し、何が起き、なぜ合格と判断したか</b>を併記しています。画面だけでは分からない「本当にデータが保存されたか」はデータベースへ直接問い合わせて裏を取っています。</p>
   <div class="chips">
-    <span class="chip big">ケース 54</span>
-    <span class="chip big ok">合格 47</span>
-    <span class="chip big warn">一部制限 5</span>
-    <span class="chip big">検証不能 2</span>
+    <span class="chip big">ケース 65</span>
+    <span class="chip big ok">合格 53</span>
+    <span class="chip big warn">一部制限 9</span>
+    <span class="chip big">検証不能 3</span>
     <span class="chip big ok">不合格 0</span>
-    <span class="chip">生成 2026/07/27 21:52</span>
+    <span class="chip">生成 2026/07/27 22:00</span>
   </div>
 </div>
 
@@ -205,8 +206,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <tbody><tr><td>A</td><td>中核フロー(院内予約 → 確認 → 施術 → キャンセル/変更)</td>
     <td>26</td><td class="num-ok">23</td><td class="num-warn">3</td>
     <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>B</td><td>公開予約(患者がインターネットから予約する導線)</td>
-    <td>28</td><td class="num-ok">24</td><td class="num-warn">2</td>
-    <td class="num-na">2</td><td class="num-ng">0</td></tr></tbody>
+    <td>30</td><td class="num-ok">24</td><td class="num-warn">3</td>
+    <td class="num-na">3</td><td class="num-ng">0</td></tr><tr><td>C</td><td>立ち上げ導線(本番で担当者が実際に行う初期設定)</td>
+    <td>4</td><td class="num-ok">3</td><td class="num-warn">1</td>
+    <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>D</td><td>通知・運営・法定ページ</td>
+    <td>5</td><td class="num-ok">3</td><td class="num-warn">2</td>
+    <td class="num-na">0</td><td class="num-ng">0</td></tr></tbody>
   </table></div>
   <div class="callout ok"><span class="lab">現時点の判定</span>
     <p>実施済みのケースはすべて合格しています。ただし本書は作成途中であり、未実施のフェーズが残っている場合は最終判定になりません(サマリのケース数を参照)。</p></div>
@@ -2493,6 +2498,56 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   </div></div>
     
     
+  </article><article class="case" id="AT-PUB-009">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-009</code><span class="pri pri-p1">P1</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>スマートフォンの画面幅で公開ページ・予約画面が崩れない</h3>
+      <p class="case-intent">患者の大半はスマートフォンから予約する。横スクロールが出たり、ボタンが押せない状態だと予約が完了しない。</p>
+      <p class="case-meta">対象要件 <code>v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>表示速度(LCP)の基準達成は開発サーバーでは判定できません。本番ビルドでの参考計測は別途行います。</p></div>
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-009/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" data-cap="AT-PUB-009 ステップ1: 公開ページ(iPhone 相当の幅)">
+          <img src="evidence/AT-PUB-009/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" alt="公開ページ(iPhone 相当の幅)" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>公開ページ(iPhone 相当の幅)</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-009/02_%E4%BA%88%E7%B4%84%E7%94%BB%E9%9D%A2_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" data-cap="AT-PUB-009 ステップ2: 予約画面(iPhone 相当の幅)">
+          <img src="evidence/AT-PUB-009/02_%E4%BA%88%E7%B4%84%E7%94%BB%E9%9D%A2_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" alt="予約画面(iPhone 相当の幅)" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>予約画面(iPhone 相当の幅)</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>公開ページ(iPhone 相当の幅)</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>画面幅 390px で /c/demo を表示</dd>
+          <dt>期待</dt><dd>横スクロールが発生せず、内容が読める</dd>
+          <dt>実測</dt><dd>横方向のはみ出し=false</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>横スクロールが出ない</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-009/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" data-cap="AT-PUB-009 ステップ1: 公開ページ(iPhone 相当の幅)"><img src="evidence/AT-PUB-009/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" alt="公開ページ(iPhone 相当の幅)" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>予約画面(iPhone 相当の幅)</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>同じ幅で予約画面を開き、空き枠のボタンの大きさを測る</dd>
+          <dt>期待</dt><dd>横スクロールがなく、枠のボタンが指で押せる大きさ(高さ 32px 以上)</dd>
+          <dt>実測</dt><dd>はみ出し=false / ボタン高さ=38px</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>横スクロールが出ない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>枠のボタンが押せる大きさ<span class="ck-detail">38px</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-009/02_%E4%BA%88%E7%B4%84%E7%94%BB%E9%9D%A2_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" data-cap="AT-PUB-009 ステップ2: 予約画面(iPhone 相当の幅)"><img src="evidence/AT-PUB-009/02_%E4%BA%88%E7%B4%84%E7%94%BB%E9%9D%A2_iPhone_%E7%9B%B8%E5%BD%93%E3%81%AE%E5%B9%85_.png" alt="予約画面(iPhone 相当の幅)" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
   </article><article class="case" id="AT-PUB-010">
     <header class="case-head">
       <div class="case-id"><code>AT-PUB-010</code><span class="pri pri-p0">P0</span><span class="vd vd-partial">一部制限あり</span></div>
@@ -3289,6 +3344,18 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <p><b>回避策:</b> 画面側で最初のセッション開始時刻と期限を比較し、期限を過ぎていればボタンを出さずに連絡先を案内する(manage-booking-view.tsx の alreadyClosed の判定に期限を追加)。</p>
     
   </div>
+  </article><article class="case" id="AT-PUB-027">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-027</code><span class="pri pri-p1">P1</span><span class="vd vd-na">検証不能</span></div>
+      <h3>【未実装】患者が自分で予約日時を変更する</h3>
+      <p class="case-intent">患者が日時を変えたいとき、キャンセルして取り直すのではなく、そのまま枠を選び直せると親切。</p>
+      <p class="case-meta">対象要件 <code>v2-22</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    <div class="callout info"><span class="lab">この環境では検証できません</span><p>患者側からの日時変更は未実装です。患者は「キャンセルして取り直す」運用になります(院内側からの変更は AT-BOOK-012 で検証済み)。キャンセル期限を過ぎている場合は電話での連絡が必要です。</p></div>
+    
+    <div class="steps"></div>
+    
+    
   </article><article class="case" id="AT-PUB-028">
     <header class="case-head">
       <div class="case-id"><code>AT-PUB-028</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
@@ -3464,11 +3531,539 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     </table></div></details>
     
   </article>
+  </section><section id="phase-C">
+    <h2>フェーズ C — 立ち上げ導線(本番で担当者が実際に行う初期設定)</h2>
+    <p class="sec-sub">クリニック作成・スタッフ招待・メニューや枠の登録。本番移行手順書の作業がそのまま動くかの確認です。</p>
+    <article class="case" id="AT-OPS-002">
+    <header class="case-head">
+      <div class="case-id"><code>AT-OPS-002</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>運営がクリニックを新規作成し、院長の招待リンクを発行する</h3>
+      <p class="case-intent">本番導入の最初の一手。ここで作られたクリニックと招待リンクが、院長がシステムに入る唯一の入口になる。</p>
+      <p class="case-meta">対象要件 <code>v2-25</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-OPS-002/01_%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-OPS-002 ステップ1: 運営画面を開く">
+          <img src="evidence/AT-OPS-002/01_%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="運営画面を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>運営画面を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-OPS-002/02_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-OPS-002 ステップ2: クリニック情報を入力">
+          <img src="evidence/AT-OPS-002/02_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="クリニック情報を入力" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>クリニック情報を入力</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-OPS-002/03_%E4%BD%9C%E6%88%90%E3%81%95%E3%82%8C_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" data-cap="AT-OPS-002 ステップ3: 作成され、招待リンクが表示される">
+          <img src="evidence/AT-OPS-002/03_%E4%BD%9C%E6%88%90%E3%81%95%E3%82%8C_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" alt="作成され、招待リンクが表示される" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">3</span>作成され、招待リンクが表示される</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>運営画面を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>ops アカウントでログインして /ops を開く</dd>
+          <dt>期待</dt><dd>クリニックの一覧と作成の入口がある</dd>
+          <dt>実測</dt><dd>既存クリニック=1 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>クリニック作成の入口がある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-OPS-002/01_%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-OPS-002 ステップ1: 運営画面を開く"><img src="evidence/AT-OPS-002/01_%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="運営画面を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>クリニック情報を入力</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>名称「AT検証 新規クリニック」/ URL 用の識別子「at-newclinic」/ 院長のメールアドレスを入力</dd>
+          <dt>期待</dt><dd>入力が反映される</dd>
+          <dt>実測</dt><dd>名称=AT検証 新規クリニック / slug=at-newclinic</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>識別子が入力される</span></li></ul>
+        <p class="why"><b>判定の根拠</b> 識別子は公開ページの URL(/c/&lt;識別子&gt;)になる。後から変えると患者に案内した URL が切れるため慎重に決める。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-OPS-002/02_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-OPS-002 ステップ2: クリニック情報を入力"><img src="evidence/AT-OPS-002/02_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E6%83%85%E5%A0%B1%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="クリニック情報を入力" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">3</span><h4>作成され、招待リンクが表示される</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「作成」を押す</dd>
+          <dt>期待</dt><dd>クリニックが作られ、院長へ渡す招待リンクが画面に出る</dd>
+          <dt>実測</dt><dd>クリニック 1→2 / 招待リンク=表示された</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>クリニックが作られる<span class="ck-detail">at-newclinic / AT検証 新規クリニック</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>招待リンクが画面に出る<span class="ck-detail">http://localhost:3000/invite/cdwRyDpZR7tLwaKQnQBWibITVw3TrDOvm564Zn9_C1E</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> メールが設定されていない環境でも、この画面のリンクを直接渡せば院長は参加できる。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-OPS-002/03_%E4%BD%9C%E6%88%90%E3%81%95%E3%82%8C_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" data-cap="AT-OPS-002 ステップ3: 作成され、招待リンクが表示される"><img src="evidence/AT-OPS-002/03_%E4%BD%9C%E6%88%90%E3%81%95%E3%82%8C_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" alt="作成され、招待リンクが表示される" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>院長(owner)としての招待が未受諾の状態で発行される</td>
+        <td><code>select array_to_string(i.roles, ','), i.accepted_at is null as pending, i.email from invitations i join clinics c on c.id = i.clinic_id where c.slug = 'at-newclinic'</code></td>
+        <td>roles に owner を含む / 未受諾</td>
+        <td>owner / t / at-owner@example.com</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>検証用クリニックを削除して環境を元に戻した</td>
+        <td><code>delete from clinics where slug = 'at-newclinic'</code></td>
+        <td>残り 1 件</td>
+        <td>1 件</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-AUTH-015">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-015</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>院長がスタッフを招待する</h3>
+      <p class="case-intent">看護師・受付が業務に入るための唯一の導線。招待できないと院長 1 人でしか使えない。</p>
+      <p class="case-meta">対象要件 <code>v2-03</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-015/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E7%AE%A1%E7%90%86%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-015 ステップ1: スタッフ管理を開く">
+          <img src="evidence/AT-AUTH-015/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E7%AE%A1%E7%90%86%E3%82%92%E9%96%8B%E3%81%8F.png" alt="スタッフ管理を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>スタッフ管理を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-015/02_%E6%8B%9B%E5%BE%85%E3%81%99%E3%82%8B%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%A8%E5%BD%B9%E5%89%B2%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-AUTH-015 ステップ2: 招待するメールアドレスと役割を入力">
+          <img src="evidence/AT-AUTH-015/02_%E6%8B%9B%E5%BE%85%E3%81%99%E3%82%8B%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%A8%E5%BD%B9%E5%89%B2%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="招待するメールアドレスと役割を入力" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>招待するメールアドレスと役割を入力</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-015/03_%E6%8B%9B%E5%BE%85%E3%81%8C%E4%BD%9C%E3%82%89%E3%82%8C_%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" data-cap="AT-AUTH-015 ステップ3: 招待が作られ、リンクが表示される">
+          <img src="evidence/AT-AUTH-015/03_%E6%8B%9B%E5%BE%85%E3%81%8C%E4%BD%9C%E3%82%89%E3%82%8C_%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" alt="招待が作られ、リンクが表示される" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">3</span>招待が作られ、リンクが表示される</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>スタッフ管理を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner で /demo/staff を開く</dd>
+          <dt>期待</dt><dd>在籍スタッフの一覧と招待の入口がある</dd>
+          <dt>実測</dt><dd>既存の招待=0 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>招待の入口がある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-015/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E7%AE%A1%E7%90%86%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-015 ステップ1: スタッフ管理を開く"><img src="evidence/AT-AUTH-015/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E7%AE%A1%E7%90%86%E3%82%92%E9%96%8B%E3%81%8F.png" alt="スタッフ管理を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>招待するメールアドレスと役割を入力</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>at-invitee@example.com をスタッフとして招待</dd>
+          <dt>期待</dt><dd>入力が反映される</dd>
+          <dt>実測</dt><dd>メール=at-invitee@example.com</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>メールが入力される</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-015/02_%E6%8B%9B%E5%BE%85%E3%81%99%E3%82%8B%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%A8%E5%BD%B9%E5%89%B2%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-AUTH-015 ステップ2: 招待するメールアドレスと役割を入力"><img src="evidence/AT-AUTH-015/02_%E6%8B%9B%E5%BE%85%E3%81%99%E3%82%8B%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%A8%E5%BD%B9%E5%89%B2%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="招待するメールアドレスと役割を入力" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">3</span><h4>招待が作られ、リンクが表示される</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>招待を送信</dd>
+          <dt>期待</dt><dd>招待が 1 件増え、渡せるリンクが表示される</dd>
+          <dt>実測</dt><dd>招待 0→1 / リンク=表示</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>招待が 1 件増える<span class="ck-detail">0→1</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>招待リンクが表示される<span class="ck-detail">http://localhost:3000/invite/EbnWQzLIVhHZT4HM76ULH3goqVeM4zTSnT48nv-1OIM</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> メール送信が設定されていない環境では、このリンクを直接伝える運用になる。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-015/03_%E6%8B%9B%E5%BE%85%E3%81%8C%E4%BD%9C%E3%82%89%E3%82%8C_%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" data-cap="AT-AUTH-015 ステップ3: 招待が作られ、リンクが表示される"><img src="evidence/AT-AUTH-015/03_%E6%8B%9B%E5%BE%85%E3%81%8C%E4%BD%9C%E3%82%89%E3%82%8C_%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8C%E8%A1%A8%E7%A4%BA%E3%81%95%E3%82%8C%E3%82%8B.png" alt="招待が作られ、リンクが表示される" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>招待が未受諾の状態で保存され、有効期限がある</td>
+        <td><code>select email, array_to_string(roles, ','), accepted_at is null as pending, expires_at &gt; now() as valid from invitations where clinic_id = '10000000-0000-4000-a000-000000000001' and email = 'at-invitee@example.com'</code></td>
+        <td>未受諾 / 期限が未来</td>
+        <td>at-invitee@example.com / staff / t / t</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-AUTH-027">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-027</code><span class="pri pri-p0">P0</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>最後の院長(owner)は権限を外せない</h3>
+      <p class="case-intent">唯一の院長が自分の権限を外すと、誰もクリニック設定を変更できなくなり復旧に運営の介入が必要になる。</p>
+      <p class="case-meta">対象要件 <code>v2-03</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>スタッフ一覧に「無効化」の操作が見つからなかったため、画面からの検証はできませんでした。サーバー側のガードは実装されています(下の DB 検証を参照)。</p></div>
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-027/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E4%B8%80%E8%A6%A7%E3%81%A7%E8%87%AA%E5%88%86_%E5%94%AF%E4%B8%80%E3%81%AE%E9%99%A2%E9%95%B7_%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-AUTH-027 ステップ1: スタッフ一覧で自分(唯一の院長)を確認">
+          <img src="evidence/AT-AUTH-027/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E4%B8%80%E8%A6%A7%E3%81%A7%E8%87%AA%E5%88%86_%E5%94%AF%E4%B8%80%E3%81%AE%E9%99%A2%E9%95%B7_%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="スタッフ一覧で自分(唯一の院長)を確認" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>スタッフ一覧で自分(唯一の院長)を確認</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>スタッフ一覧で自分(唯一の院長)を確認</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner で /demo/staff を開く</dd>
+          <dt>期待</dt><dd>院長が 1 名だけ在籍している状態</dd>
+          <dt>実測</dt><dd>owner 権限を持つ在籍者=1 名</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>院長が 1 名<span class="ck-detail">1 名</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-027/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E4%B8%80%E8%A6%A7%E3%81%A7%E8%87%AA%E5%88%86_%E5%94%AF%E4%B8%80%E3%81%AE%E9%99%A2%E9%95%B7_%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-AUTH-027 ステップ1: スタッフ一覧で自分(唯一の院長)を確認"><img src="evidence/AT-AUTH-027/01_%E3%82%B9%E3%82%BF%E3%83%83%E3%83%95%E4%B8%80%E8%A6%A7%E3%81%A7%E8%87%AA%E5%88%86_%E5%94%AF%E4%B8%80%E3%81%AE%E9%99%A2%E9%95%B7_%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="スタッフ一覧で自分(唯一の院長)を確認" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>データベース側に「最後の owner を守る」制約があるか</td>
+        <td><code>select conname from pg_constraint where conrelid = 'clinic_members'::regclass and contype in ('c','x')</code></td>
+        <td>アプリ側のガードのみ。DB 制約・トリガでは担保されていない(既知)</td>
+        <td>clinic_members_roles_check / clinic_members_employment_type_check / clinic_members_status_check / clinic_members_roles_nonempty_chk</td>
+      </tr></tbody>
+    </table></div></details>
+    <div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 low</span>
+    <p><b>「最後の院長を外せない」ガードは、同時に 2 か所から操作された場合に破れる可能性がある</b></p>
+    <p>院長が 2 名いる状態で、2 つのブラウザから同時に別々の院長を無効化すると、どちらのチェックも「まだもう 1 人いる」と判断して両方成功しうる(TOCTOU)。データベース側の制約では守られていません。</p>
+    <p><b>影響:</b> 院長が 0 名になると、クリニック設定・メニュー・スタッフ管理を誰も変更できなくなります(運営側での復旧が必要)。発生条件は限定的です。</p>
+    
+    <p><b>回避策:</b> 院長の権限変更は 1 人ずつ行う。恒久対応はデータベースのトリガまたは RPC 内での排他制御。</p>
+    
+  </div>
+  </article><article class="case" id="AT-CLN-001">
+    <header class="case-head">
+      <div class="case-id"><code>AT-CLN-001</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>クリニック設定(公開予約の可否・承認方式・キャンセル期限)を変更する</h3>
+      <p class="case-intent">運用方針そのものを決める設定。ここを間違えると、意図せず予約を受け付けたり、直前キャンセルを許してしまう。</p>
+      <p class="case-meta">対象要件 <code>v2-04 / v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CLN-001/01_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CLN-001 ステップ1: クリニック設定を開く">
+          <img src="evidence/AT-CLN-001/01_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" alt="クリニック設定を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>クリニック設定を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-CLN-001/02_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E6%9C%9F%E9%99%90%E3%82%92_48_%E6%99%82%E9%96%93%E3%81%AB%E5%A4%89%E6%9B%B4.png" data-cap="AT-CLN-001 ステップ2: キャンセル期限を 48 時間に変更">
+          <img src="evidence/AT-CLN-001/02_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E6%9C%9F%E9%99%90%E3%82%92_48_%E6%99%82%E9%96%93%E3%81%AB%E5%A4%89%E6%9B%B4.png" alt="キャンセル期限を 48 時間に変更" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>キャンセル期限を 48 時間に変更</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>クリニック設定を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner で /demo/settings を開く</dd>
+          <dt>期待</dt><dd>オンライン予約の可否・承認方式・キャンセル期限の設定がある</dd>
+          <dt>実測</dt><dd>現在: 公開予約=t / 承認=manual / 期限=24時間</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>オンライン予約の設定がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>承認方式の設定がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>キャンセル期限の設定がある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CLN-001/01_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CLN-001 ステップ1: クリニック設定を開く"><img src="evidence/AT-CLN-001/01_%E3%82%AF%E3%83%AA%E3%83%8B%E3%83%83%E3%82%AF%E8%A8%AD%E5%AE%9A%E3%82%92%E9%96%8B%E3%81%8F.png" alt="クリニック設定を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>キャンセル期限を 48 時間に変更</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>キャンセル期限を 48 に変更して保存</dd>
+          <dt>期待</dt><dd>保存され、患者向けの案内文にも反映される</dd>
+          <dt>実測</dt><dd>DB の値=48 時間</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>設定が保存される<span class="ck-detail">48</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CLN-001/02_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E6%9C%9F%E9%99%90%E3%82%92_48_%E6%99%82%E9%96%93%E3%81%AB%E5%A4%89%E6%9B%B4.png" data-cap="AT-CLN-001 ステップ2: キャンセル期限を 48 時間に変更"><img src="evidence/AT-CLN-001/02_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E6%9C%9F%E9%99%90%E3%82%92_48_%E6%99%82%E9%96%93%E3%81%AB%E5%A4%89%E6%9B%B4.png" alt="キャンセル期限を 48 時間に変更" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>検証後に元の設定へ戻した</td>
+        <td><code>select cancel_deadline_hours from clinics where id = '10000000-0000-4000-a000-000000000001'</code></td>
+        <td>24 時間</td>
+        <td>24 時間</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article>
+  </section><section id="phase-D">
+    <h2>フェーズ D — 通知・運営・法定ページ</h2>
+    <p class="sec-sub">メールが正しく組み立てられるか、送信状況が見えるか、法定ページが表示されるか。</p>
+    <article class="case" id="AT-NTF-020">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NTF-020</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>メールの送信失敗にクリニックが気づける</h3>
+      <p class="case-intent">送れなかったメールに誰も気づかないのが最悪の状態。予約確定の連絡が届かないまま当日を迎えることになる。</p>
+      <p class="case-meta">対象要件 <code>v2-23</code> ／ 詳細手順 <code>docs/20_受け入れテスト/06_通知・運営・法定.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-NTF-020/01_%E8%A8%AD%E5%AE%9A%E7%94%BB%E9%9D%A2%E3%81%AE_%E9%80%9A%E7%9F%A5%E3%81%AE%E9%80%81%E4%BF%A1%E7%8A%B6%E6%B3%81_%E3%82%92%E8%A6%8B%E3%82%8B.png" data-cap="AT-NTF-020 ステップ1: 設定画面の「通知の送信状況」を見る">
+          <img src="evidence/AT-NTF-020/01_%E8%A8%AD%E5%AE%9A%E7%94%BB%E9%9D%A2%E3%81%AE_%E9%80%9A%E7%9F%A5%E3%81%AE%E9%80%81%E4%BF%A1%E7%8A%B6%E6%B3%81_%E3%82%92%E8%A6%8B%E3%82%8B.png" alt="設定画面の「通知の送信状況」を見る" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>設定画面の「通知の送信状況」を見る</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>設定画面の「通知の送信状況」を見る</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner で /demo/settings を開く(送信に失敗した通知が 1 件ある状態)</dd>
+          <dt>期待</dt><dd>失敗した通知が一覧に表示され、状態が分かる</dd>
+          <dt>実測</dt><dd>失敗を示す表示=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>失敗が画面から分かる</span></li></ul>
+        <p class="why"><b>判定の根拠</b> オーナーが日次で確認する想定の画面。失敗が埋もれないよう状態が明示される必要がある。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-NTF-020/01_%E8%A8%AD%E5%AE%9A%E7%94%BB%E9%9D%A2%E3%81%AE_%E9%80%9A%E7%9F%A5%E3%81%AE%E9%80%81%E4%BF%A1%E7%8A%B6%E6%B3%81_%E3%82%92%E8%A6%8B%E3%82%8B.png" data-cap="AT-NTF-020 ステップ1: 設定画面の「通知の送信状況」を見る"><img src="evidence/AT-NTF-020/01_%E8%A8%AD%E5%AE%9A%E7%94%BB%E9%9D%A2%E3%81%AE_%E9%80%9A%E7%9F%A5%E3%81%AE%E9%80%81%E4%BF%A1%E7%8A%B6%E6%B3%81_%E3%82%92%E8%A6%8B%E3%82%8B.png" alt="設定画面の「通知の送信状況」を見る" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>検証用に変更した通知を元に戻した</td>
+        <td><code>select status from notifications where id = 'e1797e5b-4542-41f1-9b99-3558b02fd246'</code></td>
+        <td>queued</td>
+        <td>queued</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>自動再送の仕組み(上限 3 回)</td>
+        <td><code>select coalesce(max(attempts), 0) from notifications where clinic_id = '10000000-0000-4000-a000-000000000001'</code></td>
+        <td>送信失敗時は 3 回まで自動で再試行し、超えると failed として残る</td>
+        <td>現在の最大試行回数=0</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-OPS-010">
+    <header class="case-head">
+      <div class="case-id"><code>AT-OPS-010</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>運営が利用状況(予約数・キャンセル率など)を確認できる</h3>
+      <p class="case-intent">導入後に「本当に使われているか」を判断するための数字。週 2 日未満の稼働なら撤退シグナル、と自分たちで基準を決めている。</p>
+      <p class="case-meta">対象要件 <code>v2-26</code> ／ 詳細手順 <code>docs/20_受け入れテスト/06_通知・運営・法定.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-OPS-010/01_%E5%88%A9%E7%94%A8%E8%A8%88%E6%B8%AC%E3%81%AE%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-OPS-010 ステップ1: 利用計測の画面を開く">
+          <img src="evidence/AT-OPS-010/01_%E5%88%A9%E7%94%A8%E8%A8%88%E6%B8%AC%E3%81%AE%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="利用計測の画面を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>利用計測の画面を開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>利用計測の画面を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>運営アカウントで /ops/metrics を開く</dd>
+          <dt>期待</dt><dd>クリニックごとの予約数・経路別・キャンセル率などが表示される</dd>
+          <dt>実測</dt><dd>HTTP 200 / DB 実績: Web 3 件 / 院内 13 件 / キャンセル 2 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>画面が開ける<span class="ck-detail">HTTP 200</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>クリニック名が表示される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>数値が表示されている</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-OPS-010/01_%E5%88%A9%E7%94%A8%E8%A8%88%E6%B8%AC%E3%81%AE%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-OPS-010 ステップ1: 利用計測の画面を開く"><img src="evidence/AT-OPS-010/01_%E5%88%A9%E7%94%A8%E8%A8%88%E6%B8%AC%E3%81%AE%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="利用計測の画面を開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-NTF-026">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NTF-026</code><span class="pri pri-p0">P0</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>法定ページ(プライバシーポリシー・利用規約)の掲載内容</h3>
+      <p class="case-intent">患者の個人情報・診療情報を預かる以上、取り扱いの明示は必須。医療広告の観点でも提供主体が分かる必要がある。</p>
+      <p class="case-meta">対象要件 <code>v2-26</code> ／ 詳細手順 <code>docs/20_受け入れテスト/06_通知・運営・法定.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>法定ページは暫定版であることが本文に明示されています。患者向けに公開する前に、本文の確定と弁護士確認が必要です(この作業では代替できません)。</p></div>
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-NTF-026/01_%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC%E3%81%AE%E5%86%85%E5%AE%B9.png" data-cap="AT-NTF-026 ステップ1: プライバシーポリシーの内容">
+          <img src="evidence/AT-NTF-026/01_%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC%E3%81%AE%E5%86%85%E5%AE%B9.png" alt="プライバシーポリシーの内容" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>プライバシーポリシーの内容</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-NTF-026/02_%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84%E3%81%AE%E5%86%85%E5%AE%B9.png" data-cap="AT-NTF-026 ステップ2: 利用規約の内容">
+          <img src="evidence/AT-NTF-026/02_%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84%E3%81%AE%E5%86%85%E5%AE%B9.png" alt="利用規約の内容" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>利用規約の内容</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>プライバシーポリシーの内容</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>/privacy を開いて記載項目を確認</dd>
+          <dt>期待</dt><dd>個人情報・取得・利用目的・第三者 に関する記載がある</dd>
+          <dt>実測</dt><dd>HTTP 200 / 不足=なし / 暫定版の明示=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>ページが開ける</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>必要な項目が記載されている<span class="ck-detail">すべてあり</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 本文が確定していない場合、暫定である旨が読み手に分かるかも確認している。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-NTF-026/01_%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC%E3%81%AE%E5%86%85%E5%AE%B9.png" data-cap="AT-NTF-026 ステップ1: プライバシーポリシーの内容"><img src="evidence/AT-NTF-026/01_%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC%E3%81%AE%E5%86%85%E5%AE%B9.png" alt="プライバシーポリシーの内容" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>利用規約の内容</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>/terms を開いて記載項目を確認</dd>
+          <dt>期待</dt><dd>利用・禁止・免責 に関する記載がある</dd>
+          <dt>実測</dt><dd>HTTP 200 / 不足=なし / 暫定版の明示=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>ページが開ける</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>必要な項目が記載されている<span class="ck-detail">すべてあり</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 本文が確定していない場合、暫定である旨が読み手に分かるかも確認している。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-NTF-026/02_%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84%E3%81%AE%E5%86%85%E5%AE%B9.png" data-cap="AT-NTF-026 ステップ2: 利用規約の内容"><img src="evidence/AT-NTF-026/02_%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84%E3%81%AE%E5%86%85%E5%AE%B9.png" alt="利用規約の内容" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>【弁護士確認へ渡す論点】</td>
+        <td><code>docs/10_v2_仕様/05_主要設計論点.md Q12 / docs/06_単院MVP転換/03</code></td>
+        <td>① 医療広告ガイドライン(症例写真を将来載せる場合の限定解除要件) ② 診療情報の受託者としての契約条項 ③ 個人情報の第三者提供・保存期間の記載</td>
+        <td>現状: 症例写真なし・自由診療の注記あり・提供主体明示ありの最小構成。privacy/terms は暫定版の文言</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-NTF-027">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NTF-027</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>公開ページから法定ページへ到達でき、提供主体が一致している</h3>
+      <p class="case-intent">リンクが切れていたり、書かれている事業者名が実際と違うと、掲示していないのと同じ扱いになる。</p>
+      <p class="case-meta">対象要件 <code>v2-26</code> ／ 詳細手順 <code>docs/20_受け入れテスト/06_通知・運営・法定.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-NTF-027/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8B%E3%82%89%E9%81%B7%E7%A7%BB%E3%81%99%E3%82%8B.png" data-cap="AT-NTF-027 ステップ1: 公開ページのリンクから遷移する">
+          <img src="evidence/AT-NTF-027/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8B%E3%82%89%E9%81%B7%E7%A7%BB%E3%81%99%E3%82%8B.png" alt="公開ページのリンクから遷移する" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>公開ページのリンクから遷移する</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>公開ページのリンクから遷移する</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>公開ページ下部の「プライバシーポリシー」を押す</dd>
+          <dt>期待</dt><dd>プライバシーポリシーのページへ遷移する</dd>
+          <dt>実測</dt><dd>遷移先=/privacy</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>リンクが機能する<span class="ck-detail">/privacy</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>本文が表示される<span class="ck-detail">2755 文字</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-NTF-027/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8B%E3%82%89%E9%81%B7%E7%A7%BB%E3%81%99%E3%82%8B.png" data-cap="AT-NTF-027 ステップ1: 公開ページのリンクから遷移する"><img src="evidence/AT-NTF-027/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%81%8B%E3%82%89%E9%81%B7%E7%A7%BB%E3%81%99%E3%82%8B.png" alt="公開ページのリンクから遷移する" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>掲示されている提供主体とクリニック名</td>
+        <td><code>select name, director_name from clinics where id = '10000000-0000-4000-a000-000000000001'</code></td>
+        <td>公開ページに表示される事業者名と一致</td>
+        <td>登録名=デモクリニック / 公開ページの表記と一致(AT-PUB-001 で確認済み)</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-NFR-001">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-001</code><span class="pri pri-p1">P1</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>【参考値】表示速度の実測(本番ビルド・手元の PC)</h3>
+      <p class="case-intent">台帳が重いと現場が使わなくなる。公開ページが遅いと患者が離脱する。ただし本番の速度はサーバーの場所と回線に大きく左右される。</p>
+      <p class="case-meta">対象要件 <code>非機能</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>本番インフラ上の実測ではないため、基準(台帳 p95 &lt; 500ms / 公開ページ LCP &lt; 2.5s)の達成判定には使えません。ここでは参考値として記録します。</p></div>
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-NFR-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_%E6%82%A3%E8%80%85%E3%81%8C%E6%9C%80%E5%88%9D%E3%81%AB%E8%A6%8B%E3%82%8B%E7%94%BB%E9%9D%A2_.png" data-cap="AT-NFR-001 ステップ1: 公開ページ(患者が最初に見る画面)">
+          <img src="evidence/AT-NFR-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_%E6%82%A3%E8%80%85%E3%81%8C%E6%9C%80%E5%88%9D%E3%81%AB%E8%A6%8B%E3%82%8B%E7%94%BB%E9%9D%A2_.png" alt="公開ページ(患者が最初に見る画面)" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>公開ページ(患者が最初に見る画面)</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-NFR-001/02_%E4%BA%88%E7%B4%84%E5%8F%B0%E5%B8%B3_%E5%8F%97%E4%BB%98%E3%81%8C%E4%B8%80%E6%97%A5%E4%B8%AD%E9%96%8B%E3%81%8F%E7%94%BB%E9%9D%A2_.png" data-cap="AT-NFR-001 ステップ2: 予約台帳(受付が一日中開く画面)">
+          <img src="evidence/AT-NFR-001/02_%E4%BA%88%E7%B4%84%E5%8F%B0%E5%B8%B3_%E5%8F%97%E4%BB%98%E3%81%8C%E4%B8%80%E6%97%A5%E4%B8%AD%E9%96%8B%E3%81%8F%E7%94%BB%E9%9D%A2_.png" alt="予約台帳(受付が一日中開く画面)" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>予約台帳(受付が一日中開く画面)</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>公開ページ(患者が最初に見る画面)</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>本番ビルドで /c/demo を 3 回読み込み、表示完了までの時間を測る</dd>
+          <dt>期待</dt><dd>(参考)LCP が 2.5 秒を大きく超えないこと</dd>
+          <dt>実測</dt><dd>読み込み 平均 124ms / 最大 191ms / LCP 平均 112ms</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>(参考)計測できた<span class="ck-detail">124ms</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 手元の PC で計測した値。本番はサーバーとの距離・回線が加わる。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-NFR-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_%E6%82%A3%E8%80%85%E3%81%8C%E6%9C%80%E5%88%9D%E3%81%AB%E8%A6%8B%E3%82%8B%E7%94%BB%E9%9D%A2_.png" data-cap="AT-NFR-001 ステップ1: 公開ページ(患者が最初に見る画面)"><img src="evidence/AT-NFR-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8_%E6%82%A3%E8%80%85%E3%81%8C%E6%9C%80%E5%88%9D%E3%81%AB%E8%A6%8B%E3%82%8B%E7%94%BB%E9%9D%A2_.png" alt="公開ページ(患者が最初に見る画面)" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>予約台帳(受付が一日中開く画面)</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>本番ビルドで /demo を 3 回読み込み、表示完了までの時間を測る</dd>
+          <dt>期待</dt><dd>(参考)体感で待たされないこと</dd>
+          <dt>実測</dt><dd>読み込み 平均 120ms / 最大 127ms(予約データ 17 件)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>(参考)計測できた<span class="ck-detail">120ms</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> データ量が増えると遅くなるため、本番では実データ量での再計測が必要。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-NFR-001/02_%E4%BA%88%E7%B4%84%E5%8F%B0%E5%B8%B3_%E5%8F%97%E4%BB%98%E3%81%8C%E4%B8%80%E6%97%A5%E4%B8%AD%E9%96%8B%E3%81%8F%E7%94%BB%E9%9D%A2_.png" data-cap="AT-NFR-001 ステップ2: 予約台帳(受付が一日中開く画面)"><img src="evidence/AT-NFR-001/02_%E4%BA%88%E7%B4%84%E5%8F%B0%E5%B8%B3_%E5%8F%97%E4%BB%98%E3%81%8C%E4%B8%80%E6%97%A5%E4%B8%AD%E9%96%8B%E3%81%8F%E7%94%BB%E9%9D%A2_.png" alt="予約台帳(受付が一日中開く画面)" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>計測条件</td>
+        <td><code>pnpm build &amp;&amp; pnpm start(本番ビルド)/ ローカル Supabase / 手元の PC</code></td>
+        <td>本番インフラでの再計測が必要</td>
+        <td>公開ページ 124ms(LCP 112ms) / 台帳 120ms / 予約 17 件</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article>
   </section>
 <section id="issues"><h2>検出した問題</h2>
      <p class="sec-sub">見つかったものは隠さず全部載せています。この作業内で直したものは「修正済み」、判断や別作業が必要なものは「未解決」に分けています。</p>
      <div class="chips" style="margin-bottom:18px">
-       <span class="chip big ng">未解決 4</span>
+       <span class="chip big ng">未解決 5</span>
        <span class="chip big warn">修正済み 1</span>
      </div>
      <h3>未解決(判断・追加作業が必要)</h3><div class="callout crit">
@@ -3503,6 +4098,14 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     
     <p><b>回避策:</b> 画面側で最初のセッション開始時刻と期限を比較し、期限を過ぎていればボタンを出さずに連絡先を案内する(manage-booking-view.tsx の alreadyClosed の判定に期限を追加)。</p>
     
+  </div><div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 low ／ AT-AUTH-027</span>
+    <p><b>「最後の院長を外せない」ガードは、同時に 2 か所から操作された場合に破れる可能性がある</b></p>
+    <p>院長が 2 名いる状態で、2 つのブラウザから同時に別々の院長を無効化すると、どちらのチェックも「まだもう 1 人いる」と判断して両方成功しうる(TOCTOU)。データベース側の制約では守られていません。</p>
+    <p><b>影響:</b> 院長が 0 名になると、クリニック設定・メニュー・スタッフ管理を誰も変更できなくなります(運営側での復旧が必要)。発生条件は限定的です。</p>
+    
+    <p><b>回避策:</b> 院長の権限変更は 1 人ずつ行う。恒久対応はデータベースのトリガまたは RPC 内での排他制御。</p>
+    
   </div>
      <h3>この作業内で修正したもの</h3><div class="callout warn">
     <span class="lab">検出 → この作業内で修正済み ／ 深刻度 high ／ AT-CAT-001</span>
@@ -3525,8 +4128,8 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <h3>同時に 2 人が同じ枠を取った場合の二重予約</h3>
     <dl>
       <dt>なぜ確認できないか</dt><dd>人の手でブラウザを 2 つ操作しても「完全に同時」は作れません。</dd>
-      <dt>代わりに行ったこと</dt><dd>サーバーへ同時に予約要求を発射して実測しました。あわせて DB 制約テスト(56 チェック)の結果を引用しています。</dd>
-      <dt>残る未検証範囲</dt><dd class="rest">高負荷が続いた状態での挙動。</dd>
+      <dt>代わりに行ったこと</dt><dd>アプリを通さずデータベースへ直接、同じ部屋・同じ時間の予約を書き込み、排他制約(EXCLUDE)が拒否することを実測しました(AT-BOOK-021)。あわせて自動テスト 56 チェックの結果を引用しています。</dd>
+      <dt>残る未検証範囲</dt><dd class="rest">多数の同時アクセスが続く高負荷状態での挙動。</dd>
     </dl></div><div class="limit">
     <h3>連続投稿の制限(レート制限)</h3>
     <dl>
@@ -3536,9 +4139,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     </dl></div><div class="limit">
     <h3>表示速度(p95・LCP)の基準達成</h3>
     <dl>
-      <dt>なぜ確認できないか</dt><dd>開発サーバーは本番ビルドと性能特性が異なるため、基準の合否判定に使えません。</dd>
-      <dt>代わりに行ったこと</dt><dd>本番ビルドで参考値を計測して掲載しました(合否判定には使いません)。</dd>
-      <dt>残る未検証範囲</dt><dd class="rest">本番インフラ上での実測。</dd>
+      <dt>なぜ確認できないか</dt><dd>手元の PC は本番インフラ(Vercel + Supabase Tokyo)と条件が違うため、基準の合否判定に使えません。</dd>
+      <dt>代わりに行ったこと</dt><dd>本番ビルドで実際に計測し、参考値として掲載しました(AT-NFR-001)。</dd>
+      <dt>残る未検証範囲</dt><dd class="rest">本番インフラ上での実測。データ量が増えた状態での再計測も必要です。</dd>
     </dl></div><div class="limit">
     <h3>法定ページの法的妥当性</h3>
     <dl>
@@ -3549,11 +4152,20 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <h3>本番の Supabase / Vercel / 定期実行</h3>
     <dl>
       <dt>なぜ確認できないか</dt><dd>本番環境が未構築です。作成にはアカウントと課金の判断が必要です。</dd>
-      <dt>代わりに行ったこと</dt><dd>ローカルで同じ処理(定期実行 API・マイグレーション・初期データ)が動くことを確認し、本番移行手順書のどの STEP が残っているかを対応づけました。</dd>
-      <dt>残る未検証範囲</dt><dd class="rest">本番環境そのもの。</dd>
+      <dt>代わりに行ったこと</dt><dd>同じ処理(定期実行の入口・その認可・マイグレーション 9 本・初期データ投入)が手元の環境で動くことを確認しました。下の「本番移行手順書との対応」に、済んだこと・本番で残ることを整理しています。</dd>
+      <dt>残る未検証範囲</dt><dd class="rest">本番環境そのもの(アカウント作成・ドメイン認証・環境変数の登録・実データ投入)。</dd>
     </dl></div></section>
+<section id="migration">
+  <h2>本番移行手順書との対応(この検証で済んだこと / 本番で残ること)</h2>
+  <p class="sec-sub">この報告書は「手元の環境で、アプリが仕様どおり動くか」を確認したものです。本番で実際に使い始めるには
+  <code>docs/60_本番移行手順/</code> の作業が別途必要です。どこまで済んでいるかを整理しました。</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>手順書の STEP</th><th>この検証で確認できたこと</th><th>本番で残る作業</th></tr></thead>
+    <tbody><tr><td><b>STEP 1 事前準備</b></td><td>—</td><td class="rest-cell">Supabase / Vercel / Resend のアカウント作成、クレジットカード、独自ドメインの判断</td></tr><tr><td><b>STEP 2 本番データベース構築</b></td><td>マイグレーション 9 本と初期データの投入が正しく動くことを手元の環境で確認</td><td class="rest-cell">本番プロジェクトの作成(Tokyo リージョン)、マイグレーションの反映、運営アカウントの作成</td></tr><tr><td><b>STEP 3 デプロイと環境変数</b></td><td>CRON_SECRET が未設定/不一致だと定期実行が拒否されること、設定すれば通ることを実測(AT-NTF-014)</td><td class="rest-cell">Vercel へのインポート、環境変数 7 つの登録、本番 URL の確定</td></tr><tr><td><b>STEP 4 メール送信の設定</b></td><td>メール 7 種の本文・件名・差出人表示・リンクの中身を確認(evidence/_emails/)</td><td class="rest-cell">Resend のアカウント作成、ドメイン認証(SPF/DKIM)、実送信と到達性の確認</td></tr><tr><td><b>STEP 5 定期実行の確認</b></td><td>定期実行が送信待ちを処理し、リマインダーを二重送信しないことを実測(AT-NTF-004 / 013)</td><td class="rest-cell">Vercel Cron が 1 時間ごとに動くことの確認(有料プランが必要)</td></tr><tr><td><b>STEP 6 初期設定とデータ登録</b></td><td>クリニック作成・スタッフ招待・部屋/メニュー/担当/枠の登録・公開設定の変更を画面で実施(フェーズ C・A②)</td><td class="rest-cell">実際のクリニック情報・スタッフ・メニュー・営業時間の登録</td></tr><tr><td><b>STEP 7 公開前チェックリスト</b></td><td>中核フロー 32 ケース + 公開予約の主要ケースを画面証跡つきで消化</td><td class="rest-cell">本番環境での再確認(特にメール到達)</td></tr><tr><td><b>STEP 8 運用開始後</b></td><td>送信失敗が設定画面から分かること、利用計測が見られることを確認(AT-NTF-020 / AT-OPS-010)</td><td class="rest-cell">バックアップ設定、日次の承認漏れ確認の運用開始</td></tr></tbody>
+  </table></div>
+</section>
 
-<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 21:52(自動生成。手書きの判定は含みません)</footer>
+<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 22:00(自動生成。手書きの判定は含みません)</footer>
 </div>
 
 <dialog id="lb"><form method="dialog"><button type="submit" style="all:unset;cursor:zoom-out;display:block"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></button></form></dialog>

@@ -1,0 +1,54 @@
+{
+  "id": "AT-NTF-027",
+  "priority": "P0",
+  "phase": "D",
+  "order": 304,
+  "title": "公開ページから法定ページへ到達でき、提供主体が一致している",
+  "spec": "v2-26",
+  "refs": [
+    "20_受け入れテスト/06_通知・運営・法定.md"
+  ],
+  "intent": "リンクが切れていたり、書かれている事業者名が実際と違うと、掲示していないのと同じ扱いになる。",
+  "startedAt": "2026-07-27T12:57:57.694Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "公開ページのリンクから遷移する",
+      "action": "公開ページ下部の「プライバシーポリシー」を押す",
+      "expect": "プライバシーポリシーのページへ遷移する",
+      "actual": "遷移先=/privacy",
+      "checks": [
+        {
+          "label": "リンクが機能する",
+          "ok": true,
+          "detail": "/privacy"
+        },
+        {
+          "label": "本文が表示される",
+          "ok": true,
+          "detail": "2755 文字"
+        }
+      ],
+      "evidence": [
+        "01_公開ページのリンクから遷移する.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "掲示されている提供主体とクリニック名",
+      "query": "select name, director_name from clinics where id = '10000000-0000-4000-a000-000000000001'",
+      "expect": "公開ページに表示される事業者名と一致",
+      "actual": "登録名=デモクリニック / 公開ページの表記と一致(AT-PUB-001 で確認済み)",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:57:59.920Z"
+}

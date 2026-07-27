@@ -42,8 +42,8 @@ const LIMITS = [
   {
     item: "同時に 2 人が同じ枠を取った場合の二重予約",
     why: "人の手でブラウザを 2 つ操作しても「完全に同時」は作れません。",
-    alt: "サーバーへ同時に予約要求を発射して実測しました。あわせて DB 制約テスト(56 チェック)の結果を引用しています。",
-    rest: "高負荷が続いた状態での挙動。",
+    alt: "アプリを通さずデータベースへ直接、同じ部屋・同じ時間の予約を書き込み、排他制約(EXCLUDE)が拒否することを実測しました(AT-BOOK-021)。あわせて自動テスト 56 チェックの結果を引用しています。",
+    rest: "多数の同時アクセスが続く高負荷状態での挙動。",
   },
   {
     item: "連続投稿の制限(レート制限)",
@@ -53,9 +53,9 @@ const LIMITS = [
   },
   {
     item: "表示速度(p95・LCP)の基準達成",
-    why: "開発サーバーは本番ビルドと性能特性が異なるため、基準の合否判定に使えません。",
-    alt: "本番ビルドで参考値を計測して掲載しました(合否判定には使いません)。",
-    rest: "本番インフラ上での実測。",
+    why: "手元の PC は本番インフラ(Vercel + Supabase Tokyo)と条件が違うため、基準の合否判定に使えません。",
+    alt: "本番ビルドで実際に計測し、参考値として掲載しました(AT-NFR-001)。",
+    rest: "本番インフラ上での実測。データ量が増えた状態での再計測も必要です。",
   },
   {
     item: "法定ページの法的妥当性",
@@ -66,9 +66,21 @@ const LIMITS = [
   {
     item: "本番の Supabase / Vercel / 定期実行",
     why: "本番環境が未構築です。作成にはアカウントと課金の判断が必要です。",
-    alt: "ローカルで同じ処理(定期実行 API・マイグレーション・初期データ)が動くことを確認し、本番移行手順書のどの STEP が残っているかを対応づけました。",
-    rest: "本番環境そのもの。",
+    alt: "同じ処理(定期実行の入口・その認可・マイグレーション 9 本・初期データ投入)が手元の環境で動くことを確認しました。下の「本番移行手順書との対応」に、済んだこと・本番で残ることを整理しています。",
+    rest: "本番環境そのもの(アカウント作成・ドメイン認証・環境変数の登録・実データ投入)。",
   },
+];
+
+/** docs/60_本番移行手順 の各 STEP と、この検証で確認できた範囲の対応 */
+const MIGRATION_MAP = [
+  { step: "STEP 1 事前準備", done: "—", rest: "Supabase / Vercel / Resend のアカウント作成、クレジットカード、独自ドメインの判断" },
+  { step: "STEP 2 本番データベース構築", done: "マイグレーション 9 本と初期データの投入が正しく動くことを手元の環境で確認", rest: "本番プロジェクトの作成(Tokyo リージョン)、マイグレーションの反映、運営アカウントの作成" },
+  { step: "STEP 3 デプロイと環境変数", done: "CRON_SECRET が未設定/不一致だと定期実行が拒否されること、設定すれば通ることを実測(AT-NTF-014)", rest: "Vercel へのインポート、環境変数 7 つの登録、本番 URL の確定" },
+  { step: "STEP 4 メール送信の設定", done: "メール 7 種の本文・件名・差出人表示・リンクの中身を確認(evidence/_emails/)", rest: "Resend のアカウント作成、ドメイン認証(SPF/DKIM)、実送信と到達性の確認" },
+  { step: "STEP 5 定期実行の確認", done: "定期実行が送信待ちを処理し、リマインダーを二重送信しないことを実測(AT-NTF-004 / 013)", rest: "Vercel Cron が 1 時間ごとに動くことの確認(有料プランが必要)" },
+  { step: "STEP 6 初期設定とデータ登録", done: "クリニック作成・スタッフ招待・部屋/メニュー/担当/枠の登録・公開設定の変更を画面で実施(フェーズ C・A②)", rest: "実際のクリニック情報・スタッフ・メニュー・営業時間の登録" },
+  { step: "STEP 7 公開前チェックリスト", done: "中核フロー 32 ケース + 公開予約の主要ケースを画面証跡つきで消化", rest: "本番環境での再確認(特にメール到達)" },
+  { step: "STEP 8 運用開始後", done: "送信失敗が設定画面から分かること、利用計測が見られることを確認(AT-NTF-020 / AT-OPS-010)", rest: "バックアップ設定、日次の承認漏れ確認の運用開始" },
 ];
 
 const VERDICT_LABEL = { PASS: "合格", PARTIAL: "一部制限あり", NA: "検証不能", FAIL: "不合格" };
@@ -312,6 +324,16 @@ const issuesSection = allIssues.length
      ${fixedIssues.length ? `<h3>この作業内で修正したもの</h3>${fixedIssues.map((i) => issueBlock(i, i.caseId)).join("")}` : ""}</section>`
   : `<section id="issues"><h2>検出した問題</h2><div class="callout ok"><span class="lab">現時点</span><p>実施済みの範囲で、実装側の問題は検出されていません。</p></div></section>`;
 
+const migrationSection = `<section id="migration">
+  <h2>本番移行手順書との対応(この検証で済んだこと / 本番で残ること)</h2>
+  <p class="sec-sub">この報告書は「手元の環境で、アプリが仕様どおり動くか」を確認したものです。本番で実際に使い始めるには
+  <code>docs/60_本番移行手順/</code> の作業が別途必要です。どこまで済んでいるかを整理しました。</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>手順書の STEP</th><th>この検証で確認できたこと</th><th>本番で残る作業</th></tr></thead>
+    <tbody>${MIGRATION_MAP.map((m) => `<tr><td><b>${esc(m.step)}</b></td><td>${esc(m.done)}</td><td class="rest-cell">${esc(m.rest)}</td></tr>`).join("")}</tbody>
+  </table></div>
+</section>`;
+
 const limitsSection = `<section id="limits"><h2>この環境では確認できないこと(と、代わりに行ったこと)</h2>
   <p class="sec-sub">「できない」で終わらせず、代替手段でどこまで確認したか・何が残るかを明示します。ここに挙げた項目は本番設定後に改めて確認が必要です。</p>
   ${LIMITS.map(
@@ -460,6 +482,7 @@ tr:last-child td{border-bottom:none}
 .dbwrap summary{cursor:pointer;font-weight:600;font-size:14.5px}
 .db code{font-size:11.5px;white-space:pre-wrap}
 .cov-note{font-size:12px;color:var(--ink-faint)}
+.rest-cell{color:var(--warn)}
 .row-todo{opacity:.6}
 .issue-shot{margin-top:12px;max-width:520px}
 .issue-shot-cap{font-size:12px;color:inherit;opacity:.85;margin:0 0 6px}
@@ -488,7 +511,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     ${PHASES.filter((p) => cases.some((c) => c.phase === p.key))
       .map((p) => `<a href="#phase-${p.key}">フェーズ${p.key}</a>`)
       .join("")}
-    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a>
+    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
   </nav>
   <button class="toggle" id="tg" type="button">◐ テーマ</button>
 </div></header>
@@ -540,6 +563,7 @@ ${coverageSection}
 ${phaseSections}
 ${issuesSection}
 ${limitsSection}
+${migrationSection}
 
 <footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: ${esc(generatedAt)}(自動生成。手書きの判定は含みません)</footer>
 </div>
