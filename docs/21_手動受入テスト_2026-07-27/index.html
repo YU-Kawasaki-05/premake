@@ -159,7 +159,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <span class="brand"><span class="dot"></span>premake 受け入れテスト 画面証跡</span>
   <nav>
     <a href="#summary">サマリ</a><a href="#read">読み方</a>
-    <a href="#phase-A">フェーズA</a>
+    <a href="#phase-A">フェーズA</a><a href="#phase-B">フェーズB</a>
     <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a>
   </nav>
   <button class="toggle" id="tg" type="button">◐ テーマ</button>
@@ -171,12 +171,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <h1>本番投入前の受け入れテスト — 画面証跡つき報告書</h1>
   <p class="lede">クリニックで実際に使う操作を、ブラウザを動かして 1 手順ずつ確認した記録です。各手順のスクリーンショットを画面が移り変わる順に並べ、<b>何を期待し、何が起き、なぜ合格と判断したか</b>を併記しています。画面だけでは分からない「本当にデータが保存されたか」はデータベースへ直接問い合わせて裏を取っています。</p>
   <div class="chips">
-    <span class="chip big">ケース 26</span>
-    <span class="chip big ok">合格 23</span>
-    <span class="chip big warn">一部制限 3</span>
-    
+    <span class="chip big">ケース 54</span>
+    <span class="chip big ok">合格 47</span>
+    <span class="chip big warn">一部制限 5</span>
+    <span class="chip big">検証不能 2</span>
     <span class="chip big ok">不合格 0</span>
-    <span class="chip">生成 2026/07/27 11:44</span>
+    <span class="chip">生成 2026/07/27 21:52</span>
   </div>
 </div>
 
@@ -204,7 +204,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <thead><tr><th>フェーズ</th><th>範囲</th><th>ケース</th><th>合格</th><th>一部制限</th><th>検証不能</th><th>不合格</th></tr></thead>
     <tbody><tr><td>A</td><td>中核フロー(院内予約 → 確認 → 施術 → キャンセル/変更)</td>
     <td>26</td><td class="num-ok">23</td><td class="num-warn">3</td>
-    <td class="num-na">0</td><td class="num-ng">0</td></tr></tbody>
+    <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>B</td><td>公開予約(患者がインターネットから予約する導線)</td>
+    <td>28</td><td class="num-ok">24</td><td class="num-warn">2</td>
+    <td class="num-na">2</td><td class="num-ng">0</td></tr></tbody>
   </table></div>
   <div class="callout ok"><span class="lab">現時点の判定</span>
     <p>実施済みのケースはすべて合格しています。ただし本書は作成途中であり、未実施のフェーズが残っている場合は最終判定になりません(サマリのケース数を参照)。</p></div>
@@ -2183,11 +2185,1290 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     </table></div></details>
     
   </article>
+  </section><section id="phase-B">
+    <h2>フェーズ B — 公開予約(患者がインターネットから予約する導線)</h2>
+    <p class="sec-sub">公開予約を ON で運用する方針のため、患者が実際に触る画面を検証しています。</p>
+    <article class="case" id="AT-PUB-001">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-001</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>公開ページに医療の提供主体が明示される</h3>
+      <p class="case-intent">医療広告ガイドラインで求められる「誰が提供する医療か」の明示。院名・院長名・所在地・連絡先が欠けると広告規制に触れる。</p>
+      <p class="case-meta">対象要件 <code>v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-001 ステップ1: 公開ページを開く">
+          <img src="evidence/AT-PUB-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" alt="公開ページを開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>公開ページを開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>公開ページを開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>患者として /c/demo を開く(ログイン不要)</dd>
+          <dt>期待</dt><dd>クリニック名・院長名・所在地・電話番号が表示される</dd>
+          <dt>実測</dt><dd>クリニック名=true / 院長名=true / 郵便番号=true / 住所=true / 電話番号=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>クリニック名(デモクリニック)が表示される<span class="ck-detail">デモクリニック</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>院長名(佐藤 まこと)が表示される<span class="ck-detail">佐藤 まこと</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>郵便番号(150-0001)が表示される<span class="ck-detail">150-0001</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>住所(東京都渋谷区神宮前 1-1-1)が表示される<span class="ck-detail">東京都渋谷区神宮前 1-1-1</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>電話番号(03-0000-0000)が表示される<span class="ck-detail">03-0000-0000</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> DB に登録されている値をそのまま期待値にして、画面本文と突き合わせている。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-001 ステップ1: 公開ページを開く"><img src="evidence/AT-PUB-001/01_%E5%85%AC%E9%96%8B%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" alt="公開ページを開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-002">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-002</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>自由診療であることと副作用リスクが記載される</h3>
+      <p class="case-intent">自由診療(保険適用外)であること、副作用が起こりうることの明示は医療広告の必須要件。これが無いと公開できない。</p>
+      <p class="case-meta">対象要件 <code>v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-002/01_%E6%B3%A8%E6%84%8F%E6%9B%B8%E3%81%8D%E3%81%AE%E8%A8%98%E8%BC%89%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-002 ステップ1: 注意書きの記載を確認">
+          <img src="evidence/AT-PUB-002/01_%E6%B3%A8%E6%84%8F%E6%9B%B8%E3%81%8D%E3%81%AE%E8%A8%98%E8%BC%89%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="注意書きの記載を確認" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>注意書きの記載を確認</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>注意書きの記載を確認</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>公開ページ下部の注意書きを読む</dd>
+          <dt>期待</dt><dd>「自由診療」の明示と、副作用(発赤・腫れ等)についての記載がある</dd>
+          <dt>実測</dt><dd>自由診療=true / 副作用=true / 個人差=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>「自由診療」の記載がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>副作用についての記載がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>効果に個人差がある旨の記載がある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-002/01_%E6%B3%A8%E6%84%8F%E6%9B%B8%E3%81%8D%E3%81%AE%E8%A8%98%E8%BC%89%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-002 ステップ1: 注意書きの記載を確認"><img src="evidence/AT-PUB-002/01_%E6%B3%A8%E6%84%8F%E6%9B%B8%E3%81%8D%E3%81%AE%E8%A8%98%E8%BC%89%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="注意書きの記載を確認" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-003">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-003</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>症例写真・体験談が掲載されていない</h3>
+      <p class="case-intent">症例写真や患者の体験談を出すには医療広告の「限定解除」要件(詳細な説明の併記等)を満たす必要がある。現状は載せない方針のため、載っていないことを確認する。</p>
+      <p class="case-meta">対象要件 <code>v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-003/01_%E7%94%BB%E5%83%8F%E3%81%A8%E4%BD%93%E9%A8%93%E8%AB%87%E3%81%AE%E6%9C%89%E7%84%A1%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-003 ステップ1: 画像と体験談の有無を確認">
+          <img src="evidence/AT-PUB-003/01_%E7%94%BB%E5%83%8F%E3%81%A8%E4%BD%93%E9%A8%93%E8%AB%87%E3%81%AE%E6%9C%89%E7%84%A1%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="画像と体験談の有無を確認" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>画像と体験談の有無を確認</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>画像と体験談の有無を確認</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>公開ページ内の画像要素と、体験談を示す語句を検査</dd>
+          <dt>期待</dt><dd>施術結果の写真がなく、体験談・口コミの掲載もない</dd>
+          <dt>実測</dt><dd>img 要素=0個 / 該当語句=なし</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>施術結果の画像がない<span class="ck-detail">img=0</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>体験談・口コミの掲載がない<span class="ck-detail">なし</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 語句とマークアップの両面から確認している。将来症例を載せる場合は限定解除の要件確認が必要。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-003/01_%E7%94%BB%E5%83%8F%E3%81%A8%E4%BD%93%E9%A8%93%E8%AB%87%E3%81%AE%E6%9C%89%E7%84%A1%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-003 ステップ1: 画像と体験談の有無を確認"><img src="evidence/AT-PUB-003/01_%E7%94%BB%E5%83%8F%E3%81%A8%E4%BD%93%E9%A8%93%E8%AB%87%E3%81%AE%E6%9C%89%E7%84%A1%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="画像と体験談の有無を確認" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-004">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-004</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>料金は「表示する」設定のメニューだけに出る</h3>
+      <p class="case-intent">料金の出し方はクリニックの方針。表示しない設定にしたメニューの価格が漏れると、掲示していない価格を広告したことになる。</p>
+      <p class="case-meta">対象要件 <code>v2-05 / v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-004/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%94%E3%81%A8%E3%81%AE%E4%BE%A1%E6%A0%BC%E8%A1%A8%E7%A4%BA%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-004 ステップ1: メニューごとの価格表示を確認">
+          <img src="evidence/AT-PUB-004/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%94%E3%81%A8%E3%81%AE%E4%BE%A1%E6%A0%BC%E8%A1%A8%E7%A4%BA%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="メニューごとの価格表示を確認" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>メニューごとの価格表示を確認</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>メニューごとの価格表示を確認</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>公開ページのメニュー一覧で、価格の有無を DB の設定と突き合わせる</dd>
+          <dt>期待</dt><dd>「料金を表示」がオンのメニューだけ価格が出る</dd>
+          <dt>実測</dt><dd>アートメイク 眉(2回目まで):非表示 / アートメイク リップ:非表示 / アートメイク リタッチ(3回目以降):非表示 / アートメイク カウンセリングのみ:表示 / メディカルピーリング:表示 / 検証用 メニューA:表示</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>「アートメイク 眉(2回目まで)」の価格 ¥99,000 は表示されない<span class="ck-detail">show_price=f 画面表示=false</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>「アートメイク リップ」の価格 ¥110,000 は表示されない<span class="ck-detail">show_price=f 画面表示=false</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>「アートメイク リタッチ(3回目以降)」の価格 ¥55,000 は表示されない<span class="ck-detail">show_price=f 画面表示=false</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>「アートメイク カウンセリングのみ」は価格 ¥0 が表示される<span class="ck-detail">show_price=t 画面表示=true</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>「メディカルピーリング」は価格 ¥16,500 が表示される<span class="ck-detail">show_price=t 画面表示=true</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>「検証用 メニューA」は価格 ¥12,000 が表示される<span class="ck-detail">show_price=t 画面表示=true</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-004/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%94%E3%81%A8%E3%81%AE%E4%BE%A1%E6%A0%BC%E8%A1%A8%E7%A4%BA%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-004 ステップ1: メニューごとの価格表示を確認"><img src="evidence/AT-PUB-004/01_%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%94%E3%81%A8%E3%81%AE%E4%BE%A1%E6%A0%BC%E8%A1%A8%E7%A4%BA%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="メニューごとの価格表示を確認" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-005">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-005</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>非公開・停止したメニューは公開ページに出ない</h3>
+      <p class="case-intent">院内専用メニューや提供をやめたメニューが患者から予約できてしまうと、対応できない予約が入る。</p>
+      <p class="case-meta">対象要件 <code>v2-05 / v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-005/01_%E5%85%AC%E9%96%8B%E4%B8%AD%E3%81%AE%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%81%A6%E3%81%84%E3%82%8B.png" data-cap="AT-PUB-005 ステップ1: 公開中のメニューが出ている">
+          <img src="evidence/AT-PUB-005/01_%E5%85%AC%E9%96%8B%E4%B8%AD%E3%81%AE%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%81%A6%E3%81%84%E3%82%8B.png" alt="公開中のメニューが出ている" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>公開中のメニューが出ている</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-005/02_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%81%AB%E5%88%87%E3%82%8A%E6%9B%BF%E3%81%88%E3%82%8B%E3%81%A8%E6%B6%88%E3%81%88%E3%82%8B.png" data-cap="AT-PUB-005 ステップ2: 非公開に切り替えると消える">
+          <img src="evidence/AT-PUB-005/02_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%81%AB%E5%88%87%E3%82%8A%E6%9B%BF%E3%81%88%E3%82%8B%E3%81%A8%E6%B6%88%E3%81%88%E3%82%8B.png" alt="非公開に切り替えると消える" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>非公開に切り替えると消える</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>公開中のメニューが出ている</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>公開ページで「検証用 メニューA」が掲載されていることを確認</dd>
+          <dt>期待</dt><dd>公開設定のメニューは一覧に出る</dd>
+          <dt>実測</dt><dd>掲載=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>公開中は掲載される</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-005/01_%E5%85%AC%E9%96%8B%E4%B8%AD%E3%81%AE%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%81%A6%E3%81%84%E3%82%8B.png" data-cap="AT-PUB-005 ステップ1: 公開中のメニューが出ている"><img src="evidence/AT-PUB-005/01_%E5%85%AC%E9%96%8B%E4%B8%AD%E3%81%AE%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%8C%E5%87%BA%E3%81%A6%E3%81%84%E3%82%8B.png" alt="公開中のメニューが出ている" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>非公開に切り替えると消える</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「検証用 メニューA」を非公開(公開ページに掲載しない)に変更して再読み込み</dd>
+          <dt>期待</dt><dd>一覧から消え、患者からは予約できなくなる</dd>
+          <dt>実測</dt><dd>掲載=false</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>非公開にすると消える</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-005/02_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%81%AB%E5%88%87%E3%82%8A%E6%9B%BF%E3%81%88%E3%82%8B%E3%81%A8%E6%B6%88%E3%81%88%E3%82%8B.png" data-cap="AT-PUB-005 ステップ2: 非公開に切り替えると消える"><img src="evidence/AT-PUB-005/02_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%81%AB%E5%88%87%E3%82%8A%E6%9B%BF%E3%81%88%E3%82%8B%E3%81%A8%E6%B6%88%E3%81%88%E3%82%8B.png" alt="非公開に切り替えると消える" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-006">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-006</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>診療時間と法定ページへのリンクが表示される</h3>
+      <p class="case-intent">診療時間は患者が最初に見る情報。プライバシーポリシー・利用規約は個人情報を預かるサービスとして必須の掲示。</p>
+      <p class="case-meta">対象要件 <code>v2-19 / v2-26</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-006/01_%E8%A8%BA%E7%99%82%E6%99%82%E9%96%93%E3%81%A8%E5%90%84%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-006 ステップ1: 診療時間と各リンクを確認">
+          <img src="evidence/AT-PUB-006/01_%E8%A8%BA%E7%99%82%E6%99%82%E9%96%93%E3%81%A8%E5%90%84%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="診療時間と各リンクを確認" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>診療時間と各リンクを確認</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-006/02_%E6%B3%95%E5%AE%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%8C%E9%96%8B%E3%81%91%E3%82%8B.png" data-cap="AT-PUB-006 ステップ2: 法定ページが開ける">
+          <img src="evidence/AT-PUB-006/02_%E6%B3%95%E5%AE%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%8C%E9%96%8B%E3%81%91%E3%82%8B.png" alt="法定ページが開ける" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>法定ページが開ける</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>診療時間と各リンクを確認</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>公開ページの診療時間欄とフッターのリンクを見る</dd>
+          <dt>期待</dt><dd>曜日ごとの診療時間、プライバシーポリシー・利用規約・予約確認へのリンクがある</dd>
+          <dt>実測</dt><dd>診療時間の表示=true / プライバシー=1 / 利用規約=1 / 予約確認=1</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>診療時間が表示される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>プライバシーポリシーへのリンクがある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>利用規約へのリンクがある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約の確認・変更・キャンセルへの入口がある</span></li></ul>
+        <p class="why"><b>判定の根拠</b> DB の営業時間設定: [{&quot;dow&quot;: 1, &quot;open&quot;: &quot;10:00&quot;, &quot;close&quot;: &quot;19:00&quot;}, {&quot;dow&quot;: 2, &quot;open&quot;: &quot;10:00&quot;, &quot;close&quot;: &quot;19:00&quot;}, {&quot;dow&quot;: 3, &quot;open&quot;: &quot;10:00&quot;, &quot;close&quot;: &quot;19:00&quot;}, {&quot;dow&quot;: 4, &quot;open&quot;: &quot;10:00&quot;, &quot;close&quot;: &quot;19:00&quot;}, {&quot;dow&quot;: 5, &quot;open&quot;: &quot;10:00&quot;, &quot;close&quot;: &quot;19:00&quot;}, {&quot;dow&quot;: 6, &quot;open&quot;: &quot;10:00&quot;, &quot;close&quot;: &quot;17:00&quot;}]</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-006/01_%E8%A8%BA%E7%99%82%E6%99%82%E9%96%93%E3%81%A8%E5%90%84%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E7%A2%BA%E8%AA%8D.png" data-cap="AT-PUB-006 ステップ1: 診療時間と各リンクを確認"><img src="evidence/AT-PUB-006/01_%E8%A8%BA%E7%99%82%E6%99%82%E9%96%93%E3%81%A8%E5%90%84%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E7%A2%BA%E8%AA%8D.png" alt="診療時間と各リンクを確認" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>法定ページが開ける</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>/privacy と /terms を直接開く</dd>
+          <dt>期待</dt><dd>どちらも 200 で内容が表示される</dd>
+          <dt>実測</dt><dd>privacy=HTTP 200 「PRIVACY POLICY プライバシーポリシー 制定日 (正式公開時に記載) ・ 最終改定日 (正式公開時に記載」 / terms=HTTP 200 「TERMS OF SERVICE 利用規約 制定日 (正式公開時に記載) ・ 最終改定日 (正式公開時に記載) 本」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>プライバシーポリシーが開ける</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>利用規約が開ける</span></li></ul>
+        <p class="why"><b>判定の根拠</b> 現在の文言は暫定版。本文の確定と弁護士確認は人が行う作業として残っている(未検証項目を参照)。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-006/02_%E6%B3%95%E5%AE%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%8C%E9%96%8B%E3%81%91%E3%82%8B.png" data-cap="AT-PUB-006 ステップ2: 法定ページが開ける"><img src="evidence/AT-PUB-006/02_%E6%B3%95%E5%AE%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%8C%E9%96%8B%E3%81%91%E3%82%8B.png" alt="法定ページが開ける" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-007">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-007</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>存在しないクリニックの URL は 404 になる</h3>
+      <p class="case-intent">URL を推測して他のクリニックの存在を探れないようにする。エラーの出方で情報が漏れないことも確認する。</p>
+      <p class="case-meta">対象要件 <code>v2-19</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-007/01_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84_slug_%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-007 ステップ1: 存在しない slug を開く">
+          <img src="evidence/AT-PUB-007/01_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84_slug_%E3%82%92%E9%96%8B%E3%81%8F.png" alt="存在しない slug を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>存在しない slug を開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>存在しない slug を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>/c/no-such-clinic-xyz を開く</dd>
+          <dt>期待</dt><dd>404 が返り、他クリニックの情報は一切出ない</dd>
+          <dt>実測</dt><dd>HTTP 404 / 本文の冒頭=「」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>404 が返る<span class="ck-detail">HTTP 404</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>他クリニックの名称が出ない</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-007/01_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84_slug_%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-007 ステップ1: 存在しない slug を開く"><img src="evidence/AT-PUB-007/01_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84_slug_%E3%82%92%E9%96%8B%E3%81%8F.png" alt="存在しない slug を開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-008">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-008</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>オンライン予約をオフにすると患者向けの導線が閉じる</h3>
+      <p class="case-intent">「今は電話予約だけにしたい」ときに確実に止められること。オフにしたのに申し込めてしまうと、対応できない予約が入る。</p>
+      <p class="case-meta">対象要件 <code>v2-19 / v2-20</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-008/01_%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E4%BA%88%E7%B4%84%E3%82%92%E3%82%AA%E3%83%95%E3%81%AB%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-008 ステップ1: オンライン予約をオフにする">
+          <img src="evidence/AT-PUB-008/01_%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E4%BA%88%E7%B4%84%E3%82%92%E3%82%AA%E3%83%95%E3%81%AB%E3%81%99%E3%82%8B.png" alt="オンライン予約をオフにする" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>オンライン予約をオフにする</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-008/02_%E3%82%AA%E3%83%B3%E3%81%AB%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-008 ステップ2: オンに戻すと復活する">
+          <img src="evidence/AT-PUB-008/02_%E3%82%AA%E3%83%B3%E3%81%AB%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" alt="オンに戻すと復活する" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>オンに戻すと復活する</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>オンライン予約をオフにする</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>クリニック設定でオンライン予約をオフにし、公開ページと予約ページを開く</dd>
+          <dt>期待</dt><dd>予約ボタンが消え、予約ページも開けない(404 または受付停止の案内)</dd>
+          <dt>実測</dt><dd>トップの予約ボタン=0個 / 予約ページ=HTTP 404 「ページが見つかりません お探しのページは存在しないか、アクセス権限がありません。 ログインへ」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>予約ボタンが出ない<span class="ck-detail">0個</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約ページから申し込めない<span class="ck-detail">HTTP 404</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-008/01_%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E4%BA%88%E7%B4%84%E3%82%92%E3%82%AA%E3%83%95%E3%81%AB%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-008 ステップ1: オンライン予約をオフにする"><img src="evidence/AT-PUB-008/01_%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E4%BA%88%E7%B4%84%E3%82%92%E3%82%AA%E3%83%95%E3%81%AB%E3%81%99%E3%82%8B.png" alt="オンライン予約をオフにする" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>オンに戻すと復活する</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>オンライン予約をオンに戻して公開ページを再読み込み</dd>
+          <dt>期待</dt><dd>予約ボタンが再表示される</dd>
+          <dt>実測</dt><dd>予約ボタン=6個</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>予約ボタンが戻る<span class="ck-detail">6個</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-008/02_%E3%82%AA%E3%83%B3%E3%81%AB%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-008 ステップ2: オンに戻すと復活する"><img src="evidence/AT-PUB-008/02_%E3%82%AA%E3%83%B3%E3%81%AB%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" alt="オンに戻すと復活する" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-010">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-010</code><span class="pri pri-p0">P0</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>承認モード「メール確認後に自動確定」の実際の挙動</h3>
+      <p class="case-intent">クリニックが選べる承認モードのうち auto を選んだ場合の挙動。選択肢の名前どおりなら、患者がメールのリンクを押して初めて確定するはず。</p>
+      <p class="case-meta">対象要件 <code>v2-20</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>auto モードは選択肢名(「メール確認後に自動確定」)に反し、申込と同時に確定します。手動承認(推奨)で運用する限り実害はありませんが、設定名が誤解を招きます。</p></div>
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-010/01_%E6%89%BF%E8%AA%8D%E3%83%A2%E3%83%BC%E3%83%89_auto_%E3%81%A7%E7%94%B3%E3%81%97%E8%BE%BC%E3%82%80.png" data-cap="AT-PUB-010 ステップ1: 承認モード auto で申し込む">
+          <img src="evidence/AT-PUB-010/01_%E6%89%BF%E8%AA%8D%E3%83%A2%E3%83%BC%E3%83%89_auto_%E3%81%A7%E7%94%B3%E3%81%97%E8%BE%BC%E3%82%80.png" alt="承認モード auto で申し込む" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>承認モード auto で申し込む</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>承認モード auto で申し込む</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>承認モードを「メール確認後に自動確定」にして 2026-07-28 14:00 に申し込む</dd>
+          <dt>期待</dt><dd>(選択肢名どおりなら)確認メールが送られ、リンクを押すまでは確定しない</dd>
+          <dt>実測</dt><dd>状態=confirmed / 積まれた通知=booking_confirmed,booking_created_internal / 画面で確認を促している=false</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>予約が作られる<span class="ck-detail">B-260727-B6F5</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 実測の結果は下の「検出した問題」を参照。選択肢の名前と実装が一致していない。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-010/01_%E6%89%BF%E8%AA%8D%E3%83%A2%E3%83%BC%E3%83%89_auto_%E3%81%A7%E7%94%B3%E3%81%97%E8%BE%BC%E3%82%80.png" data-cap="AT-PUB-010 ステップ1: 承認モード auto で申し込む"><img src="evidence/AT-PUB-010/01_%E6%89%BF%E8%AA%8D%E3%83%A2%E3%83%BC%E3%83%89_auto_%E3%81%A7%E7%94%B3%E3%81%97%E8%BE%BC%E3%82%80.png" alt="承認モード auto で申し込む" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>申込直後の状態</td>
+        <td><code>select status from bookings where guest_email = 'at-pub-auto@example.com'</code></td>
+        <td>選択肢名どおりなら requested(メール確認待ち)</td>
+        <td>confirmed</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>検証後に承認モードを manual(推奨)へ戻した</td>
+        <td><code>select booking_approval_mode from clinics where id = '10000000-0000-4000-a000-000000000001'</code></td>
+        <td>manual</td>
+        <td>manual</td>
+      </tr></tbody>
+    </table></div></details>
+    <div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 medium</span>
+    <p><b>承認モード「メール確認後に自動確定(auto)」に、メール確認のステップが実装されていない</b></p>
+    <p>auto に設定して申し込んだところ、確認リンクを経ずにその場で確定(confirmed)になりました。積まれた通知は booking_confirmed / booking_created_internal で、確認用のメールは送られていません。</p>
+    <p><b>影響:</b> この設定を選ぶと、メールアドレスの実在確認をしないまま予約が確定します。存在しないアドレスやなりすましでの予約を受け付けてしまい、当日の無断キャンセルにつながります。手動承認で運用する限り実害はありません。</p>
+    
+    <p><b>回避策:</b> 承認モードは「院内で承認してから確定(manual)」のまま運用する。選択肢名を「即時確定」へ変更するか、確認リンクの実装を行うかは要判断。</p>
+    
+  </div>
+  </article><article class="case" id="AT-PUB-011">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-011</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>患者がインターネットから予約を申し込む(院内承認モード)</h3>
+      <p class="case-intent">公開予約の本流。申込がその場で確定せず「承認待ち」で入り、患者には受付の連絡が届くこと。</p>
+      <p class="case-meta">対象要件 <code>v2-20</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-011/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%82%92%E9%81%B8%E3%81%B6.png" data-cap="AT-PUB-011 ステップ1: 空き枠を選ぶ">
+          <img src="evidence/AT-PUB-011/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%82%92%E9%81%B8%E3%81%B6.png" alt="空き枠を選ぶ" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>空き枠を選ぶ</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-011/02_%E9%80%A3%E7%B5%A1%E5%85%88%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-PUB-011 ステップ2: 連絡先を入力">
+          <img src="evidence/AT-PUB-011/02_%E9%80%A3%E7%B5%A1%E5%85%88%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="連絡先を入力" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>連絡先を入力</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-011/03_%E7%94%B3%E8%BE%BC%E3%81%8C%E5%8F%97%E3%81%91%E4%BB%98%E3%81%91%E3%82%89%E3%82%8C%E3%82%8B.png" data-cap="AT-PUB-011 ステップ3: 申込が受け付けられる">
+          <img src="evidence/AT-PUB-011/03_%E7%94%B3%E8%BE%BC%E3%81%8C%E5%8F%97%E3%81%91%E4%BB%98%E3%81%91%E3%82%89%E3%82%8C%E3%82%8B.png" alt="申込が受け付けられる" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">3</span>申込が受け付けられる</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>空き枠を選ぶ</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>2026-07-28 の空き枠から 13:00 を選択</dd>
+          <dt>期待</dt><dd>連絡先の入力フォームが表示される</dd>
+          <dt>実測</dt><dd>選択した枠=13:00 / 入力欄=1個</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>連絡先フォームが出る</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-011/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%82%92%E9%81%B8%E3%81%B6.png" data-cap="AT-PUB-011 ステップ1: 空き枠を選ぶ"><img src="evidence/AT-PUB-011/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%82%92%E9%81%B8%E3%81%B6.png" alt="空き枠を選ぶ" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>連絡先を入力</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>氏名・かな・電話・メールアドレスを入力</dd>
+          <dt>期待</dt><dd>入力内容がフォームに反映される</dd>
+          <dt>実測</dt><dd>氏名=AT公開 患者 / メール=at-pub@example.com</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>入力が反映される</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-011/02_%E9%80%A3%E7%B5%A1%E5%85%88%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-PUB-011 ステップ2: 連絡先を入力"><img src="evidence/AT-PUB-011/02_%E9%80%A3%E7%B5%A1%E5%85%88%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="連絡先を入力" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">3</span><h4>申込が受け付けられる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「この内容で予約する」を押す</dd>
+          <dt>期待</dt><dd>受付完了の画面になり、予約番号が案内される。状態は「承認待ち」</dd>
+          <dt>実測</dt><dd>画面=「予約を受け付けました 予約番号 B-260727-D6D3 クリニックの確認後に確定します。確認・キャンセルは下記リンクから行えます。 予約内容を確認する 」 / DB=B-260727-D6D3 / requested / web</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>予約が作られる<span class="ck-detail">B-260727-D6D3</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>状態が承認待ち<span class="ck-detail">requested</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>インターネット経由として記録される<span class="ck-detail">web</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>画面に予約番号が出る<span class="ck-detail">B-260727-D6D3</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 手動承認モードのため、この時点では確定していない(院内が確定して初めて成立)。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-011/03_%E7%94%B3%E8%BE%BC%E3%81%8C%E5%8F%97%E3%81%91%E4%BB%98%E3%81%91%E3%82%89%E3%82%8C%E3%82%8B.png" data-cap="AT-PUB-011 ステップ3: 申込が受け付けられる"><img src="evidence/AT-PUB-011/03_%E7%94%B3%E8%BE%BC%E3%81%8C%E5%8F%97%E3%81%91%E4%BB%98%E3%81%91%E3%82%89%E3%82%8C%E3%82%8B.png" alt="申込が受け付けられる" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>患者へ受付の連絡、院内へ新規申込の連絡が積まれる</td>
+        <td><code>select kind, recipient_type, recipient_email from notifications n join bookings b on b.id = n.booking_id where b.guest_email = 'at-pub@example.com' order by n.created_at</code></td>
+        <td>booking_requested(patient) と booking_created_internal(member)</td>
+        <td>booking_requested:patient:at-pub@example.com / booking_created_internal:member:info@demo.local</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-012">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-012</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>空き枠の計算が正しい(所要時間+片付け時間・15 分刻み・枠の終端)</h3>
+      <p class="case-intent">ここが間違うと「予約できたのに実際は入れない」「空いているのに出ない」が起きる。公開予約の心臓部。</p>
+      <p class="case-meta">対象要件 <code>v2-21</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-012/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%81%AE%E4%B8%80%E8%A6%A7%E3%82%92%E8%A1%A8%E7%A4%BA.png" data-cap="AT-PUB-012 ステップ1: 空き枠の一覧を表示">
+          <img src="evidence/AT-PUB-012/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%81%AE%E4%B8%80%E8%A6%A7%E3%82%92%E8%A1%A8%E7%A4%BA.png" alt="空き枠の一覧を表示" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>空き枠の一覧を表示</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>空き枠の一覧を表示</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>患者として 2026-07-28 の「メディカルピーリング」の空き枠を表示</dd>
+          <dt>期待</dt><dd>データベースから計算した期待値と完全に一致する(21 枠)</dd>
+          <dt>実測</dt><dd>画面 21 枠 / 期待 21 枠 / 画面のみ=なし / 期待のみ=なし</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>画面にしか無い枠がない(予約できない枠を出していない)<span class="ck-detail">なし</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>期待にしか無い枠がない(取りこぼしていない)<span class="ck-detail">なし</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>1 枠以上表示されている<span class="ck-detail">21 枠</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 実装の関数を呼ばず、施術枠・既存予約・担当割当から別経路で計算した集合と比較している(実装の写経では検算にならないため)。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-012/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%81%AE%E4%B8%80%E8%A6%A7%E3%82%92%E8%A1%A8%E7%A4%BA.png" data-cap="AT-PUB-012 ステップ1: 空き枠の一覧を表示"><img src="evidence/AT-PUB-012/01_%E7%A9%BA%E3%81%8D%E6%9E%A0%E3%81%AE%E4%B8%80%E8%A6%A7%E3%82%92%E8%A1%A8%E7%A4%BA.png" alt="空き枠の一覧を表示" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>刻みと終端の確認</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>表示された時刻の分と、最後の枠の終了時刻を検査</dd>
+          <dt>期待</dt><dd>すべて 15 分刻み。最後の枠でも施術終了が受付枠の終わり(19:00)を超えない</dd>
+          <dt>実測</dt><dd>刻み OK=true / 最後の枠=18:00(+55分) / 枠の終わり=19:00</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>15 分刻みで並ぶ<span class="ck-detail">0,15,30,45</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>最後の枠が受付枠からはみ出さない<span class="ck-detail">18:00 + 55分 ≦ 19:00</span></span></li></ul>
+        
+      </div>
+      
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>期待値の算出根拠(受付枠と既存予約)</td>
+        <td><code>schedule_blocks(block_type='open') と booking_sessions(status='scheduled') を 2026-07-28 で取得し、15 分刻みで 55 分が収まる開始時刻を列挙</code></td>
+        <td>21 枠</td>
+        <td>13:00 / 13:15 / 13:30 / 13:45 / 14:00 / 14:15 / 14:30 / 14:45 / 15:00 / 15:15 / 15:30 / 15:45 / 16:00 / 16:15 / 16:30 / 16:45 / 17:00 / 17:15 / 17:30 / 17:45 / 18:00</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-013">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-013</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>埋まった時間は空き枠から消える(部屋・担当の重複を除外)</h3>
+      <p class="case-intent">予約が入った直後にその時間が空き枠から消えなければ、同じ枠を二重に申し込まれる。院内予約で埋めた場合も同様に消える必要がある。</p>
+      <p class="case-meta">対象要件 <code>v2-21</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-013/01_%E4%BA%88%E7%B4%84%E3%82%92%E5%85%A5%E3%82%8C%E3%82%8B%E5%89%8D%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" data-cap="AT-PUB-013 ステップ1: 予約を入れる前の空き枠">
+          <img src="evidence/AT-PUB-013/01_%E4%BA%88%E7%B4%84%E3%82%92%E5%85%A5%E3%82%8C%E3%82%8B%E5%89%8D%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" alt="予約を入れる前の空き枠" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>予約を入れる前の空き枠</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-013/02_%E4%BA%88%E7%B4%84%E5%BE%8C%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" data-cap="AT-PUB-013 ステップ2: 予約後の空き枠">
+          <img src="evidence/AT-PUB-013/02_%E4%BA%88%E7%B4%84%E5%BE%8C%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" alt="予約後の空き枠" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>予約後の空き枠</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>予約を入れる前の空き枠</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>2026-07-29 の空き枠を表示</dd>
+          <dt>期待</dt><dd>受付枠の範囲で空き枠が並ぶ</dd>
+          <dt>実測</dt><dd>29 枠(10:00,10:15,10:30,10:45,11:00,11:15 …)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>空き枠がある<span class="ck-detail">29 枠</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-013/01_%E4%BA%88%E7%B4%84%E3%82%92%E5%85%A5%E3%82%8C%E3%82%8B%E5%89%8D%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" data-cap="AT-PUB-013 ステップ1: 予約を入れる前の空き枠"><img src="evidence/AT-PUB-013/01_%E4%BA%88%E7%B4%84%E3%82%92%E5%85%A5%E3%82%8C%E3%82%8B%E5%89%8D%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" alt="予約を入れる前の空き枠" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>予約後の空き枠</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>院内から 2026-07-29 14:00 に「メディカルピーリング」の予約(B-260727-BEF4)を入れ、患者側の空き枠を再表示</dd>
+          <dt>期待</dt><dd>14:00 を含む時間帯が空き枠から消え、再計算した期待値と一致する</dd>
+          <dt>実測</dt><dd>29 → 22 枠 / 消えた枠=13:15,13:30,13:45,14:00,14:15,14:30,14:45</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>予約した 14:00 が消える<span class="ck-detail">残存=false</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>重なる開始時刻もまとめて消える<span class="ck-detail">13:15,13:30,13:45,14:00,14:15,14:30,14:45</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>再計算した期待値と完全一致<span class="ck-detail">一致</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 占有は 14:00 から 55 分。この時間に重なる開始時刻(15 分刻み)がすべて除外される。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-013/02_%E4%BA%88%E7%B4%84%E5%BE%8C%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" data-cap="AT-PUB-013 ステップ2: 予約後の空き枠"><img src="evidence/AT-PUB-013/02_%E4%BA%88%E7%B4%84%E5%BE%8C%E3%81%AE%E7%A9%BA%E3%81%8D%E6%9E%A0.png" alt="予約後の空き枠" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>入れた予約が占有として記録されている</td>
+        <td><code>select to_char(lower(occupied_range) at time zone 'Asia/Tokyo','HH24:MI'), to_char(upper(occupied_range) at time zone 'Asia/Tokyo','HH24:MI') from booking_sessions s join bookings b on b.id = s.booking_id where b.notes = 'AT公開 空き枠除外'</code></td>
+        <td>14:00 から 55 分</td>
+        <td>14:00-14:55</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-015">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-015</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>連絡先の入力チェック(必須・メール形式)</h3>
+      <p class="case-intent">連絡先が取れない申込が入ると、確定連絡もリマインダーも送れない。入口で止める必要がある。</p>
+      <p class="case-meta">対象要件 <code>v2-20</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-015/01_%E4%BD%95%E3%82%82%E5%85%A5%E5%8A%9B%E3%81%9B%E3%81%9A%E3%81%AB%E9%80%81%E4%BF%A1.png" data-cap="AT-PUB-015 ステップ1: 何も入力せずに送信">
+          <img src="evidence/AT-PUB-015/01_%E4%BD%95%E3%82%82%E5%85%A5%E5%8A%9B%E3%81%9B%E3%81%9A%E3%81%AB%E9%80%81%E4%BF%A1.png" alt="何も入力せずに送信" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>何も入力せずに送信</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-015/02_%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%AE%E5%BD%A2%E5%BC%8F%E3%81%8C%E4%B8%8D%E6%AD%A3.png" data-cap="AT-PUB-015 ステップ2: メールアドレスの形式が不正">
+          <img src="evidence/AT-PUB-015/02_%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%AE%E5%BD%A2%E5%BC%8F%E3%81%8C%E4%B8%8D%E6%AD%A3.png" alt="メールアドレスの形式が不正" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>メールアドレスの形式が不正</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>何も入力せずに送信</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>連絡先を空のまま「この内容で予約する」</dd>
+          <dt>期待</dt><dd>送信されず、入力を促される</dd>
+          <dt>実測</dt><dd>フォームが残っている=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>送信されない</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-015/01_%E4%BD%95%E3%82%82%E5%85%A5%E5%8A%9B%E3%81%9B%E3%81%9A%E3%81%AB%E9%80%81%E4%BF%A1.png" data-cap="AT-PUB-015 ステップ1: 何も入力せずに送信"><img src="evidence/AT-PUB-015/01_%E4%BD%95%E3%82%82%E5%85%A5%E5%8A%9B%E3%81%9B%E3%81%9A%E3%81%AB%E9%80%81%E4%BF%A1.png" alt="何も入力せずに送信" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>メールアドレスの形式が不正</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>メール欄に「not-an-email」を入れて送信</dd>
+          <dt>期待</dt><dd>送信されず、予約は作られない</dd>
+          <dt>実測</dt><dd>フォームが残っている=true / 予約 16→16</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>送信されない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約が増えていない<span class="ck-detail">16→16</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 画面側の入力型チェックに加え、サーバー側でも zod で検証している。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-015/02_%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%AE%E5%BD%A2%E5%BC%8F%E3%81%8C%E4%B8%8D%E6%AD%A3.png" data-cap="AT-PUB-015 ステップ2: メールアドレスの形式が不正"><img src="evidence/AT-PUB-015/02_%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E3%81%AE%E5%BD%A2%E5%BC%8F%E3%81%8C%E4%B8%8D%E6%AD%A3.png" alt="メールアドレスの形式が不正" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-016">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-016</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>画面を書き換えた不正な申込を受け付けない(枠外・非公開メニュー・他院)</h3>
+      <p class="case-intent">公開ページは誰でも開ける。ブラウザの開発者ツールで値を書き換えて送信できるため、サーバー側で必ず再検証する必要がある。</p>
+      <p class="case-meta">対象要件 <code>v2-20 / v2-21</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-016/01_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%AE_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-016 ステップ1: 非公開メニューの ID を URL に入れて開く">
+          <img src="evidence/AT-PUB-016/01_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%AE_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" alt="非公開メニューの ID を URL に入れて開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>非公開メニューの ID を URL に入れて開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-016/02_%E9%81%8E%E5%8E%BB%E3%81%AE%E6%97%A5%E4%BB%98%E3%82%92%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-016 ステップ2: 過去の日付を指定する">
+          <img src="evidence/AT-PUB-016/02_%E9%81%8E%E5%8E%BB%E3%81%AE%E6%97%A5%E4%BB%98%E3%82%92%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B.png" alt="過去の日付を指定する" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>過去の日付を指定する</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>非公開メニューの ID を URL に入れて開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>?service=&lt;非公開メニューの ID&gt; を直接指定して予約ページを開く</dd>
+          <dt>期待</dt><dd>404 になる(非公開のメニューは予約対象にできない)</dd>
+          <dt>実測</dt><dd>HTTP 404 / 本文=「ページが見つかりません お探しのページは存在しないか、アクセス権限がありません。 ログインへ」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>予約フォームまで進めない<span class="ck-detail">HTTP 404</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-016/01_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%AE_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-016 ステップ1: 非公開メニューの ID を URL に入れて開く"><img src="evidence/AT-PUB-016/01_%E9%9D%9E%E5%85%AC%E9%96%8B%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC%E3%81%AE_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" alt="非公開メニューの ID を URL に入れて開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>過去の日付を指定する</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>?date=2026-07-24(3 日前)を指定して予約ページを開く</dd>
+          <dt>期待</dt><dd>空き枠が 1 件も出ない</dd>
+          <dt>実測</dt><dd>空き枠=0 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>過去の枠は出ない<span class="ck-detail">0 件</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 空き枠の計算は現在時刻より前の開始時刻を除外する。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-016/02_%E9%81%8E%E5%8E%BB%E3%81%AE%E6%97%A5%E4%BB%98%E3%82%92%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-016 ステップ2: 過去の日付を指定する"><img src="evidence/AT-PUB-016/02_%E9%81%8E%E5%8E%BB%E3%81%AE%E6%97%A5%E4%BB%98%E3%82%92%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B.png" alt="過去の日付を指定する" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>不正な操作で予約が作られていない</td>
+        <td><code>select count(*) from bookings where clinic_id = '10000000-0000-4000-a000-000000000001'</code></td>
+        <td>16 件のまま</td>
+        <td>16 件</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-018">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-018</code><span class="pri pri-p2">P2</span><span class="vd vd-na">検証不能</span></div>
+      <h3>【未実装】メール確認前の仮押さえを 30 分で自動解放する</h3>
+      <p class="case-intent">メール確認方式(auto)を使う場合、確認されないまま枠が押さえられ続けないようにする仕組み。</p>
+      <p class="case-meta">対象要件 <code>v2-20</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    <div class="callout info"><span class="lab">この環境では検証できません</span><p>メール確認のステップ自体が未実装のため(AT-PUB-010)、その確認待ちを解放する仕組みも存在しません。手動承認で運用する限り、承認待ちの予約は院内が明示的に確定またはキャンセルするまで残ります。</p></div>
+    
+    <div class="steps"></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>承認待ちのまま残っている予約の件数</td>
+        <td><code>select count(*) from bookings where clinic_id = '10000000-0000-4000-a000-000000000001' and status = 'requested'</code></td>
+        <td>手動承認では自動解放されない(院内が判断する)</td>
+        <td>0 件</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-019">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-019</code><span class="pri pri-p1">P1</span><span class="vd vd-na">検証不能</span></div>
+      <h3>【未実装】連続した申込・照会の回数制限(レート制限)</h3>
+      <p class="case-intent">予約番号の総当たりや、いたずら予約の連投を止める仕組み。実装されていれば一定回数で拒否される。</p>
+      <p class="case-meta">対象要件 <code>v2-20 / 非機能</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    <div class="callout info"><span class="lab">この環境では検証できません</span><p>レート制限は未実装です。実装されるまで「何回で拒否されるか」を確認する対象がありません。以下は現状の実測です。</p></div>
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>照会ページへ短時間に連続アクセス</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>予約照会ページへ 12 回連続でアクセスする</dd>
+          <dt>期待</dt><dd>(実装されていれば)途中から 429 などで拒否される</dd>
+          <dt>実測</dt><dd>応答=200 / 429 の回数=0</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>(参考)現状は拒否されない<span class="ck-detail">429=0 回</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> すべて 200 が返る = 回数制限がかかっていない。総当たり攻撃を秒間数十回のペースで試せる状態。</p>
+      </div>
+      
+    </div>
+  </div></div>
+    
+    <div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 medium</span>
+    <p><b>ログイン・予約申込・予約照会・患者検索に回数制限(レート制限)がない</b></p>
+    <p>照会ページへ 12 回連続でアクセスしても、すべて正常応答でした。予約番号(B-YYMMDD-4桁)とメールアドレスの組み合わせを機械的に試行し続けることが可能です。ログインのパスワード試行、いたずら予約の連投も同様に止まりません。</p>
+    <p><b>影響:</b> 予約内容の不正閲覧・いたずら予約による枠の占有・メール送信の誘発。公開予約を本格運用するなら実装が望ましい水準です。</p>
+    
+    <p><b>回避策:</b> 当面は Vercel/Cloudflare 側の WAF・ボット対策で緩和できます。恒久対応は Upstash 等での IP/対象単位の制限(申し送り #3)。</p>
+    
+  </div>
+  </article><article class="case" id="AT-PUB-020">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-020</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>担当スタッフの指名(指名を許可したメニューのみ・指定なしが既定)</h3>
+      <p class="case-intent">指名は集客上の要。ただし指名を受けないスタッフや、指名を許可していないメニューで指名欄が出てはいけない。</p>
+      <p class="case-meta">対象要件 <code>v2-21</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-020/01_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%9F%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" data-cap="AT-PUB-020 ステップ1: 指名を許可したメニュー">
+          <img src="evidence/AT-PUB-020/01_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%9F%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" alt="指名を許可したメニュー" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>指名を許可したメニュー</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-020/02_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%A6%E3%81%84%E3%81%AA%E3%81%84%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" data-cap="AT-PUB-020 ステップ2: 指名を許可していないメニュー">
+          <img src="evidence/AT-PUB-020/02_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%A6%E3%81%84%E3%81%AA%E3%81%84%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" alt="指名を許可していないメニュー" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>指名を許可していないメニュー</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>指名を許可したメニュー</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「アートメイク 眉(2回目まで)」の予約ページを開く</dd>
+          <dt>期待</dt><dd>「担当の指名(任意)」が表示され、指名可能なスタッフだけが並ぶ。既定は「指定なし」</dd>
+          <dt>実測</dt><dd>指名欄=true / 担当できるスタッフ=鈴木・田中</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>指名欄が表示される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>「指定なし」の選択肢がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>担当割当のあるスタッフが選べる<span class="ck-detail">鈴木・田中</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-020/01_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%9F%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" data-cap="AT-PUB-020 ステップ1: 指名を許可したメニュー"><img src="evidence/AT-PUB-020/01_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%9F%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" alt="指名を許可したメニュー" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>指名を許可していないメニュー</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「検証用 メニューA」の予約ページを開く</dd>
+          <dt>期待</dt><dd>指名欄が表示されない</dd>
+          <dt>実測</dt><dd>指名欄=false</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>指名欄が出ない</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-020/02_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%A6%E3%81%84%E3%81%AA%E3%81%84%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" data-cap="AT-PUB-020 ステップ2: 指名を許可していないメニュー"><img src="evidence/AT-PUB-020/02_%E6%8C%87%E5%90%8D%E3%82%92%E8%A8%B1%E5%8F%AF%E3%81%97%E3%81%A6%E3%81%84%E3%81%AA%E3%81%84%E3%83%A1%E3%83%8B%E3%83%A5%E3%83%BC.png" alt="指名を許可していないメニュー" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-021">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-021</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>指名すると、そのスタッフの枠だけが空き枠に出る</h3>
+      <p class="case-intent">指名したのに別のスタッフの枠が出ると、当日に「担当が違う」というトラブルになる。</p>
+      <p class="case-meta">対象要件 <code>v2-21</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-021/01__%E9%88%B4%E6%9C%A8_%E3%82%92%E6%8C%87%E5%90%8D%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-021 ステップ1: 「鈴木」を指名する">
+          <img src="evidence/AT-PUB-021/01__%E9%88%B4%E6%9C%A8_%E3%82%92%E6%8C%87%E5%90%8D%E3%81%99%E3%82%8B.png" alt="「鈴木」を指名する" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>「鈴木」を指名する</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>「鈴木」を指名する</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>メニュー「アートメイク 眉(2回目まで)」(所要 165 分)で、指名なしの空き枠(9 枠)を確認したうえで 鈴木 を指名して再表示</dd>
+          <dt>期待</dt><dd>指名したスタッフの受付枠に由来する時刻だけが残る</dd>
+          <dt>実測</dt><dd>指名なし=9 枠 / 指名後=5 枠(14:15,14:30,14:45,15:00,15:15)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>指名操作ができる<span class="ck-detail">鈴木</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>指名後の枠がすべて当該スタッフの受付枠内にある<span class="ck-detail">対象外=なし</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>指名で枠が絞られる(または同数)<span class="ck-detail">9→5</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 指名後の枠がすべて、そのスタッフの受付枠の範囲に収まっているかで判定している。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-021/01__%E9%88%B4%E6%9C%A8_%E3%82%92%E6%8C%87%E5%90%8D%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-021 ステップ1: 「鈴木」を指名する"><img src="evidence/AT-PUB-021/01__%E9%88%B4%E6%9C%A8_%E3%82%92%E6%8C%87%E5%90%8D%E3%81%99%E3%82%8B.png" alt="「鈴木」を指名する" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-022">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-022</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>そのメニューを担当できないスタッフの枠は空き枠に出ない</h3>
+      <p class="case-intent">担当割当は「このスタッフはこの施術ができる」という定義。割当のないスタッフの枠が出ると、できない施術の予約が入る。</p>
+      <p class="case-meta">対象要件 <code>v2-21</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-022/01_%E6%8B%85%E5%BD%93%E5%89%B2%E5%BD%93%E3%82%92%E5%A4%96%E3%81%99%E3%81%A8%E6%9E%A0%E3%81%8C%E6%B6%88%E3%81%88%E3%82%8B.png" data-cap="AT-PUB-022 ステップ1: 担当割当を外すと枠が消える">
+          <img src="evidence/AT-PUB-022/01_%E6%8B%85%E5%BD%93%E5%89%B2%E5%BD%93%E3%82%92%E5%A4%96%E3%81%99%E3%81%A8%E6%9E%A0%E3%81%8C%E6%B6%88%E3%81%88%E3%82%8B.png" alt="担当割当を外すと枠が消える" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>担当割当を外すと枠が消える</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-022/02_%E5%89%B2%E5%BD%93%E3%82%92%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-022 ステップ2: 割当を戻すと復活する">
+          <img src="evidence/AT-PUB-022/02_%E5%89%B2%E5%BD%93%E3%82%92%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" alt="割当を戻すと復活する" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>割当を戻すと復活する</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>担当割当を外すと枠が消える</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>その日に受付枠を持つスタッフから、当該メニューの担当割当を外して再表示</dd>
+          <dt>期待</dt><dd>そのスタッフの枠に由来する空き枠が消える</dd>
+          <dt>実測</dt><dd>22 → 0 枠(削除した割当=2 件)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>割当を外すと空き枠が減る<span class="ck-detail">22→0</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 「担当割当を忘れると空き枠が 1 件も出ない」という運用上の落とし穴の裏返しでもある。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-022/01_%E6%8B%85%E5%BD%93%E5%89%B2%E5%BD%93%E3%82%92%E5%A4%96%E3%81%99%E3%81%A8%E6%9E%A0%E3%81%8C%E6%B6%88%E3%81%88%E3%82%8B.png" data-cap="AT-PUB-022 ステップ1: 担当割当を外すと枠が消える"><img src="evidence/AT-PUB-022/01_%E6%8B%85%E5%BD%93%E5%89%B2%E5%BD%93%E3%82%92%E5%A4%96%E3%81%99%E3%81%A8%E6%9E%A0%E3%81%8C%E6%B6%88%E3%81%88%E3%82%8B.png" alt="担当割当を外すと枠が消える" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>割当を戻すと復活する</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>担当割当を元に戻して再表示</dd>
+          <dt>期待</dt><dd>空き枠が元の件数に戻る</dd>
+          <dt>実測</dt><dd>0 → 22 枠(元: 22 枠)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>元の件数に戻る<span class="ck-detail">22/22</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-022/02_%E5%89%B2%E5%BD%93%E3%82%92%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-022 ステップ2: 割当を戻すと復活する"><img src="evidence/AT-PUB-022/02_%E5%89%B2%E5%BD%93%E3%82%92%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" alt="割当を戻すと復活する" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-023">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-023</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>患者が予約番号とメールアドレスで自分の予約を照会する</h3>
+      <p class="case-intent">患者がログインなしで自分の予約を確認・キャンセルするための入口。ここが使えないと問い合わせが電話に集中する。</p>
+      <p class="case-meta">対象要件 <code>v2-22</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-023/01_%E7%85%A7%E4%BC%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-023 ステップ1: 照会ページを開く">
+          <img src="evidence/AT-PUB-023/01_%E7%85%A7%E4%BC%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" alt="照会ページを開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>照会ページを開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-023/02_%E6%AD%A3%E3%81%97%E3%81%84%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E7%85%A7%E4%BC%9A.png" data-cap="AT-PUB-023 ステップ2: 正しい組み合わせで照会">
+          <img src="evidence/AT-PUB-023/02_%E6%AD%A3%E3%81%97%E3%81%84%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E7%85%A7%E4%BC%9A.png" alt="正しい組み合わせで照会" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>正しい組み合わせで照会</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>照会ページを開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>公開ページの「予約の確認・変更・キャンセルはこちら」から /c/demo/lookup を開く</dd>
+          <dt>期待</dt><dd>予約番号とメールアドレスの入力欄がある</dd>
+          <dt>実測</dt><dd>番号欄=1 / メール欄=1</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>予約番号の入力欄がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>メールアドレスの入力欄がある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-023/01_%E7%85%A7%E4%BC%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-023 ステップ1: 照会ページを開く"><img src="evidence/AT-PUB-023/01_%E7%85%A7%E4%BC%9A%E3%83%9A%E3%83%BC%E3%82%B8%E3%82%92%E9%96%8B%E3%81%8F.png" alt="照会ページを開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>正しい組み合わせで照会</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>予約番号 B-260727-CB81 と at-pub@example.com を入力して照会</dd>
+          <dt>期待</dt><dd>自分の予約の管理画面が開き、日時とメニューが表示される</dd>
+          <dt>実測</dt><dd>遷移先=/c/demo/manage/ObXysePkESCgWYIyRJ2t0-2Lm_UeuxWWLHmGWxSDhYY / 予約番号の表示=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>管理画面へ遷移する<span class="ck-detail">/c/demo/manage/ObXysePkESCgWYIyRJ2t0-2Lm_UeuxWWLHmGWxSDhYY</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約番号が表示される</span></li></ul>
+        <p class="why"><b>判定の根拠</b> 管理画面の URL には推測できないトークンが入る(番号だけでは開けない)。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-023/02_%E6%AD%A3%E3%81%97%E3%81%84%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E7%85%A7%E4%BC%9A.png" data-cap="AT-PUB-023 ステップ2: 正しい組み合わせで照会"><img src="evidence/AT-PUB-023/02_%E6%AD%A3%E3%81%97%E3%81%84%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E7%85%A7%E4%BC%9A.png" alt="正しい組み合わせで照会" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-024">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-024</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>他人の予約は照会できない(組み合わせが違えば開かない)</h3>
+      <p class="case-intent">予約番号だけ、あるいはメールだけを知っている第三者に予約内容を見せてはいけない。総当たりの手がかりも与えないこと。</p>
+      <p class="case-meta">対象要件 <code>v2-22</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-024/01_%E6%AD%A3%E3%81%97%E3%81%84%E7%95%AA%E5%8F%B7_%E9%81%95%E3%81%86%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" data-cap="AT-PUB-024 ステップ1: 正しい番号 + 違うメールアドレス">
+          <img src="evidence/AT-PUB-024/01_%E6%AD%A3%E3%81%97%E3%81%84%E7%95%AA%E5%8F%B7_%E9%81%95%E3%81%86%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" alt="正しい番号 + 違うメールアドレス" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>正しい番号 + 違うメールアドレス</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-024/02_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84%E7%95%AA%E5%8F%B7_%E6%AD%A3%E3%81%97%E3%81%84%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" data-cap="AT-PUB-024 ステップ2: 存在しない番号 + 正しいメールアドレス">
+          <img src="evidence/AT-PUB-024/02_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84%E7%95%AA%E5%8F%B7_%E6%AD%A3%E3%81%97%E3%81%84%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" alt="存在しない番号 + 正しいメールアドレス" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>存在しない番号 + 正しいメールアドレス</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>正しい番号 + 違うメールアドレス</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>予約番号 B-260727-CB81 に、無関係のメールアドレスを組み合わせて照会</dd>
+          <dt>期待</dt><dd>管理画面は開かず、予約の存在も分からない応答になる</dd>
+          <dt>実測</dt><dd>遷移先=/c/demo/lookup / 画面=「予約の確認・キャンセル 予約時の予約番号とメールアドレスを入力してください。 予約番号 メールアドレス 該当する予約が見つかりませんで」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>管理画面へ遷移しない<span class="ck-detail">/c/demo/lookup</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約内容が表示されない</span></li></ul>
+        <p class="why"><b>判定の根拠</b> 「番号は合っているがメールが違う」と分かる応答を返すと、番号の総当たりを助けてしまう。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-024/01_%E6%AD%A3%E3%81%97%E3%81%84%E7%95%AA%E5%8F%B7_%E9%81%95%E3%81%86%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" data-cap="AT-PUB-024 ステップ1: 正しい番号 + 違うメールアドレス"><img src="evidence/AT-PUB-024/01_%E6%AD%A3%E3%81%97%E3%81%84%E7%95%AA%E5%8F%B7_%E9%81%95%E3%81%86%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" alt="正しい番号 + 違うメールアドレス" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>存在しない番号 + 正しいメールアドレス</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>存在しない予約番号で照会</dd>
+          <dt>期待</dt><dd>同じように開かない。応答の違いから存在の有無を推測できない</dd>
+          <dt>実測</dt><dd>遷移先=/c/demo/lookup / 画面=「予約の確認・キャンセル 予約時の予約番号とメールアドレスを入力してください。 予約番号 メールアドレス 該当する予約が見つかりませんで」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>管理画面へ遷移しない<span class="ck-detail">/c/demo/lookup</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>存在する番号のときと同じ応答になる(存在を漏らさない)<span class="ck-detail">同一の応答</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-024/02_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84%E7%95%AA%E5%8F%B7_%E6%AD%A3%E3%81%97%E3%81%84%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" data-cap="AT-PUB-024 ステップ2: 存在しない番号 + 正しいメールアドレス"><img src="evidence/AT-PUB-024/02_%E5%AD%98%E5%9C%A8%E3%81%97%E3%81%AA%E3%81%84%E7%95%AA%E5%8F%B7_%E6%AD%A3%E3%81%97%E3%81%84%E3%83%A1%E3%83%BC%E3%83%AB%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9.png" alt="存在しない番号 + 正しいメールアドレス" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-025">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-025</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>患者が自分でキャンセルでき、枠が解放される</h3>
+      <p class="case-intent">電話をかけずにキャンセルできること。キャンセルされた枠がすぐ他の患者に開放され、院内にも通知が届くこと。</p>
+      <p class="case-meta">対象要件 <code>v2-22</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-025/01_%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-025 ステップ1: 管理画面を開く">
+          <img src="evidence/AT-PUB-025/01_%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="管理画面を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>管理画面を開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-025/02_%E7%A2%BA%E8%AA%8D%E3%82%92%E6%B1%82%E3%82%81%E3%82%89%E3%82%8C%E3%82%8B.png" data-cap="AT-PUB-025 ステップ2: 確認を求められる">
+          <img src="evidence/AT-PUB-025/02_%E7%A2%BA%E8%AA%8D%E3%82%92%E6%B1%82%E3%82%81%E3%82%89%E3%82%8C%E3%82%8B.png" alt="確認を求められる" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>確認を求められる</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-025/03_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E3%81%8C%E5%AE%8C%E4%BA%86%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-025 ステップ3: キャンセルが完了する">
+          <img src="evidence/AT-PUB-025/03_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E3%81%8C%E5%AE%8C%E4%BA%86%E3%81%99%E3%82%8B.png" alt="キャンセルが完了する" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">3</span>キャンセルが完了する</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>管理画面を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>予約番号 B-260727-CB81 で管理画面に入る</dd>
+          <dt>期待</dt><dd>キャンセルの入口と、キャンセル期限(24 時間前まで)の案内がある</dd>
+          <dt>実測</dt><dd>キャンセルボタン=1個 / 期限の記載=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>キャンセルの入口がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>キャンセル期限が案内されている<span class="ck-detail">24 時間</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-025/01_%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-025 ステップ1: 管理画面を開く"><img src="evidence/AT-PUB-025/01_%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="管理画面を開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>確認を求められる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「予約をキャンセル」を押す</dd>
+          <dt>期待</dt><dd>いきなり実行されず、確認のステップが入る</dd>
+          <dt>実測</dt><dd>確認の表示=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>確認ステップがある</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-025/02_%E7%A2%BA%E8%AA%8D%E3%82%92%E6%B1%82%E3%82%81%E3%82%89%E3%82%8C%E3%82%8B.png" data-cap="AT-PUB-025 ステップ2: 確認を求められる"><img src="evidence/AT-PUB-025/02_%E7%A2%BA%E8%AA%8D%E3%82%92%E6%B1%82%E3%82%81%E3%82%89%E3%82%8C%E3%82%8B.png" alt="確認を求められる" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">3</span><h4>キャンセルが完了する</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>「キャンセルする」で確定</dd>
+          <dt>期待</dt><dd>キャンセル済みの表示になり、枠が解放される</dd>
+          <dt>実測</dt><dd>画面=「デモクリニック 予約番号 B-260727-CB81 メニュー メディカルピーリング 日時 7/29(水) 10:00–」 / DB: status=cancelled 生きている枠=0</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>状態がキャンセルになる<span class="ck-detail">cancelled</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>押さえていた枠が解放される<span class="ck-detail">0 件</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-025/03_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E3%81%8C%E5%AE%8C%E4%BA%86%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-025 ステップ3: キャンセルが完了する"><img src="evidence/AT-PUB-025/03_%E3%82%AD%E3%83%A3%E3%83%B3%E3%82%BB%E3%83%AB%E3%81%8C%E5%AE%8C%E4%BA%86%E3%81%99%E3%82%8B.png" alt="キャンセルが完了する" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>患者と院内の双方に通知が積まれる</td>
+        <td><code>select kind, recipient_type from notifications where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' order by created_at</code></td>
+        <td>booking_cancelled(patient) と booking_cancelled_internal(member)</td>
+        <td>booking_requested:patient / booking_created_internal:member / booking_cancelled:patient / booking_cancelled_internal:member</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>患者によるキャンセルが監査ログに残る</td>
+        <td><code>select action, actor_type from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action like '%guest_cancel%' order by created_at desc limit 1</code></td>
+        <td>booking.guest_cancel / actor_type=guest</td>
+        <td>booking.guest_cancel / guest</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-026">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-026</code><span class="pri pri-p1">P1</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>キャンセル期限を過ぎた予約は患者側でキャンセルできない</h3>
+      <p class="case-intent">直前キャンセルを電話に誘導し、クリニックが状況を把握できるようにするための制限。設定した時間(現在 24 時間前)より後は画面から操作できないこと。</p>
+      <p class="case-meta">対象要件 <code>v2-22</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>キャンセル期限を過ぎていても「予約をキャンセル」ボタンは表示されます。押すとサーバー側で拒否され予約は変わりませんが、患者は操作してから断られることになります(表示の出し分けが未実装)。</p></div>
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-026/01_%E6%9C%9F%E9%99%90%E5%86%85_48_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" data-cap="AT-PUB-026 ステップ1: 期限内(48 時間後)の予約">
+          <img src="evidence/AT-PUB-026/01_%E6%9C%9F%E9%99%90%E5%86%85_48_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" alt="期限内(48 時間後)の予約" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>期限内(48 時間後)の予約</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-026/02_%E6%9C%9F%E9%99%90%E5%A4%96_2_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" data-cap="AT-PUB-026 ステップ2: 期限外(2 時間後)の予約">
+          <img src="evidence/AT-PUB-026/02_%E6%9C%9F%E9%99%90%E5%A4%96_2_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" alt="期限外(2 時間後)の予約" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>期限外(2 時間後)の予約</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>期限内(48 時間後)の予約</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>48 時間後の予約の管理画面を開く</dd>
+          <dt>期待</dt><dd>キャンセルの操作ができる(期限は 24 時間前まで)</dd>
+          <dt>実測</dt><dd>キャンセルボタン=1個</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>キャンセルできる</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-026/01_%E6%9C%9F%E9%99%90%E5%86%85_48_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" data-cap="AT-PUB-026 ステップ1: 期限内(48 時間後)の予約"><img src="evidence/AT-PUB-026/01_%E6%9C%9F%E9%99%90%E5%86%85_48_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" alt="期限内(48 時間後)の予約" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>期限外(2 時間後)の予約</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>2 時間後に迫った予約の管理画面を開き、キャンセルを試みる</dd>
+          <dt>期待</dt><dd>キャンセルできない。期限を過ぎている旨が案内される</dd>
+          <dt>実測</dt><dd>キャンセルボタン=1個 / 押した結果=サーバーが拒否 / 画面=「デモクリニック 予約番号 B-AT0001-SOON メニュー メディカルピーリング 日時 7/27(月) 23:51–7/28(火) 00:36 状態 確定 この予約をキャンセルしますか? キャンセルする 戻る キャン」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>期限外のキャンセルが成立しない<span class="ck-detail">予約の状態=confirmed</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>期限を過ぎた旨が案内される<span class="ck-detail">デモクリニック 予約番号 B-AT0001-SOON メニュー メディカルピーリング 日時 7/27(月) 23:51–7/28(火) 00:36 状態 確定 この予約をキャンセル</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> ボタン自体は表示されるが、押すとサーバー側の期限チェックで拒否される(予約は確定のまま)。表示の出し分けは行われていない。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-026/02_%E6%9C%9F%E9%99%90%E5%A4%96_2_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" data-cap="AT-PUB-026 ステップ2: 期限外(2 時間後)の予約"><img src="evidence/AT-PUB-026/02_%E6%9C%9F%E9%99%90%E5%A4%96_2_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" alt="期限外(2 時間後)の予約" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    <div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 low</span>
+    <p><b>キャンセル期限を過ぎた予約でも、患者側にキャンセルボタンが表示される</b></p>
+    <p>管理画面は予約の状態(キャンセル済み・完了・来院)だけを見てボタンの出し分けをしており、キャンセル期限は見ていません。期限後に押すとサーバー側で拒否され「キャンセル期限(24時間前)を過ぎています」と表示されます。データは変わらないため安全性の問題はありません。</p>
+    <p><b>影響:</b> 患者が操作してから断られるため、問い合わせの電話が増える可能性があります。データ不整合は起きません。</p>
+    
+    <p><b>回避策:</b> 画面側で最初のセッション開始時刻と期限を比較し、期限を過ぎていればボタンを出さずに連絡先を案内する(manage-booking-view.tsx の alreadyClosed の判定に期限を追加)。</p>
+    
+  </div>
+  </article><article class="case" id="AT-PUB-028">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-028</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>推測した管理リンクでは開けない(トークンの検証)</h3>
+      <p class="case-intent">管理画面の URL はメールに載る。URL の一部を書き換えて他人の予約を開けないこと、トークンが平文で保存されていないこと。</p>
+      <p class="case-meta">対象要件 <code>v2-22</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-028/01_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-028 ステップ1: でたらめなトークンで管理画面を開く">
+          <img src="evidence/AT-PUB-028/01_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="でたらめなトークンで管理画面を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>でたらめなトークンで管理画面を開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>でたらめなトークンで管理画面を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>/c/demo/manage/&lt;でたらめな文字列&gt; を直接開く</dd>
+          <dt>期待</dt><dd>404 になり、予約内容は出ない</dd>
+          <dt>実測</dt><dd>HTTP 200 / 画面=「リンクが無効です リンクの有効期限が切れているか、無効です。 予約番号で再照会する」</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>開けない<span class="ck-detail">HTTP 200</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-028/01_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PUB-028 ステップ1: でたらめなトークンで管理画面を開く"><img src="evidence/AT-PUB-028/01_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="でたらめなトークンで管理画面を開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>トークンは平文ではなくハッシュで保存され、有効期限がある</td>
+        <td><code>select token_hash is not null as hashed, length(token_hash) as len, expires_at &gt; now() as valid, purpose from booking_access_tokens where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' limit 1</code></td>
+        <td>ハッシュ値(64 文字の SHA-256)が保存され、期限が未来</td>
+        <td>t / 64 / t / manage</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-029">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-029</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>データベースへ直接アクセスしても患者情報は読めない(RLS)</h3>
+      <p class="case-intent">公開ページで使う鍵(anon key)はブラウザに配られるため、第三者の手に渡る前提で考える必要がある。その鍵でデータベースを直接叩いても、患者・予約が読めてはいけない。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>公開用の鍵でデータベースを直接叩く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>ブラウザに配られる anon key で patients / bookings / booking_sessions / clinic_members / audit_logs / notifications を取得しようとする</dd>
+          <dt>期待</dt><dd>どのテーブルも 0 件、または権限エラー。1 行も返らない</dd>
+          <dt>実測</dt><dd>patients:HTTP401(非配列) / bookings:HTTP401(非配列) / booking_sessions:HTTP401(非配列) / clinic_members:HTTP401(非配列) / audit_logs:HTTP401(非配列) / notifications:HTTP401(非配列)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>患者情報を含むテーブルが 1 行も読めない<span class="ck-detail">全テーブル 0 行</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> デフォルト拒否の行レベルセキュリティ(RLS)。anon 向けのポリシーを 1 つも作っていないため、鍵が漏れても読めない。</p>
+      </div>
+      
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>業務テーブルの RLS が有効になっている</td>
+        <td><code>select relname, relrowsecurity from pg_class where relname in ('patients','bookings','booking_sessions','notifications','audit_logs')</code></td>
+        <td>すべて有効(t)</td>
+        <td>audit_logs=true / booking_sessions=true / bookings=true / notifications=true / patients=true</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-030">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-030</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>インターネットからの操作が監査ログに残る</h3>
+      <p class="case-intent">誰がいつ申し込んだかを後から追えること。トラブル時の調査と、不正利用の検知に必要。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    
+    <div class="steps"></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>ゲスト予約の作成が監査ログに記録される</td>
+        <td><code>select action, actor_type, target_type from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action like '%guest%' order by created_at desc limit 5</code></td>
+        <td>booking.guest_create / actor_type=guest / target_type=booking</td>
+        <td>booking.guest_create:guest:booking / booking.guest_create:guest:booking / booking.guest_create:guest:booking / booking.guest_create:guest:booking</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>アクセス元(IP・ブラウザ情報)も記録される</td>
+        <td><code>select count(*) from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action like '%guest%' and ip is not null and user_agent is not null</code></td>
+        <td>1 件以上</td>
+        <td>4 件 / 例: ::1 / Mozilla/5.0 (Macintosh; Intel Mac OS X 1</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PUB-031">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-031</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
+      <h3>日時の表示形式が統一されている(7/12(金) 13:00–15:30)</h3>
+      <p class="case-intent">曜日が入っていないと患者が日付を読み違える。院内・患者向け・メールで表記が揺れないことを確認する。</p>
+      <p class="case-meta">対象要件 <code>v2-04</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PUB-031/01_%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E6%97%A5%E4%BB%98%E8%A1%A8%E8%A8%98.png" data-cap="AT-PUB-031 ステップ1: 予約ページの日付表記">
+          <img src="evidence/AT-PUB-031/01_%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E6%97%A5%E4%BB%98%E8%A1%A8%E8%A8%98.png" alt="予約ページの日付表記" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>予約ページの日付表記</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>予約ページの日付表記</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>/c/demo/reserve?date=2026-07-28 を開く</dd>
+          <dt>期待</dt><dd>「7/28(火)」のように月/日(曜日)の形式で表示される</dd>
+          <dt>実測</dt><dd>月/日(曜)形式=true / 時刻形式=true</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>月/日(曜日)の形式で表示される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>時刻が HH:MM で表示される</span></li></ul>
+        <p class="why"><b>判定の根拠</b> メール本文の表記(evidence/_emails/)も同じ書式であることを併せて確認済み。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-031/01_%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E6%97%A5%E4%BB%98%E8%A1%A8%E8%A8%98.png" data-cap="AT-PUB-031 ステップ1: 予約ページの日付表記"><img src="evidence/AT-PUB-031/01_%E4%BA%88%E7%B4%84%E3%83%9A%E3%83%BC%E3%82%B8%E3%81%AE%E6%97%A5%E4%BB%98%E8%A1%A8%E8%A8%98.png" alt="予約ページの日付表記" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PUB-033">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PUB-033</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>インターネット申込が院内のメールアドレスへ通知される</h3>
+      <p class="case-intent">手動承認で運用する以上、申込に気づけないと患者を待たせる。院内通知はクリニック設定のメールアドレス宛に飛ぶ。</p>
+      <p class="case-meta">対象要件 <code>v2-23</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
+    </header>
+    
+    
+    <div class="steps"></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(3件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>院内宛の通知がクリニックのメールアドレスへ積まれる</td>
+        <td><code>select n.kind, n.recipient_email, n.status from notifications n join bookings b on b.id = n.booking_id where b.guest_email = 'at-pub@example.com' and n.recipient_type = 'member'</code></td>
+        <td>booking_created_internal / 宛先=info@demo.local</td>
+        <td>booking_created_internal:info@demo.local:queued</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>院内宛メールに患者の管理リンクが含まれない</td>
+        <td><code>tests/at-evidence-emails.test.ts の検証(院内向け 2 種に /manage/ が無いこと)</code></td>
+        <td>含まれない</td>
+        <td>検証済み</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>【本番での注意】院内通知の宛先はクリニック設定のメールアドレス</td>
+        <td><code>select email from clinics where id = '10000000-0000-4000-a000-000000000001'</code></td>
+        <td>実際に受信できるアドレスを設定する必要がある</td>
+        <td>現在の設定=info@demo.local(demo 用のダミー)</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article>
   </section>
 <section id="issues"><h2>検出した問題</h2>
      <p class="sec-sub">見つかったものは隠さず全部載せています。この作業内で直したものは「修正済み」、判断や別作業が必要なものは「未解決」に分けています。</p>
      <div class="chips" style="margin-bottom:18px">
-       <span class="chip big ng">未解決 1</span>
+       <span class="chip big ng">未解決 4</span>
        <span class="chip big warn">修正済み 1</span>
      </div>
      <h3>未解決(判断・追加作業が必要)</h3><div class="callout crit">
@@ -2197,6 +3478,30 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <p><b>影響:</b> 「担当が外れていて予約が取れない」等の問い合わせ時に、いつ誰が変更したのか追跡できません。患者影響はありませんが運用調査が難しくなります。</p>
     
     <p><b>回避策:</b> 変更時に運用側で記録を残す。改修は recordAudit() の呼び出し追加のみで済む軽微なもの。</p>
+    
+  </div><div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 medium ／ AT-PUB-010</span>
+    <p><b>承認モード「メール確認後に自動確定(auto)」に、メール確認のステップが実装されていない</b></p>
+    <p>auto に設定して申し込んだところ、確認リンクを経ずにその場で確定(confirmed)になりました。積まれた通知は booking_confirmed / booking_created_internal で、確認用のメールは送られていません。</p>
+    <p><b>影響:</b> この設定を選ぶと、メールアドレスの実在確認をしないまま予約が確定します。存在しないアドレスやなりすましでの予約を受け付けてしまい、当日の無断キャンセルにつながります。手動承認で運用する限り実害はありません。</p>
+    
+    <p><b>回避策:</b> 承認モードは「院内で承認してから確定(manual)」のまま運用する。選択肢名を「即時確定」へ変更するか、確認リンクの実装を行うかは要判断。</p>
+    
+  </div><div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 medium ／ AT-PUB-019</span>
+    <p><b>ログイン・予約申込・予約照会・患者検索に回数制限(レート制限)がない</b></p>
+    <p>照会ページへ 12 回連続でアクセスしても、すべて正常応答でした。予約番号(B-YYMMDD-4桁)とメールアドレスの組み合わせを機械的に試行し続けることが可能です。ログインのパスワード試行、いたずら予約の連投も同様に止まりません。</p>
+    <p><b>影響:</b> 予約内容の不正閲覧・いたずら予約による枠の占有・メール送信の誘発。公開予約を本格運用するなら実装が望ましい水準です。</p>
+    
+    <p><b>回避策:</b> 当面は Vercel/Cloudflare 側の WAF・ボット対策で緩和できます。恒久対応は Upstash 等での IP/対象単位の制限(申し送り #3)。</p>
+    
+  </div><div class="callout crit">
+    <span class="lab">未解決の問題 ／ 深刻度 low ／ AT-PUB-026</span>
+    <p><b>キャンセル期限を過ぎた予約でも、患者側にキャンセルボタンが表示される</b></p>
+    <p>管理画面は予約の状態(キャンセル済み・完了・来院)だけを見てボタンの出し分けをしており、キャンセル期限は見ていません。期限後に押すとサーバー側で拒否され「キャンセル期限(24時間前)を過ぎています」と表示されます。データは変わらないため安全性の問題はありません。</p>
+    <p><b>影響:</b> 患者が操作してから断られるため、問い合わせの電話が増える可能性があります。データ不整合は起きません。</p>
+    
+    <p><b>回避策:</b> 画面側で最初のセッション開始時刻と期限を比較し、期限を過ぎていればボタンを出さずに連絡先を案内する(manage-booking-view.tsx の alreadyClosed の判定に期限を追加)。</p>
     
   </div>
      <h3>この作業内で修正したもの</h3><div class="callout warn">
@@ -2248,7 +3553,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <dt>残る未検証範囲</dt><dd class="rest">本番環境そのもの。</dd>
     </dl></div></section>
 
-<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 11:44(自動生成。手書きの判定は含みません)</footer>
+<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 21:52(自動生成。手書きの判定は含みません)</footer>
 </div>
 
 <dialog id="lb"><form method="dialog"><button type="submit" style="all:unset;cursor:zoom-out;display:block"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></button></form></dialog>

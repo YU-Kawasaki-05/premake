@@ -1,0 +1,66 @@
+{
+  "id": "AT-PUB-004",
+  "priority": "P1",
+  "phase": "B",
+  "order": 104,
+  "title": "料金は「表示する」設定のメニューだけに出る",
+  "spec": "v2-05 / v2-19",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "料金の出し方はクリニックの方針。表示しない設定にしたメニューの価格が漏れると、掲示していない価格を広告したことになる。",
+  "startedAt": "2026-07-27T12:29:24.321Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "メニューごとの価格表示を確認",
+      "action": "公開ページのメニュー一覧で、価格の有無を DB の設定と突き合わせる",
+      "expect": "「料金を表示」がオンのメニューだけ価格が出る",
+      "actual": "アートメイク 眉(2回目まで):非表示 / アートメイク リップ:非表示 / アートメイク リタッチ(3回目以降):非表示 / アートメイク カウンセリングのみ:表示 / メディカルピーリング:表示 / 検証用 メニューA:表示",
+      "checks": [
+        {
+          "label": "「アートメイク 眉(2回目まで)」の価格 ¥99,000 は表示されない",
+          "ok": true,
+          "detail": "show_price=f 画面表示=false"
+        },
+        {
+          "label": "「アートメイク リップ」の価格 ¥110,000 は表示されない",
+          "ok": true,
+          "detail": "show_price=f 画面表示=false"
+        },
+        {
+          "label": "「アートメイク リタッチ(3回目以降)」の価格 ¥55,000 は表示されない",
+          "ok": true,
+          "detail": "show_price=f 画面表示=false"
+        },
+        {
+          "label": "「アートメイク カウンセリングのみ」は価格 ¥0 が表示される",
+          "ok": true,
+          "detail": "show_price=t 画面表示=true"
+        },
+        {
+          "label": "「メディカルピーリング」は価格 ¥16,500 が表示される",
+          "ok": true,
+          "detail": "show_price=t 画面表示=true"
+        },
+        {
+          "label": "「検証用 メニューA」は価格 ¥12,000 が表示される",
+          "ok": true,
+          "detail": "show_price=t 画面表示=true"
+        }
+      ],
+      "evidence": [
+        "01_メニューごとの価格表示を確認.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:29:25.495Z"
+}

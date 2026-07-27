@@ -60,6 +60,22 @@ export async function rest(path, init) {
   return { ok: res.ok, status: res.status, json, text };
 }
 
+/** 未ログイン相当(anon キー)で PostgREST を叩く。RLS が効いているかの検証用 */
+export async function restAnon(path) {
+  const key = ENV.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+  });
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    /* non-json */
+  }
+  return { status: res.status, json, text: text.slice(0, 300) };
+}
+
 /**
  * ローカル Supabase の Postgres へ直接 SQL を投げる。
  * PostgREST は public スキーマしか見られないため、auth.users や監査ログの
@@ -286,8 +302,19 @@ export function newCase(meta) {
   return { rec, step, dbCheck, issue, na, partial, abort, finish, dir };
 }
 
-/** ケースを try/catch で包み、例外は必ず FAIL として記録する */
+/**
+ * ケースを try/catch で包み、例外は必ず FAIL として記録する。
+ * AT_ONLY=ID1,ID2 が指定されていれば、それ以外はスキップして既存の結果を残す(部分再実行用)。
+ */
 export async function runCase(meta, body) {
+  const only = (process.env.AT_ONLY ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (only.length > 0 && !only.includes(meta.id)) {
+    console.log(`- ${meta.id} skipped (AT_ONLY)`);
+    return "SKIPPED";
+  }
   const c = newCase(meta);
   try {
     await body(c);

@@ -1,0 +1,99 @@
+{
+  "id": "AT-PUB-011",
+  "priority": "P0",
+  "phase": "B",
+  "order": 111,
+  "title": "患者がインターネットから予約を申し込む(院内承認モード)",
+  "spec": "v2-20",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "公開予約の本流。申込がその場で確定せず「承認待ち」で入り、患者には受付の連絡が届くこと。",
+  "startedAt": "2026-07-27T12:47:58.364Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "空き枠を選ぶ",
+      "action": "2026-07-28 の空き枠から 13:00 を選択",
+      "expect": "連絡先の入力フォームが表示される",
+      "actual": "選択した枠=13:00 / 入力欄=1個",
+      "checks": [
+        {
+          "label": "連絡先フォームが出る",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_空き枠を選ぶ.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "連絡先を入力",
+      "action": "氏名・かな・電話・メールアドレスを入力",
+      "expect": "入力内容がフォームに反映される",
+      "actual": "氏名=AT公開 患者 / メール=at-pub@example.com",
+      "checks": [
+        {
+          "label": "入力が反映される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_連絡先を入力.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 3,
+      "label": "申込が受け付けられる",
+      "action": "「この内容で予約する」を押す",
+      "expect": "受付完了の画面になり、予約番号が案内される。状態は「承認待ち」",
+      "actual": "画面=「予約を受け付けました 予約番号 B-260727-D6D3 クリニックの確認後に確定します。確認・キャンセルは下記リンクから行えます。 予約内容を確認する 」 / DB=B-260727-D6D3 / requested / web",
+      "note": "手動承認モードのため、この時点では確定していない(院内が確定して初めて成立)。",
+      "checks": [
+        {
+          "label": "予約が作られる",
+          "ok": true,
+          "detail": "B-260727-D6D3"
+        },
+        {
+          "label": "状態が承認待ち",
+          "ok": true,
+          "detail": "requested"
+        },
+        {
+          "label": "インターネット経由として記録される",
+          "ok": true,
+          "detail": "web"
+        },
+        {
+          "label": "画面に予約番号が出る",
+          "ok": true,
+          "detail": "B-260727-D6D3"
+        }
+      ],
+      "evidence": [
+        "03_申込が受け付けられる.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "患者へ受付の連絡、院内へ新規申込の連絡が積まれる",
+      "query": "select kind, recipient_type, recipient_email from notifications n join bookings b on b.id = n.booking_id where b.guest_email = 'at-pub@example.com' order by n.created_at",
+      "expect": "booking_requested(patient) と booking_created_internal(member)",
+      "actual": "booking_requested:patient:at-pub@example.com / booking_created_internal:member:info@demo.local",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:48:02.501Z"
+}

@@ -1,0 +1,66 @@
+{
+  "id": "AT-PUB-010",
+  "priority": "P0",
+  "phase": "B",
+  "order": 110,
+  "title": "承認モード「メール確認後に自動確定」の実際の挙動",
+  "spec": "v2-20",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "クリニックが選べる承認モードのうち auto を選んだ場合の挙動。選択肢の名前どおりなら、患者がメールのリンクを押して初めて確定するはず。",
+  "notes": "設定を一時的に auto へ切り替えて実測し、終了後に manual(推奨)へ戻している。",
+  "startedAt": "2026-07-27T12:42:21.419Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "承認モード auto で申し込む",
+      "action": "承認モードを「メール確認後に自動確定」にして 2026-07-28 14:00 に申し込む",
+      "expect": "(選択肢名どおりなら)確認メールが送られ、リンクを押すまでは確定しない",
+      "actual": "状態=confirmed / 積まれた通知=booking_confirmed,booking_created_internal / 画面で確認を促している=false",
+      "note": "実測の結果は下の「検出した問題」を参照。選択肢の名前と実装が一致していない。",
+      "checks": [
+        {
+          "label": "予約が作られる",
+          "ok": true,
+          "detail": "B-260727-B6F5"
+        }
+      ],
+      "evidence": [
+        "01_承認モード_auto_で申し込む.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "申込直後の状態",
+      "query": "select status from bookings where guest_email = 'at-pub-auto@example.com'",
+      "expect": "選択肢名どおりなら requested(メール確認待ち)",
+      "actual": "confirmed",
+      "ok": true
+    },
+    {
+      "label": "検証後に承認モードを manual(推奨)へ戻した",
+      "query": "select booking_approval_mode from clinics where id = '10000000-0000-4000-a000-000000000001'",
+      "expect": "manual",
+      "actual": "manual",
+      "ok": true
+    }
+  ],
+  "issues": [
+    {
+      "severity": "medium",
+      "summary": "承認モード「メール確認後に自動確定(auto)」に、メール確認のステップが実装されていない",
+      "detail": "auto に設定して申し込んだところ、確認リンクを経ずにその場で確定(confirmed)になりました。積まれた通知は booking_confirmed / booking_created_internal で、確認用のメールは送られていません。",
+      "impact": "この設定を選ぶと、メールアドレスの実在確認をしないまま予約が確定します。存在しないアドレスやなりすましでの予約を受け付けてしまい、当日の無断キャンセルにつながります。手動承認で運用する限り実害はありません。",
+      "workaround": "承認モードは「院内で承認してから確定(manual)」のまま運用する。選択肢名を「即時確定」へ変更するか、確認リンクの実装を行うかは要判断。",
+      "status": "open"
+    }
+  ],
+  "naReason": null,
+  "partialReason": "auto モードは選択肢名(「メール確認後に自動確定」)に反し、申込と同時に確定します。手動承認(推奨)で運用する限り実害はありませんが、設定名が誤解を招きます。",
+  "aborted": false,
+  "verdict": "PARTIAL",
+  "finishedAt": "2026-07-27T12:42:25.670Z"
+}

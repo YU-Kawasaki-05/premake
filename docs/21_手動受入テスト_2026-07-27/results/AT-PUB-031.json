@@ -1,0 +1,45 @@
+{
+  "id": "AT-PUB-031",
+  "priority": "P1",
+  "phase": "B",
+  "order": 131,
+  "title": "日時の表示形式が統一されている(7/12(金) 13:00–15:30)",
+  "spec": "v2-04",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "曜日が入っていないと患者が日付を読み違える。院内・患者向け・メールで表記が揺れないことを確認する。",
+  "startedAt": "2026-07-27T12:29:32.813Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "予約ページの日付表記",
+      "action": "/c/demo/reserve?date=2026-07-28 を開く",
+      "expect": "「7/28(火)」のように月/日(曜日)の形式で表示される",
+      "actual": "月/日(曜)形式=true / 時刻形式=true",
+      "note": "メール本文の表記(evidence/_emails/)も同じ書式であることを併せて確認済み。",
+      "checks": [
+        {
+          "label": "月/日(曜日)の形式で表示される",
+          "ok": true
+        },
+        {
+          "label": "時刻が HH:MM で表示される",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_予約ページの日付表記.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:29:33.963Z"
+}

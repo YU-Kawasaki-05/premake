@@ -1,0 +1,44 @@
+{
+  "id": "AT-PUB-033",
+  "priority": "P0",
+  "phase": "B",
+  "order": 133,
+  "title": "インターネット申込が院内のメールアドレスへ通知される",
+  "spec": "v2-23",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "手動承認で運用する以上、申込に気づけないと患者を待たせる。院内通知はクリニック設定のメールアドレス宛に飛ぶ。",
+  "startedAt": "2026-07-27T12:42:14.559Z",
+  "steps": [],
+  "dbChecks": [
+    {
+      "label": "院内宛の通知がクリニックのメールアドレスへ積まれる",
+      "query": "select n.kind, n.recipient_email, n.status from notifications n join bookings b on b.id = n.booking_id where b.guest_email = 'at-pub@example.com' and n.recipient_type = 'member'",
+      "expect": "booking_created_internal / 宛先=info@demo.local",
+      "actual": "booking_created_internal:info@demo.local:queued",
+      "ok": true
+    },
+    {
+      "label": "院内宛メールに患者の管理リンクが含まれない",
+      "query": "tests/at-evidence-emails.test.ts の検証(院内向け 2 種に /manage/ が無いこと)",
+      "expect": "含まれない",
+      "actual": "検証済み",
+      "ok": true
+    },
+    {
+      "label": "【本番での注意】院内通知の宛先はクリニック設定のメールアドレス",
+      "query": "select email from clinics where id = '10000000-0000-4000-a000-000000000001'",
+      "expect": "実際に受信できるアドレスを設定する必要がある",
+      "actual": "現在の設定=info@demo.local(demo 用のダミー)",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:42:14.670Z"
+}

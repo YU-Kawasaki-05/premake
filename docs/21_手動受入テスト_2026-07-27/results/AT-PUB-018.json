@@ -1,0 +1,30 @@
+{
+  "id": "AT-PUB-018",
+  "priority": "P2",
+  "phase": "B",
+  "order": 118,
+  "title": "【未実装】メール確認前の仮押さえを 30 分で自動解放する",
+  "spec": "v2-20",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "メール確認方式(auto)を使う場合、確認されないまま枠が押さえられ続けないようにする仕組み。",
+  "notes": "auto モード自体に確認ステップが無いため(AT-PUB-010 参照)、この機能も存在しない。",
+  "startedAt": "2026-07-27T12:51:27.931Z",
+  "steps": [],
+  "dbChecks": [
+    {
+      "label": "承認待ちのまま残っている予約の件数",
+      "query": "select count(*) from bookings where clinic_id = '10000000-0000-4000-a000-000000000001' and status = 'requested'",
+      "expect": "手動承認では自動解放されない(院内が判断する)",
+      "actual": "0 件",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": "メール確認のステップ自体が未実装のため(AT-PUB-010)、その確認待ちを解放する仕組みも存在しません。手動承認で運用する限り、承認待ちの予約は院内が明示的に確定またはキャンセルするまで残ります。",
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "NA",
+  "finishedAt": "2026-07-27T12:51:27.994Z"
+}

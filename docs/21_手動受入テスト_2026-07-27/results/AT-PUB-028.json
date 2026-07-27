@@ -1,0 +1,49 @@
+{
+  "id": "AT-PUB-028",
+  "priority": "P0",
+  "phase": "B",
+  "order": 128,
+  "title": "推測した管理リンクでは開けない(トークンの検証)",
+  "spec": "v2-22",
+  "refs": [
+    "20_受け入れテスト/05_公開予約.md"
+  ],
+  "intent": "管理画面の URL はメールに載る。URL の一部を書き換えて他人の予約を開けないこと、トークンが平文で保存されていないこと。",
+  "startedAt": "2026-07-27T12:51:04.956Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "でたらめなトークンで管理画面を開く",
+      "action": "/c/demo/manage/<でたらめな文字列> を直接開く",
+      "expect": "404 になり、予約内容は出ない",
+      "actual": "HTTP 200 / 画面=「リンクが無効です リンクの有効期限が切れているか、無効です。 予約番号で再照会する」",
+      "checks": [
+        {
+          "label": "開けない",
+          "ok": true,
+          "detail": "HTTP 200"
+        }
+      ],
+      "evidence": [
+        "01_でたらめなトークンで管理画面を開く.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "トークンは平文ではなくハッシュで保存され、有効期限がある",
+      "query": "select token_hash is not null as hashed, length(token_hash) as len, expires_at > now() as valid, purpose from booking_access_tokens where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' limit 1",
+      "expect": "ハッシュ値(64 文字の SHA-256)が保存され、期限が未来",
+      "actual": "t / 64 / t / manage",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T12:51:05.276Z"
+}
