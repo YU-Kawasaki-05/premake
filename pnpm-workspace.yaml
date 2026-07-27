@@ -1,3 +1,7 @@
+onlyBuiltDependencies:
+  - supabase
+  - '@biomejs/biome'
+  - '@tailwindcss/oxide'
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver

@@ -144,3 +144,7 @@ if (fail > 0) {
   console.log("FAILED:");
   for (const r of results.filter((x) => !x.ok)) console.log(`  - [${r.area}] ${r.name}: ${r.detail}`);
 }
+const MIN_CHECKS = 22; // 期待するチェック数(下回る = 途中で飛ばされた)
+if (results.length < MIN_CHECKS)
+  console.log(`INCOMPLETE: チェック数 ${results.length} が期待 ${MIN_CHECKS} を下回っています`);
+process.exit(fail === 0 && results.length >= MIN_CHECKS ? 0 : 1);

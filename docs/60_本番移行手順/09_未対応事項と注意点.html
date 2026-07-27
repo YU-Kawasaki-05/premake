@@ -173,8 +173,110 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 </head>
 <body>
 <header class="top"><div class="wrap"><div class="bar"><span class="brand"><span class="dot"></span>premake 本番移行手順書</span><a href="00_目次.html">&#9776; 目次へ戻る</a></div></div></header>
-<div class="hero"><div class="wrap"><p class="stepno">公開前に必ずお読みください</p><h1>重要 未対応事項と注意点</h1><p class="lede">今回のリリースに含まれない機能と、本番前に必ず対応すべき事項を正直に列挙します。誤解と事故を防ぐための最重要ページです。</p><div class="meta"><span class="chip">全員必読</span><span class="chip time">目安 約15分</span></div></div></div>
-<div class="wrap"><section><h2>このページの目的</h2><p>公開前に必ずお読みください。ここでは、<strong>今回のリリースに含まれない機能</strong>と、<strong>本番前に必ず対応すべき事項</strong>を正直に列挙します。『使えると思っていた機能が実は無かった』という誤解を防ぐためのページです。</p><p>根拠は品質監査(<a href="../40_品質監査_2026-07-21/00_サマリ.md">サマリ</a>・<a href="../40_品質監査_2026-07-21/01_実装ギャップ台帳.md">実装ギャップ台帳</a>・<a href="../40_品質監査_2026-07-21/02_不具合レポート.md">不具合レポート</a>)です。</p></section><section><h2>A. 本番前に必ず対応すべき事項(未完のもの)</h2><div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>1. メール送信元がクリニック名になっていない(要・コード修正)</p><p>現状、送信元が開発用の仮アドレス <code class="inline">onboarding@resend.dev</code> に固定されています。患者に届くメールがクリニック名にならず、迷惑メールに入りやすい状態です。<strong>開発担当者に依頼し、認証済みドメインの差出人へ変更</strong>してください(STEP 4 参照)。これは設定画面ではなくプログラム修正が必要です。</p></div><div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>2. 法定ページ(利用規約・プライバシー)が暫定のβ版</p><p>プライバシーポリシー・利用規約は現在<strong>暫定のβ版</strong>で、正式な内容ではありません。特に患者向けの公開ページを出す場合や、診療情報を扱う運用では、<strong>弁護士の確認を受けた正式版に差し替え</strong>てください(医療広告・診療情報の取扱条項を含む)。院内運用のみでも、患者への案内文面は法務確認を推奨します。</p></div><div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>3. スタッフ権限の抜け道(脅威モデルとして認識)</p><p>技術的な指摘として、看護師(staff)権限のアカウントが、通常画面を経由せず直接データベース API を叩くと、本来 院長(owner)専用の操作(料金・メニュー変更、患者削除)ができてしまう余地があります(越境は自院内に限定)。悪用には技術知識が要りますが、<strong>本番前にアクセス制御(RLS)を owner 限定へ絞る改善を推奨</strong>します。当面は、信頼できるスタッフのみに staff 権限を付与してください。</p></div><div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>4. 不正アクセス対策(レート制限)が未実装</p><p>ログイン・(公開予約を使う場合の)ゲスト予約や照会に対する<strong>回数制限(レート制限)がありません</strong>。総当たり攻撃やいたずら送信のリスクがあります。特に<strong>公開Web予約を使う場合は本番前の対応を推奨</strong>します。</p></div><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>5. メールの差し込み値のエスケープ / 送信失敗の自動再送</p><p>(公開予約でゲスト名などを受け付ける場合)メール本文の差し込み値のエスケープ処理、および一時的な送信失敗の自動再送は未対応です。前者は開発担当者に確認を、後者は STEP 8 の週次チェックで補ってください。</p></div><div class="callout info"><p class="ct"><span class="ic">&#9432;</span>6. テストデータ(seed)の本番混入ガード</p><p>手順(STEP 2)で『seed を本番に流さない』ことで回避していますが、プログラム側で本番実行を止める安全装置(ガード)は未実装です。運用として<strong>本番データベースに対する <code class="inline">db reset</code>・seed 実行を絶対に行わない</strong>ルールを徹底してください。</p></div></section><section><h2>B. 今回のリリースに含まれない機能(MVPから除外)</h2><p>次は<strong>『現状こういう扱い』</strong>という前提で運用してください。使えると誤解しないための一覧です。</p><div class="tablewrap"><table><thead><tr><th>機能</th><th>現状の扱い</th><th>使いたい場合</th></tr></thead><tbody><tr><td><strong>患者向け公開Web予約</strong></td><td>初期状態オフ。院内運用のみ推奨</td><td>オンにするなら、上の A(法定ページ・レート制限・エスケープ)に加え、『退職者/施術不可スタッフが候補に出る』『非公開スタッフの本名や枠が患者に見える』等の未対応も解消が必要</td></tr><tr><td><strong>オンライン問診</strong></td><td>未実装。<strong>紙で運用</strong>する前提</td><td>侵襲的施術の既往歴・アレルギー・妊娠確認は<strong>紙の問診で必ず取得</strong>。オンライン化は別途開発が必要(患者安全に直結)</td></tr><tr><td><strong>予約の変更(リスケ)</strong></td><td>未実装</td><td>日時・担当・部屋を変えるときは<strong>キャンセル→作り直し</strong>で対応</td></tr><tr><td><strong>院内(スタッフ)向け通知</strong></td><td>未実装</td><td>公開予約を受ける場合、「予約が入った」の院内通知が出ない。院内運用では看護師自身が作るため影響は限定的</td></tr><tr><td><strong>手動承認時の患者確定メール</strong></td><td>未送信</td><td>公開Web予約(手動承認)を使う場合のみ関係。院内運用では発生しない</td></tr><tr><td>週ビュー / 承認待ち専用画面 / Google ログイン 等</td><td>今回のスコープ外</td><td>仕様として除外済み(日ビュー・台帳で運用)</td></tr></tbody></table></div></section><section><h2>C. まとめ: 推奨する始め方</h2><div class="callout ok"><p class="ct"><span class="ic">&#10003;</span>『院内運用・公開予約オフ・問診は紙』で小さく始める</p><p>この形なら、中核フロー(看護師が予約→院内確認→当日施術→キャンセル)が成立し、上の未対応事項の多くは『公開予約を使わない限り実害が小さい』ものになります。運用が安定し、法務・追加開発の準備が整ってから、公開Web予約やオンライン問診の追加を検討するのが安全です。</p><p>ただし <strong>A-1(メール送信元)</strong> と、患者への案内文面・法定ページの<strong>法務確認(A-2)</strong>は、院内運用でも本番開始前に対応しておくことを強く推奨します。</p></div></section></div>
+<div class="hero"><div class="wrap"><p class="stepno">公開前に必ずお読みください</p><h1>重要 未対応事項と注意点</h1><p class="lede">今回のリリースで<strong>まだ残っている作業</strong>と、<strong>含まれない機能</strong>を正直に列挙します。あわせて、2026-07-22 版で「未対応」としていた項目のうち<strong>すでに解消したもの</strong>もはっきり示します。誤解と事故を防ぐための最重要ページです。</p><div class="meta"><span class="chip">全員必読</span><span class="chip time">目安 約15分</span><span class="chip">2026-07-26 改訂</span></div></div></div>
+<div class="wrap">
+
+<section><h2>このページの目的</h2>
+<p>公開前に必ずお読みください。ここでは、<strong>本番前に必ず対応すべき事項</strong>と、<strong>今回のリリースに含まれない機能</strong>を正直に列挙します。『使えると思っていた機能が実は無かった』という誤解を防ぐためのページです。</p>
+<div class="callout ok"><p class="ct"><span class="ic">&#10003;</span>この改訂でリストは大きく短くなりました</p><p>この手順書の最初の版(2026-07-22)には、未対応事項が A で 6 項目・B で 6 項目ありました。その後の開発で<strong>そのうち 8 項目が解消済み</strong>です。下の「A」に残しているのは<strong>本当にまだ残っている作業だけ</strong>で、解消したものは「以前の課題と現在」の節にまとめました。<strong>A に書いていない項目は、もう心配する必要はありません。</strong></p></div>
+<p class="small muted">根拠となる記録: 開発の全体像と残タスク = <a href="../50_次セッション引き継ぎ_2026-07-22.md">引き継ぎメモ(§13〜§14)</a>・<a href="../70_作業報告_2026-07-23.md">作業報告(2026-07-23)</a> / もとの指摘の出どころ = <a href="../40_品質監査_2026-07-21/00_サマリ.md">品質監査サマリ</a>・<a href="../40_品質監査_2026-07-21/01_実装ギャップ台帳.md">実装ギャップ台帳</a>・<a href="../40_品質監査_2026-07-21/02_不具合レポート.md">不具合レポート</a>。</p>
+</section>
+
+<section><h2>A. 本番前に必ず対応すべき事項(いま残っているもの)</h2>
+<p>残っているのは次の <strong>4 件</strong>です。上の 2 件は<strong>公開前に必ず</strong>、下の 2 件は<strong>条件つき</strong>(その運用をしないなら関係ありません)です。</p>
+
+<div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>A-1. 法定ページ(利用規約・プライバシーポリシー)の本文確定と弁護士確認 <span class="badge dev">開発担当者</span></p>
+<p>利用規約とプライバシーポリシーは、<strong>標準的な構成(目次つき)の「暫定版」までは整備済み</strong>です。見栄えの整ったページとして表示されます。ただし、</p>
+<ul class="disc"><li>ページ内に<strong>「正式公開前の暫定版です」と明記された注意書き</strong>が入っています</li><li><strong>事業者情報・委託先・お問い合わせ窓口などは仮の記載(プレースホルダ)</strong>のままです</li><li><strong>弁護士の確認は受けていません</strong></li></ul>
+<p>今回は<strong>患者向けの公開Web予約を使う方針</strong>のため、これらのページは患者が必ず目にします。<strong>仮の記載を実際の内容に置き換え、弁護士の確認を受けた正式版に差し替えるまで、患者への案内(公開)を開始しないでください</strong>。医療広告および診療情報の取扱いに関する条項の確認も必要です。差し替え作業は開発担当者に依頼してください(対象はアプリ内の <code class="inline">/privacy</code> と <code class="inline">/terms</code> の 2 ページです)。</p></div>
+
+<div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>A-2. 不正アクセス対策(レート制限)が未実装</p>
+<p><strong>レート制限</strong>とは、「同じ相手からの短時間の連続アクセスを制限し、機械的ないたずらを止める仕組み」です。現在、ログイン・公開予約の申し込み・予約の照会に、この回数制限がありません。パスワードを機械的に試す攻撃や、いたずらの連続送信を受ける可能性があります。</p>
+<p>公開Web予約を使う方針のため、<strong>当面は次の緩和策で運用します</strong>(実装は次の開発段階の候補です)。</p>
+<ul class="disc">
+<li><strong>承認モードを「院内で確認してから確定」(手動承認)にしておく</strong> — これが最も効きます。いたずらの申し込みが入っても、院内が承認するまで予約は確定しません。</li>
+<li><strong>Vercel・Supabase が標準で備えるアクセス保護に依存する状態</strong>であることを理解しておく(専用の追加対策は入っていません)。</li>
+<li><strong>不自然な増え方に気づける運用にする</strong> — 台帳に見覚えのない予約が急に増える、同じ連絡先から何件も申し込みが来る、といった兆候を毎日の台帳確認で見ます。設定画面の「通知の送信状況」(STEP 8 参照)も手がかりになります。</li>
+<li><strong>おかしいときは一時的に止められる</strong> — 設定 → オンライン予約 の「患者向けオンライン予約」をオフにすれば、公開ページからの申し込みを即座に止められます(院内での予約登録は続けられます)。</li>
+<li>明らかな悪用が続く場合は、開発担当者にレート制限の実装を依頼してください。</li>
+</ul></div>
+
+<div class="callout info"><p class="ct"><span class="ic">&#9432;</span>A-3.【条件つき】公開予約を「自動確定」にする場合の仕組みが未実装</p>
+<p>設定画面の「Web 予約の確定方法」では <strong>「院内で確認してから確定(推奨)」</strong> と <strong>「メール確認後に自動確定」</strong> を選べます。しかし後者(自動確定)の前提となる<strong>「患者がメールの確認リンクを踏んで初めて確定する」「一定時間(30 分)内に確認されなければ枠を自動で解放する」仕組みは未実装</strong>です。</p>
+<p>そのため、<strong>「院内で確認してから確定(推奨)」のまま運用してください</strong>。今回の推奨運用はこちらです。将来「自動確定に切り替えたい」と判断したときは、<strong>切り替える前に</strong>開発担当者へ追加実装を依頼してください。</p></div>
+
+<div class="callout info"><p class="ct"><span class="ic">&#9432;</span>A-4.【条件つき】重複した患者どうしの統合(マージ)が未実装</p>
+<p>公開Web予約は、はじめは<strong>患者マスタ(患者の台帳)と結び付いていない状態</strong>で入ります。これを既存の患者に結び付ける機能(<strong>名寄せ</strong>)は実装済みで、台帳から数クリックで行えます(下の「使い方」参照)。</p>
+<p>一方、<strong>すでに患者マスタに二重登録されてしまった患者を 1 件にまとめる機能はありません</strong>。運用でこう防いでください。</p>
+<ul class="disc"><li>紐付けのときに表示される<strong>候補一覧をよく確認し、同じ人を新規で作らない</strong>。</li><li>誤って二重に作ってしまったら、片方の患者にメモを残して<strong>以後は使わない</strong>ようにする。</li></ul>
+<p class="small muted">なお、以前あった危険な統合処理(取り消しのきかない上書き)は削除済みです。<strong>勝手に統合されてデータが失われることはありません。</strong></p></div>
+</section>
+
+<section><h2>以前の課題と現在(すべて解消済み・対応不要)</h2>
+<div class="callout ok"><p class="ct"><span class="ic">&#10003;</span>ここに挙げる項目は、もう対応する必要がありません</p><p>2026-07-22 版の手順書を先に読んだ方のために、<strong>当時「未対応」としていて、その後解消した項目</strong>を残しています。<strong>危険は残っていません</strong>ので、対応作業として計画に入れないでください。</p></div>
+<div class="tablewrap"><table><thead><tr><th>2026-07-22 版の記載</th><th>現在(2026-07-26)</th></tr></thead><tbody>
+<tr><td>A-1 メール送信元がクリニック名になっていない(<strong>コード修正が必要</strong>)</td><td><strong>解消済み。</strong>差出人の表示名は自動でクリニック名になります。<strong>プログラムの修正は不要</strong>で、残るのは STEP 4 の設定作業(ドメイン認証と <code>EMAIL_FROM_ADDRESS</code> の登録)だけです</td></tr>
+<tr><td>A-3 スタッフ権限の抜け道(看護師が画面を通さず、院長専用の操作をできる余地)</td><td><strong>解消済み。</strong>料金・メニュー・部屋などの変更と患者の削除は、<strong>データベース側で院長(owner)と運営のみに制限</strong>されました。画面を通さない迂回もできません</td></tr>
+<tr><td>A-5 メールの差し込み値のエスケープ / 送信失敗の自動再送</td><td><strong>両方解消済み。</strong>患者名などの差し込み値は無害化して送られ(なりすまし文面の混入を防止)、一時的な送信失敗は<strong>最大 3 回まで自動で再送</strong>されます</td></tr>
+<tr><td>A-6 テストデータ(seed)の本番混入ガードが未実装</td><td><strong>解消済み。</strong>テストデータはローカルの開発環境でしか実行できず、本番に流そうとすると<strong>自動で中断</strong>します。ただし運用ルールとしての「本番に流さない」は<strong>二重の防御として引き続き徹底</strong>してください</td></tr>
+<tr><td>B 公開Web予約で「退職者・その施術ができないスタッフが候補に出る」「非公開スタッフの本名や空き枠が患者に見える」</td><td><strong>すべて解消済み。</strong>候補に出るのは<strong>在籍中・指名可・そのメニューを担当できるスタッフだけ</strong>になり、本名の露出も止まりました</td></tr>
+<tr><td>B 予約の変更(リスケ)が未実装 → キャンセルして作り直し</td><td><strong>実装済み。</strong>台帳から日時・担当・部屋を変更でき、患者に変更のお知らせが届きます(下の「使い方」参照)</td></tr>
+<tr><td>B 院内(スタッフ)向け通知が未実装</td><td><strong>実装済み。</strong>公開予約が入るとクリニックのメールアドレスに通知が届きます(下の「使い方」参照)</td></tr>
+<tr><td>B 手動承認したときの患者への確定メールが未送信</td><td><strong>実装済み。</strong>院内で「確定にする」を押すと、患者に確定メールが届きます</td></tr>
+</tbody></table></div>
+
+<h3>以前は「未実装」だった機能の使い方</h3>
+<p>上で「実装済み」になった機能の操作場所です。実際の登録・操作の手順は <a href="06_初期設定とデータ登録.html">STEP 6</a>、動作確認は <a href="07_公開前の動作確認チェックリスト.html">STEP 7</a> を参照してください。</p>
+<div class="tablewrap"><table><thead><tr><th>機能</th><th>どこで・どう使うか</th></tr></thead><tbody>
+<tr><td><strong>予約の変更(リスケ)</strong></td><td>台帳(日ビュー)で予約をクリック → <strong>「予約を変更」</strong> → 日付・時刻・担当・部屋を選ぶ → <strong>「変更を保存」</strong>。患者に変更のお知らせメールが届きます。変更できるのは「承認待ち」「確定」の予約までで、来院・完了後は変更できません(その場合はキャンセルして作り直します)</td></tr>
+<tr><td><strong>手動承認と確定メール</strong></td><td>台帳で「承認待ち」の予約を開き、「ステータス変更」の <strong>「確定にする」</strong> を押します。これで患者に確定メールが届きます</td></tr>
+<tr><td><strong>院内向け通知</strong></td><td>公開ページから予約が入ると、クリニックのメールアドレス宛に<strong>「新しい予約が入りました(要確認)」</strong>が届きます。患者が自分でキャンセルしたときも<strong>「予約がキャンセルされました」</strong>が届きます。宛先は 設定 → 基本情報 の「メール」欄なので、<strong>毎日必ず見るアドレス</strong>を登録してください</td></tr>
+<tr><td><strong>患者マスタへの紐付け(名寄せ)</strong></td><td>台帳で公開予約を開くと「ゲスト予約(患者マスタ未紐付け)」の欄に <strong>「患者に紐付け」</strong> が出ます。連絡先や氏名が近い既存患者の候補が<strong>一致理由つき</strong>で並ぶので、選んで紐付けるか、新規患者として登録します。<strong>自動では統合しません</strong>(必ず人が確認します)</td></tr>
+<tr><td><strong>通知の送信状況の確認</strong></td><td>設定画面(院長のみ)の <strong>「通知の送信状況」</strong> で、直近 50 件のメールの状態を確認できます。週次チェックの方法は <a href="08_運用開始後の運用とバックアップ.html">STEP 8</a> を参照してください</td></tr>
+</tbody></table></div>
+</section>
+
+<section><h2>B. 今回のリリースに含まれない機能・使わない機能</h2>
+<p>次は<strong>『現状こういう扱い』</strong>という前提で運用してください。使えると誤解しないための一覧です。</p>
+<div class="tablewrap"><table><thead><tr><th>機能</th><th>現状の扱い</th><th>補足</th></tr></thead><tbody>
+<tr><td><strong>患者向け公開Web予約</strong></td><td><strong>使います(オンにします)。</strong>承認モードは<strong>「院内で確認してから確定」(手動承認)</strong></td><td>以前挙げていた露出の問題(退職者・施術不可スタッフ・本名)は<strong>すべて解消済み</strong>です。オンにする前に <strong>A-1(法定ページの法務確認)</strong> を必ず終えてください。「メール確認後に自動確定」は A-3 のため当面使いません</td></tr>
+<tr><td><strong>オンライン問診</strong></td><td><strong>紙で運用します</strong>(今回のリリースの方針として決定)</td><td>「未実装だから仕方なく紙」ではなく、<strong>最初のリリースの範囲を絞る判断として紙運用に決めた</strong>ものです(仕様書 v2-18 に明記)。侵襲的な施術の<strong>既往歴・アレルギー・妊娠の確認は患者安全に直結するため、紙の問診で必ず取得</strong>してください。オンライン化は次の開発段階(Phase 2)の候補です</td></tr>
+<tr><td><strong>患者どうしの統合(重複患者のマージ)</strong></td><td>未実装</td><td><strong>A-4</strong> 参照。ゲスト予約を患者マスタに結び付ける「名寄せ」は実装済みです</td></tr>
+<tr><td><strong>公開予約の「メール確認後に自動確定」</strong></td><td>設定では選べますが<strong>仕組みが未完成</strong></td><td><strong>A-3</strong> 参照。「院内で確認してから確定」で運用します</td></tr>
+<tr><td><strong>不正アクセス対策(レート制限)</strong></td><td>未実装</td><td><strong>A-2</strong> 参照。手動承認と日々の台帳確認で補います</td></tr>
+<tr><td>週ビュー(スタッフ別のレーン表示) / 承認待ち専用の一覧画面 / Google ログイン / 患者タグ</td><td>今回のスコープ外</td><td>仕様として除外済みです。<strong>日ビューの台帳</strong>で運用します。次の開発段階の候補です</td></tr>
+<tr><td>クレジットカード決済</td><td>機能はありません</td><td>会計は院内の既存の方法で行ってください</td></tr>
+</tbody></table></div>
+</section>
+
+<section><h2>C. まとめ: 推奨する始め方</h2>
+<div class="callout ok"><p class="ct"><span class="ic">&#10003;</span>『公開Web予約はオン・承認は院内の手動承認・問診は紙』で始める</p>
+<p>この形が今回の推奨運用です。次の流れがひと通り成立します。</p>
+<p class="small">患者が Web から申し込む(または看護師が電話予約を台帳に入れる) → <strong>院内に通知が届く</strong> → 台帳で内容を確認して<strong>「確定にする」</strong> → 患者に確定メール → 前日にリマインダー → 当日「受付(チェックイン)」→「施術完了」。キャンセルすれば枠は自動で空きに戻ります。</p>
+<p><strong>手動承認にする理由:</strong> いたずらや入力間違いの申し込みが、院内の確認なしに確定枠になることを防げます。レート制限が未実装(A-2)の状態でも、被害を「確認して却下すれば済む」範囲に抑えられます。</p></div>
+
+<div class="callout warn"><p class="ct"><span class="ic">&#9888;</span>患者への案内(公開)を始める前に、必ず片付ける 3 つ</p>
+<ol class="steps">
+<li><span class="st-title">法定ページの本文確定と弁護士確認(A-1)</span>利用規約・プライバシーポリシーの仮の記載を実際の内容に差し替え、法務確認を受けます。<strong>これが終わるまで公開しない</strong>でください。</li>
+<li><span class="st-title">メールのドメイン認証と差出人アドレスの設定(<a href="04_メール送信の設定.html">STEP 4</a>)</span>ドメイン認証(SPF / DKIM = 「このクリニックが本当に送ったメールだ」と証明する設定)を済ませ、<code class="inline">EMAIL_FROM_ADDRESS</code> に認証済みドメインの差出人(例: <code class="inline">reserve@クリニックのドメイン</code>)を登録します。未設定のままだとメール配信サービスの共有テスト用アドレスから送られ、<strong>迷惑メールに入りやすくなります</strong>。</li>
+<li><span class="st-title"><code class="inline">CRON_SECRET</code> と <code class="inline">APP_URL</code> の設定(<a href="03_アプリのデプロイと環境変数.html">STEP 3</a>・<a href="05_定期実行(リマインダー)の確認.html">STEP 5</a>)</span><code class="inline">CRON_SECRET</code> が未設定だと<strong>定期実行がすべて拒否され、リマインダーも通知メールも一切送られません</strong>(安全側に倒す設計です)。<code class="inline">APP_URL</code> が未設定だと<strong>本番アプリがそもそも起動しません</strong>(メール内のリンクが開発用アドレスを指す事故を防ぐための仕様です)。</li>
+</ol></div>
+
+<h3>この形での進め方(順番)</h3>
+<ol class="steps">
+<li><span class="st-title">STEP 1〜5 を済ませる</span>アカウント準備・データベース構築・アプリの公開・メール送信・定期実行の確認まで。</li>
+<li><span class="st-title">STEP 6 で初期データを登録する</span>院長・看護師・メニュー・部屋・担当・施術枠まで。</li>
+<li><span class="st-title">院内通知の宛先を登録する</span>設定 → 基本情報 の「メール」欄に、<strong>毎日必ず見るクリニックのアドレス</strong>を入れます。ここが公開予約の通知先になります。</li>
+<li><span class="st-title">公開予約をオンにする</span>設定 → オンライン予約 で「患者向けオンライン予約」をオンにし、「Web 予約の確定方法」を<strong>「院内で確認してから確定(推奨)」</strong>に、「患者キャンセル期限(時間前まで)」をクリニックの方針に合わせて決めます。</li>
+<li><span class="st-title">STEP 7 で通しの確認をする</span>とくに「公開ページから申し込む → 院内に通知が届く → 『確定にする』→ 患者に確定メールが届く」までを実際に確認します。</li>
+<li><span class="st-title">上の『必ず片付ける 3 つ』が済んでから案内を始める</span>クリニックの Web サイトや SNS への予約リンク掲載は、ここまで終わってからにします。</li>
+<li><span class="st-title">STEP 8 の定期チェックを運用に組み込む</span>通知の送信状況・承認待ちの放置がないか・バックアップを、週次で確認します。</li>
+</ol>
+
+<div class="callout info"><p class="ct"><span class="ic">&#9432;</span>もっと詳しい記録を見たいとき</p><p>実装の全体像・残タスクの判断理由は <a href="../50_次セッション引き継ぎ_2026-07-22.md">引き継ぎメモ</a> の <strong>§13(最終の残タスク)</strong> と <strong>§14(2026-07-23 の反映内容)</strong>、要約は <a href="../70_作業報告_2026-07-23.md">作業報告(2026-07-23)</a> にあります。リリース判定に使う受け入れテストは <a href="../20_受け入れテスト/00_最優先MVPパス.md">最優先 MVP パス</a>(全 219 ケース・最優先 86 件)から始めてください。</p></div>
+</section>
+
+</div>
 <div class="wrap"><nav class="pager"><a class="prev" href="08_運用開始後の運用とバックアップ.html"><span class="dir">&#8592; 前へ</span><span class="nm">STEP8 運用とバックアップ</span></a><span></span></nav></div>
 <footer class="foot"><div class="wrap">premake — クリニック予約・業務管理システム ／ 本番移行手順書。この手順書はブラウザで開いて読めます。順番に実行してください。</div></footer>
 </body>

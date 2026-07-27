@@ -22,11 +22,18 @@ export type SendEmailInput = {
 };
 
 /**
- * メール送信。RESEND_API_KEY 未設定(開発)ではログ出力のみで成功扱い。
+ * メール送信。RESEND_API_KEY 未設定のとき:
+ *  - 開発: ログ出力のみで成功扱い(ローカルで通知フローを通すため)
+ *  - 本番: 失敗として返す。成功扱いにすると通知一覧に「送信済み」と出るのに
+ *    実際は 1 通も届かない、という気づけない事故になる(設定漏れを可視化する)
  * @returns 送信できたか
  */
 export async function sendEmail(input: SendEmailInput): Promise<{ ok: boolean; error?: string }> {
   if (!env.RESEND_API_KEY) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[email] RESEND_API_KEY is not set; refusing to report success in production");
+      return { ok: false, error: "RESEND_API_KEY が未設定のため送信できません" };
+    }
     console.info("[email:dev] would send", {
       to: input.to,
       subject: input.subject,

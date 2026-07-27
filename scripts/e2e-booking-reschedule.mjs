@@ -11,6 +11,8 @@ const RESCHEDULE_EMAIL = "e2e-reschedule@example.com";
 
 // --- 集計 ---
 const results = [];
+// 途中で例外中断した場合に「全項目 green」と誤報しないためのフラグ
+let aborted = false;
 function rec(name, ok, detail) {
   results.push({ name, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"} ${name}${detail ? " — " + detail : ""}`);
@@ -263,6 +265,7 @@ try {
   console.log("PAGEERRORS:", errs.length, errs.slice(0, 3));
 } catch (e) {
   console.log("EXCEPTION:", String(e).slice(0, 300));
+  aborted = true;
   await p.screenshot({ path: SHOT + "/booking-reschedule-fail.png", fullPage: true }).catch(() => {});
 }
 
@@ -276,4 +279,10 @@ if (fail > 0) {
   console.log("FAILED:");
   for (const r of results.filter((x) => !x.ok)) console.log(`  - ${r.name}: ${r.detail ?? ""}`);
 }
-console.log(fail === 0 ? "RESCHEDULE_OK" : "RESCHEDULE_FAILED");
+const MIN_CHECKS = 11; // 期待するチェック数(下回る = 途中で飛ばされた)
+if (aborted) console.log("ABORTED: 例外で中断したため、以降のチェックは実行されていません");
+if (!aborted && results.length < MIN_CHECKS)
+  console.log(`INCOMPLETE: チェック数 ${results.length} が期待 ${MIN_CHECKS} を下回っています`);
+const allGreen = fail === 0 && !aborted && results.length >= MIN_CHECKS;
+console.log(allGreen ? "RESCHEDULE_OK" : "RESCHEDULE_FAILED");
+process.exit(allGreen ? 0 : 1);
