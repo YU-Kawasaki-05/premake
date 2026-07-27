@@ -1,0 +1,57 @@
+{
+  "id": "AT-NFR-007",
+  "priority": "P0",
+  "phase": "E",
+  "order": 404.5,
+  "title": "通知・監査ログは自院分だけ読めて、他院分は読めない・書き込みもできない",
+  "spec": "v2-04",
+  "refs": [
+    "20_受け入れテスト/07_非機能・セキュリティ.md"
+  ],
+  "intent": "notifications には患者のメールアドレスが入る。他院分が読めれば重大な漏洩。一方で自院分は画面表示に使うため読める必要がある(過剰に閉じてもいけない)。",
+  "startedAt": "2026-07-27T17:22:40.247Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "自院分と他院分を読み比べる",
+      "action": "スタッフの JWT で notifications / audit_logs を、絞り込みなし / 他院の clinic_id 指定 の 2 通りで取得",
+      "expect": "絞り込みなしでは自院分が返り、他院を指定すると 0 行",
+      "actual": "自院分=notifications:5行 / audit_logs:5行 / 他院分=notifications:0行 / audit_logs:0行",
+      "note": "行レベルセキュリティが clinic_id で絞っているため、絞り込みを指定しなくても自院分しか返らない。",
+      "checks": [
+        {
+          "label": "他院分が 1 行も返らない",
+          "ok": true,
+          "detail": "0 行"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "監査ログを偽造しようとする",
+      "action": "スタッフの JWT で audit_logs に行を挿入しようとする",
+      "expect": "拒否され、行は作られない(記録は service role のみが書ける)",
+      "actual": "HTTP 403 / 挿入された行=0 件 / 応答={\"code\":\"42501\",\"details\":null,\"hint\":null,\"message\":\"new row violates row-level",
+      "note": "偽の操作記録を残せると、監査ログ自体の証拠能力が失われる。",
+      "checks": [
+        {
+          "label": "偽造できない",
+          "ok": true,
+          "detail": "0 件"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:40.317Z"
+}

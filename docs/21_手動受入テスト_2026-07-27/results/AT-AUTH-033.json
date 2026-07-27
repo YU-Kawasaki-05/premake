@@ -1,0 +1,61 @@
+{
+  "id": "AT-AUTH-033",
+  "priority": "P0",
+  "phase": "E",
+  "order": 402,
+  "title": "ログイン済みユーザーが自分を運営(ops)に昇格させられない",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/07_非機能・セキュリティ.md"
+  ],
+  "intent": "`profiles.is_ops` を自分で true にできてしまうと、全クリニックのデータと設定に手が届く。権限昇格の最重要ポイント。",
+  "startedAt": "2026-07-27T17:22:39.497Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "自分の profiles.is_ops を true に書き換えようとする",
+      "action": "スタッフの JWT で PATCH /rest/v1/profiles?id=eq.<自分> {is_ops:true}",
+      "expect": "拒否され、値は変わらない",
+      "actual": "HTTP 403 / is_ops: f → f / 応答={\"code\":\"42501\",\"details\":null,\"hint\":\"Grant the required privileges to the curr",
+      "note": "RLS のポリシーで is_ops の更新が許可されていないこと(または profiles への更新自体が拒否されること)を確認している。",
+      "checks": [
+        {
+          "label": "値が変わっていない",
+          "ok": true,
+          "detail": "f → f"
+        },
+        {
+          "label": "書き込みが拒否される",
+          "ok": true,
+          "detail": "HTTP 403"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "院長(owner)でも運営には昇格できない",
+      "action": "owner の JWT で同じ書き換えを試みる",
+      "expect": "拒否され、値は変わらない",
+      "actual": "HTTP 403 / is_ops: f → f",
+      "checks": [
+        {
+          "label": "値が変わっていない",
+          "ok": true,
+          "detail": "f → f"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:39.890Z"
+}

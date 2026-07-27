@@ -1,0 +1,651 @@
+{
+  "summary": {
+    "total": 84,
+    "direct": 52,
+    "covered": 20,
+    "auto": 7,
+    "staging": 1,
+    "out": 4,
+    "todo": 0,
+    "failed": 0
+  },
+  "rows": [
+    {
+      "id": "AT-AUTH-001",
+      "title": "owner のメール+パスワードログイン → クリニックへ遷移",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-008",
+      "title": "未ログインで保護ルートへ直アクセス → /login",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-013",
+      "title": "ops がクリニック作成 + owner 招待発行",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "covered",
+      "ref": "AT-OPS-002",
+      "verdict": "PASS",
+      "note": "運営のクリニック作成と owner 招待の発行を画面で実施"
+    },
+    {
+      "id": "AT-AUTH-016",
+      "title": "非 ops は /ops にアクセスできない",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-017",
+      "title": "owner のスタッフ招待 → 新規ユーザーが受諾 → メンバー化",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-019",
+      "title": "期限切れ招待トークンは無効",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-020",
+      "title": "受諾済み(再利用)招待トークンは無効",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-025",
+      "title": "複数ロールの権限和とナビ表示・owner 専用ページ制御",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-027",
+      "title": "最後の active owner を外せない",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "AT-AUTH-028",
+      "title": "クロステナント分離(他クリニックは 404)",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "covered",
+      "ref": "AT-NFR-003",
+      "verdict": "PASS",
+      "note": "他院データが 1 行も読めないことを JWT 直叩きで実測"
+    },
+    {
+      "id": "AT-AUTH-032",
+      "title": "監査ログが全 mutation を記録(SQL 確認)",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-AUTH-033",
+      "title": "権限昇格防止: authenticated は is_ops を書けない",
+      "src": "01_基盤・認証・スタッフ管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-CAT-019",
+      "title": "施術枠の新規確保(open)→ 公開空き枠反映",
+      "src": "02_メニュー・リソース・枠.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-CAT-021",
+      "title": "部屋×時間の重複排他",
+      "src": "02_メニュー・リソース・枠.md",
+      "how": "auto",
+      "ref": "tests/db-constraints.test.ts",
+      "note": "同一部屋・時間重複が 23P01 で拒否される"
+    },
+    {
+      "id": "AT-CAT-022",
+      "title": "スタッフ×時間の重複排他",
+      "src": "02_メニュー・リソース・枠.md",
+      "how": "auto",
+      "ref": "tests/db-constraints.test.ts",
+      "note": "同一スタッフ・時間重複が部屋違いでも拒否される"
+    },
+    {
+      "id": "AT-CAT-023",
+      "title": "同時実行での二重確保防止",
+      "src": "02_メニュー・リソース・枠.md",
+      "how": "auto",
+      "ref": "tests/booking-flow.test.ts",
+      "verdict": "PARTIAL",
+      "note": "排他制約による直列化"
+    },
+    {
+      "id": "AT-CAT-025",
+      "title": "予約が入っている枠は削除不可",
+      "src": "02_メニュー・リソース・枠.md",
+      "how": "direct",
+      "verdict": "NA"
+    },
+    {
+      "id": "AT-CAT-029",
+      "title": "テナント越境不可(他クリニック slug)",
+      "src": "02_メニュー・リソース・枠.md",
+      "how": "covered",
+      "ref": "AT-NFR-003",
+      "verdict": "PASS",
+      "note": "他院 slug / clinic_id でのアクセスを実測"
+    },
+    {
+      "id": "AT-BOOK-007",
+      "title": "院内予約作成: 既存患者を検索して予約",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-BOOK-008",
+      "title": "院内予約作成: 新規患者を登録して予約",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-BOOK-010",
+      "title": "越境防止(他クリニックの患者/メニュー/部屋/担当 ID)",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-BOOK-013",
+      "title": "キャンセル(理由記録・枠解放・通知)",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-BOOK-015",
+      "title": "ステータス正当遷移のフルパス",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-BOOK-016",
+      "title": "ステータス不正遷移の拒否(サーバー強制)",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "covered",
+      "ref": "AT-BOOK-015",
+      "verdict": "PASS",
+      "note": "完了後は状態変更・キャンセルの操作自体が出ないことを実測。サーバー側の状態機械も確認"
+    },
+    {
+      "id": "AT-BOOK-018",
+      "title": "ダブルブッキング防止: 部屋×時間",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-BOOK-019",
+      "title": "ダブルブッキング防止: スタッフ×時間",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-BOOK-021",
+      "title": "同時実行の二重予約(競合)",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "AT-BOOK-025",
+      "title": "シナリオ F2: 電話予約を台帳に入れる",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "covered",
+      "ref": "AT-BOOK-015",
+      "verdict": "PASS",
+      "note": "電話予約→当日 done の通しを、作成ケース(AT-BOOK-008)と状態遷移ケースの連続で実施"
+    },
+    {
+      "id": "AT-BOOK-027",
+      "title": "権限・RLS(未ログイン/非メンバー/他クリニック/ops/doctor)",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "covered",
+      "ref": "AT-NFR-031",
+      "verdict": "PASS",
+      "note": "staff の直接書き込み拒否と未ログイン遮断を実測"
+    },
+    {
+      "id": "AT-BOOK-028",
+      "title": "監査ログ記録(create/status/cancel/patient 検索)",
+      "src": "03_予約台帳・予約管理.md",
+      "how": "covered",
+      "ref": "AT-AUTH-032",
+      "verdict": "PASS",
+      "note": "create/status/cancel/患者検索の監査ログを集計で確認"
+    },
+    {
+      "id": "AT-PAT-013",
+      "title": "検索文字列のインジェクション試験",
+      "src": "04_患者・問診.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PAT-018",
+      "title": "ゲスト予約の名寄せ候補提示と紐付け",
+      "src": "04_患者・問診.md",
+      "how": "auto",
+      "ref": "scripts/e2e-patient-linking.mjs(29 チェック)",
+      "note": "名寄せ候補の提示と紐付け"
+    },
+    {
+      "id": "AT-PAT-019",
+      "title": "名寄せは自動マージされない",
+      "src": "04_患者・問診.md",
+      "how": "auto",
+      "ref": "scripts/e2e-patient-linking.mjs",
+      "note": "自動マージしないこと"
+    },
+    {
+      "id": "AT-PAT-021",
+      "title": "問診リンク送付(予約確定後)",
+      "src": "04_患者・問診.md",
+      "how": "out",
+      "note": "運用方針で問診は紙のため対象外(v2-18 未実装)"
+    },
+    {
+      "id": "AT-PAT-022",
+      "title": "ゲストによる問診記入・送信(中断再開・モバイル)",
+      "src": "04_患者・問診.md",
+      "how": "out",
+      "note": "同上"
+    },
+    {
+      "id": "AT-PAT-023",
+      "title": "院内での問診回答閲覧と閲覧ログ",
+      "src": "04_患者・問診.md",
+      "how": "out",
+      "note": "同上"
+    },
+    {
+      "id": "AT-PAT-025",
+      "title": "患者閲覧の監査ログ(一覧・検索・詳細 / SQL 確認)",
+      "src": "04_患者・問診.md",
+      "how": "covered",
+      "ref": "AT-AUTH-032",
+      "verdict": "PASS",
+      "note": "patient.list.view / patient.search / patient.view を実測"
+    },
+    {
+      "id": "AT-PAT-026",
+      "title": "患者 mutation の監査ログ(SQL 確認)",
+      "src": "04_患者・問診.md",
+      "how": "covered",
+      "ref": "AT-AUTH-032",
+      "verdict": "PASS",
+      "note": "患者の作成・更新の監査ログを集計で確認"
+    },
+    {
+      "id": "AT-PAT-027",
+      "title": "未ログインでの患者ページアクセス拒否",
+      "src": "04_患者・問診.md",
+      "how": "covered",
+      "ref": "AT-PAT-028",
+      "verdict": "PASS",
+      "note": "未ログインでの患者詳細アクセスを同ケース内で実測"
+    },
+    {
+      "id": "AT-PAT-028",
+      "title": "他クリニックの患者へのアクセス拒否",
+      "src": "04_患者・問診.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PAT-029",
+      "title": "anon 直接クエリでの患者 RLS 拒否",
+      "src": "04_患者・問診.md",
+      "how": "covered",
+      "ref": "AT-NFR-002",
+      "verdict": "PASS",
+      "note": "anon キーで患者テーブルが 401 になることを実測"
+    },
+    {
+      "id": "AT-PUB-001",
+      "title": "公開ページ: 医療提供主体の明示",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-002",
+      "title": "公開ページ: 自由診療の注意・副作用表記",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-003",
+      "title": "公開ページ: 症例写真・体験談が無い",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-007",
+      "title": "存在しない slug は 404",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-008",
+      "title": "公開オフ時に全公開導線が閉じる",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-010",
+      "title": "ゲスト予約 正常系(auto: メール確認で確定)",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "AT-PUB-011",
+      "title": "ゲスト予約 正常系(manual: 院内承認で確定)",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-013",
+      "title": "空き枠が既存予約・部屋/担当重複を除外",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-014",
+      "title": "二重予約防止(同時実行・直前に埋まる)",
+      "src": "05_公開予約.md",
+      "how": "auto",
+      "ref": "tests/booking-flow.test.ts",
+      "verdict": "PARTIAL",
+      "note": "同時書き込みの拒否"
+    },
+    {
+      "id": "AT-PUB-016",
+      "title": "改ざん系(枠外・過去・非公開メニュー・他院)",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-023",
+      "title": "予約照会(番号+メール)→ 管理画面",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-025",
+      "title": "キャンセル(期限内)→ 枠解放・メール",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-026",
+      "title": "キャンセル期限 境界(ちょうど/超過)",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "AT-PUB-029",
+      "title": "RLS: anon 直接アクセス不可",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-PUB-033",
+      "title": "公開予約作成 → 院内宛通知(booking_created_internal)",
+      "src": "05_公開予約.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NTF-001",
+      "title": "ゲスト予約(自動確定)→ 患者に確定メール",
+      "src": "06_通知・運営・法定.md",
+      "how": "covered",
+      "ref": "AT-PUB-010",
+      "verdict": "PARTIAL",
+      "note": "auto モードの挙動を実測(確認ステップ未実装を検出)"
+    },
+    {
+      "id": "AT-NTF-003",
+      "title": "手動承認予約を院内で確定 → 患者に確定メール",
+      "src": "06_通知・運営・法定.md",
+      "how": "covered",
+      "ref": "AT-BOOK-017",
+      "verdict": "PASS",
+      "note": "承認待ち→確定で患者宛 booking_confirmed が積まれることを実測"
+    },
+    {
+      "id": "AT-NTF-006",
+      "title": "予約キャンセル → 患者にキャンセルメール(管理リンクなし)",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NTF-008",
+      "title": "院内(member)通知 — 公開予約作成・患者セルフキャンセルで院内に通知",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NTF-010",
+      "title": "送信元表示がクリニック名であること",
+      "src": "06_通知・運営・法定.md",
+      "how": "staging",
+      "note": "Resend を設定した環境での実送信が必要 / 本文・差出人表示は evidence/_emails/ で確認済み"
+    },
+    {
+      "id": "AT-NTF-013",
+      "title": "リマインダー送信(Cron 手動実行)",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NTF-014",
+      "title": "Cron 認可 — CRON_SECRET 不一致で 401",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NTF-015",
+      "title": "Cron 認可 — CRON_SECRET 未設定は本番 401 / 開発のみ実行",
+      "src": "06_通知・運営・法定.md",
+      "how": "covered",
+      "ref": "AT-NTF-014",
+      "verdict": "PASS",
+      "note": "CRON_SECRET 未設定/不一致/一致の 3 通りを実測"
+    },
+    {
+      "id": "AT-NTF-016",
+      "title": "リマインダー二重送信防止(Cron 複数回実行)",
+      "src": "06_通知・運営・法定.md",
+      "how": "covered",
+      "ref": "AT-NTF-013",
+      "verdict": "PASS",
+      "note": "定期実行を 2 回続けて呼び、2 通目が作られないことを実測"
+    },
+    {
+      "id": "AT-NTF-020",
+      "title": "送信失敗時の挙動(worker_jobs 失敗・リトライ)",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NTF-022",
+      "title": "ops 利用計測が既知テストデータと一致",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NTF-023",
+      "title": "ops 以外のアクセス拒否",
+      "src": "06_通知・運営・法定.md",
+      "how": "covered",
+      "ref": "AT-AUTH-016",
+      "verdict": "PASS",
+      "note": "owner / staff で /ops が開けないことを実測"
+    },
+    {
+      "id": "AT-NTF-026",
+      "title": "法定ページの存在と公開ページからの到達(モバイル含む)",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "AT-NTF-027",
+      "title": "§6 法務チェックリスト全項目",
+      "src": "06_通知・運営・法定.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NFR-001",
+      "title": "anon key で全業務テーブルへ REST 直アクセス → 拒否",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "AT-NFR-002",
+      "title": "anon ロールで SQL 直アクセス → permission denied",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NFR-003",
+      "title": "別クリニックの authenticated メンバーによる横断 select → 0 件",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NFR-004",
+      "title": "authenticated による clinic_id 書き換え(行移送)→ 拒否",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NFR-005",
+      "title": "booking_access_tokens を authenticated が読めない(service role 専用)",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NFR-007",
+      "title": "notifications / audit_logs は他クリニック分を読めない",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NFR-008",
+      "title": "権限昇格防止 — authenticated が profiles.is_ops を書き換えられない",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "covered",
+      "ref": "AT-AUTH-033",
+      "verdict": "PASS",
+      "note": "is_ops の書き換えが 403 で拒否される"
+    },
+    {
+      "id": "AT-NFR-015",
+      "title": "SERVICE_ROLE_KEY がクライアントバンドルに含まれない",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "covered",
+      "ref": "静的検証(2026-07-27)",
+      "note": "本番ビルドの .next/static に service role key が 0 件。admin クライアントを import する 14 ファイルすべてがサーバー側"
+    },
+    {
+      "id": "AT-NFR-017",
+      "title": "Cron エンドポイントの CRON_SECRET 認証(fail-closed)",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "covered",
+      "ref": "AT-NTF-014",
+      "verdict": "PASS",
+      "note": "fail-closed の挙動を実測"
+    },
+    {
+      "id": "AT-NFR-019",
+      "title": "患者 PII 閲覧の閲覧ログ記録",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "covered",
+      "ref": "AT-AUTH-032",
+      "verdict": "PASS",
+      "note": "患者カルテ閲覧で patient.view が記録されることを実測"
+    },
+    {
+      "id": "AT-NFR-020",
+      "title": "問診回答閲覧の閲覧ログ記録",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "out",
+      "note": "問診が未実装のため対象外"
+    },
+    {
+      "id": "AT-NFR-030",
+      "title": "バックアップ(日次 + 手動エクスポート)手順の存在確認",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PARTIAL"
+    },
+    {
+      "id": "AT-NFR-031",
+      "title": "staff の直接 PostgREST 書き込みが owner 限定テーブルで拒否(AUTH-1)",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "direct",
+      "verdict": "PASS"
+    },
+    {
+      "id": "AT-NFR-032",
+      "title": "複合 FK でクロステナント参照(他院の部屋・スタッフ占有)を DB 遮断(DB-N-1)",
+      "src": "07_非機能・セキュリティ.md",
+      "how": "auto",
+      "ref": "tests/db-security.test.ts",
+      "verdict": "PASS",
+      "note": "複合 FK でのクロステナント遮断"
+    }
+  ]
+}

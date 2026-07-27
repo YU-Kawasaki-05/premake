@@ -60,6 +60,43 @@ export async function rest(path, init) {
   return { ok: res.ok, status: res.status, json, text };
 }
 
+/**
+ * スタッフのメール/パスワードで Supabase Auth にログインし、実際の JWT を得る。
+ * この JWT で PostgREST を叩くと「ログイン済みユーザーがブラウザの開発者ツールから
+ * 直接データベース API を呼んだ場合」を再現できる(アプリの認可を通らない経路)。
+ */
+export async function authToken(email, password = PASSWORD) {
+  const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: ENV.NEXT_PUBLIC_SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const json = await res.json().catch(() => null);
+  if (!json?.access_token) throw new Error(`ログイントークンが取得できない: ${email} ${res.status}`);
+  return json.access_token;
+}
+
+/** 指定した JWT(authenticated ロール)で PostgREST を叩く */
+export async function restAs(token, path, init) {
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    ...init,
+    headers: {
+      apikey: ENV.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+  });
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    /* non-json */
+  }
+  return { status: res.status, json, text: text.slice(0, 240), rows: Array.isArray(json) ? json.length : null };
+}
+
 /** 未ログイン相当(anon キー)で PostgREST を叩く。RLS が効いているかの検証用 */
 export async function restAnon(path) {
   const key = ENV.NEXT_PUBLIC_SUPABASE_ANON_KEY;

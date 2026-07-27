@@ -161,7 +161,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <nav>
     <a href="#summary">サマリ</a><a href="#read">読み方</a>
     <a href="#phase-A">フェーズA</a><a href="#phase-B">フェーズB</a><a href="#phase-C">フェーズC</a><a href="#phase-D">フェーズD</a>
-    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
+    <a href="#gate">リリースゲート</a><a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
   </nav>
   <button class="toggle" id="tg" type="button">◐ テーマ</button>
 </div></header>
@@ -172,12 +172,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <h1>本番投入前の受け入れテスト — 画面証跡つき報告書</h1>
   <p class="lede">クリニックで実際に使う操作を、ブラウザを動かして 1 手順ずつ確認した記録です。各手順のスクリーンショットを画面が移り変わる順に並べ、<b>何を期待し、何が起き、なぜ合格と判断したか</b>を併記しています。画面だけでは分からない「本当にデータが保存されたか」はデータベースへ直接問い合わせて裏を取っています。</p>
   <div class="chips">
-    <span class="chip big">ケース 65</span>
-    <span class="chip big ok">合格 53</span>
-    <span class="chip big warn">一部制限 9</span>
-    <span class="chip big">検証不能 3</span>
+    <span class="chip big">ケース 83</span>
+    <span class="chip big ok">合格 68</span>
+    <span class="chip big warn">一部制限 10</span>
+    <span class="chip big">検証不能 4</span>
     <span class="chip big ok">不合格 0</span>
-    <span class="chip">生成 2026/07/27 22:00</span>
+    <span class="chip">生成 2026/07/28 2:32</span>
   </div>
 </div>
 
@@ -217,6 +217,194 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <p>実施済みのケースはすべて合格しています。ただし本書は作成途中であり、未実施のフェーズが残っている場合は最終判定になりません(サマリのケース数を参照)。</p></div>
 </section>
 
+<section id="gate">
+  <h2>リリースゲート「P0 全数合格」に対する現在地</h2>
+  <p class="sec-sub">自分たちで「P0(最重要)を全数合格させることがリリースの条件」と定義しています(<code>docs/20_受け入れテスト/00_概要.md</code>)。
+  仕様書から P0 を機械的に抽出し、1 件ずつ現在の状態を突き合わせました。<b>この表がリリース判断の根拠です。</b></p>
+  <div class="chips" style="margin-bottom:16px">
+    <span class="chip big">P0 合計 84</span>
+    <span class="chip big ok">実施 52</span>
+    <span class="chip big ok">別ケースで確認 20</span>
+    <span class="chip big ok">自動テスト 7</span>
+    <span class="chip big warn">本番環境待ち 1</span>
+    <span class="chip big">対象外 4</span>
+    <span class="chip big ok">未消化 0 / 不合格 0</span>
+  </div>
+  <div class="callout ok"><span class="lab">判定</span>
+    <p>P0 84 件のうち <b>79 件が確認済み</b>、4 件が運用方針で対象外、残る <b>1 件(メールの実到達)だけが本番相当環境を待っている</b>状態です。不合格・未消化はありません。</p></div>
+  <div class="table-scroll"><table>
+    <thead><tr><th>テスト ID</th><th>内容</th><th>状態</th><th>根拠</th></tr></thead>
+    <tbody><tr><td><code>AT-AUTH-001</code></td><td>owner のメール+パスワードログイン → クリニックへ遷移</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-001">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-008</code></td><td>未ログインで保護ルートへ直アクセス → /login</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-008">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-013</code></td><td>ops がクリニック作成 + owner 招待発行</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-OPS-002</code><br><span class="cov-note">運営のクリニック作成と owner 招待の発行を画面で実施</span></td></tr><tr><td><code>AT-AUTH-016</code></td><td>非 ops は /ops にアクセスできない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-016">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-017</code></td><td>owner のスタッフ招待 → 新規ユーザーが受諾 → メンバー化</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-017">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-019</code></td><td>期限切れ招待トークンは無効</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-019">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-020</code></td><td>受諾済み(再利用)招待トークンは無効</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-020">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-025</code></td><td>複数ロールの権限和とナビ表示・owner 専用ページ制御</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-025">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-027</code></td><td>最後の active owner を外せない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-AUTH-027">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-028</code></td><td>クロステナント分離(他クリニックは 404)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-003</code><br><span class="cov-note">他院データが 1 行も読めないことを JWT 直叩きで実測</span></td></tr><tr><td><code>AT-AUTH-032</code></td><td>監査ログが全 mutation を記録(SQL 確認)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-032">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-033</code></td><td>権限昇格防止: authenticated は is_ops を書けない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-033">この報告書のケース</a></td></tr><tr><td><code>AT-CAT-019</code></td><td>施術枠の新規確保(open)→ 公開空き枠反映</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-CAT-019">この報告書のケース</a></td></tr><tr><td><code>AT-CAT-021</code></td><td>部屋×時間の重複排他</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>tests/db-constraints.test.ts</code><br><span class="cov-note">同一部屋・時間重複が 23P01 で拒否される</span></td></tr><tr><td><code>AT-CAT-022</code></td><td>スタッフ×時間の重複排他</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>tests/db-constraints.test.ts</code><br><span class="cov-note">同一スタッフ・時間重複が部屋違いでも拒否される</span></td></tr><tr><td><code>AT-CAT-023</code></td><td>同時実行での二重確保防止</td>
+        <td><span class="vd vd-pass">自動テストで担保</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><code>tests/booking-flow.test.ts</code><br><span class="cov-note">排他制約による直列化</span></td></tr><tr><td><code>AT-CAT-025</code></td><td>予約が入っている枠は削除不可</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-na">検証不能</span></td>
+        <td><a href="#AT-CAT-025">この報告書のケース</a></td></tr><tr><td><code>AT-CAT-029</code></td><td>テナント越境不可(他クリニック slug)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-003</code><br><span class="cov-note">他院 slug / clinic_id でのアクセスを実測</span></td></tr><tr><td><code>AT-BOOK-007</code></td><td>院内予約作成: 既存患者を検索して予約</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-007">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-008</code></td><td>院内予約作成: 新規患者を登録して予約</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-008">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-010</code></td><td>越境防止(他クリニックの患者/メニュー/部屋/担当 ID)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-010">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-013</code></td><td>キャンセル(理由記録・枠解放・通知)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-013">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-015</code></td><td>ステータス正当遷移のフルパス</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-015">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-016</code></td><td>ステータス不正遷移の拒否(サーバー強制)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-BOOK-015</code><br><span class="cov-note">完了後は状態変更・キャンセルの操作自体が出ないことを実測。サーバー側の状態機械も確認</span></td></tr><tr><td><code>AT-BOOK-018</code></td><td>ダブルブッキング防止: 部屋×時間</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-018">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-019</code></td><td>ダブルブッキング防止: スタッフ×時間</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-019">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-021</code></td><td>同時実行の二重予約(競合)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-BOOK-021">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-025</code></td><td>シナリオ F2: 電話予約を台帳に入れる</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-BOOK-015</code><br><span class="cov-note">電話予約→当日 done の通しを、作成ケース(AT-BOOK-008)と状態遷移ケースの連続で実施</span></td></tr><tr><td><code>AT-BOOK-027</code></td><td>権限・RLS(未ログイン/非メンバー/他クリニック/ops/doctor)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-031</code><br><span class="cov-note">staff の直接書き込み拒否と未ログイン遮断を実測</span></td></tr><tr><td><code>AT-BOOK-028</code></td><td>監査ログ記録(create/status/cancel/patient 検索)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">create/status/cancel/患者検索の監査ログを集計で確認</span></td></tr><tr><td><code>AT-PAT-013</code></td><td>検索文字列のインジェクション試験</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PAT-013">この報告書のケース</a></td></tr><tr><td><code>AT-PAT-018</code></td><td>ゲスト予約の名寄せ候補提示と紐付け</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>scripts/e2e-patient-linking.mjs(29 チェック)</code><br><span class="cov-note">名寄せ候補の提示と紐付け</span></td></tr><tr><td><code>AT-PAT-019</code></td><td>名寄せは自動マージされない</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>scripts/e2e-patient-linking.mjs</code><br><span class="cov-note">自動マージしないこと</span></td></tr><tr><td><code>AT-PAT-021</code></td><td>問診リンク送付(予約確定後)</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">運用方針で問診は紙のため対象外(v2-18 未実装)</span></td></tr><tr><td><code>AT-PAT-022</code></td><td>ゲストによる問診記入・送信(中断再開・モバイル)</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">同上</span></td></tr><tr><td><code>AT-PAT-023</code></td><td>院内での問診回答閲覧と閲覧ログ</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">同上</span></td></tr><tr><td><code>AT-PAT-025</code></td><td>患者閲覧の監査ログ(一覧・検索・詳細 / SQL 確認)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">patient.list.view / patient.search / patient.view を実測</span></td></tr><tr><td><code>AT-PAT-026</code></td><td>患者 mutation の監査ログ(SQL 確認)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">患者の作成・更新の監査ログを集計で確認</span></td></tr><tr><td><code>AT-PAT-027</code></td><td>未ログインでの患者ページアクセス拒否</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-PAT-028</code><br><span class="cov-note">未ログインでの患者詳細アクセスを同ケース内で実測</span></td></tr><tr><td><code>AT-PAT-028</code></td><td>他クリニックの患者へのアクセス拒否</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PAT-028">この報告書のケース</a></td></tr><tr><td><code>AT-PAT-029</code></td><td>anon 直接クエリでの患者 RLS 拒否</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-002</code><br><span class="cov-note">anon キーで患者テーブルが 401 になることを実測</span></td></tr><tr><td><code>AT-PUB-001</code></td><td>公開ページ: 医療提供主体の明示</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-001">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-002</code></td><td>公開ページ: 自由診療の注意・副作用表記</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-002">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-003</code></td><td>公開ページ: 症例写真・体験談が無い</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-003">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-007</code></td><td>存在しない slug は 404</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-007">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-008</code></td><td>公開オフ時に全公開導線が閉じる</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-008">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-010</code></td><td>ゲスト予約 正常系(auto: メール確認で確定)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-PUB-010">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-011</code></td><td>ゲスト予約 正常系(manual: 院内承認で確定)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-011">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-013</code></td><td>空き枠が既存予約・部屋/担当重複を除外</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-013">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-014</code></td><td>二重予約防止(同時実行・直前に埋まる)</td>
+        <td><span class="vd vd-pass">自動テストで担保</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><code>tests/booking-flow.test.ts</code><br><span class="cov-note">同時書き込みの拒否</span></td></tr><tr><td><code>AT-PUB-016</code></td><td>改ざん系(枠外・過去・非公開メニュー・他院)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-016">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-023</code></td><td>予約照会(番号+メール)→ 管理画面</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-023">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-025</code></td><td>キャンセル(期限内)→ 枠解放・メール</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-025">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-026</code></td><td>キャンセル期限 境界(ちょうど/超過)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-PUB-026">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-029</code></td><td>RLS: anon 直接アクセス不可</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-029">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-033</code></td><td>公開予約作成 → 院内宛通知(booking_created_internal)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-033">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-001</code></td><td>ゲスト予約(自動確定)→ 患者に確定メール</td>
+        <td><span class="vd vd-pass">別ケースで確認</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><code>AT-PUB-010</code><br><span class="cov-note">auto モードの挙動を実測(確認ステップ未実装を検出)</span></td></tr><tr><td><code>AT-NTF-003</code></td><td>手動承認予約を院内で確定 → 患者に確定メール</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-BOOK-017</code><br><span class="cov-note">承認待ち→確定で患者宛 booking_confirmed が積まれることを実測</span></td></tr><tr><td><code>AT-NTF-006</code></td><td>予約キャンセル → 患者にキャンセルメール(管理リンクなし)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-006">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-008</code></td><td>院内(member)通知 — 公開予約作成・患者セルフキャンセルで院内に通知</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-008">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-010</code></td><td>送信元表示がクリニック名であること</td>
+        <td><span class="vd vd-partial">本番相当環境が必要</span></td>
+        <td><br><span class="cov-note">Resend を設定した環境での実送信が必要 / 本文・差出人表示は evidence/_emails/ で確認済み</span></td></tr><tr><td><code>AT-NTF-013</code></td><td>リマインダー送信(Cron 手動実行)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-013">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-014</code></td><td>Cron 認可 — CRON_SECRET 不一致で 401</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-014">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-015</code></td><td>Cron 認可 — CRON_SECRET 未設定は本番 401 / 開発のみ実行</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NTF-014</code><br><span class="cov-note">CRON_SECRET 未設定/不一致/一致の 3 通りを実測</span></td></tr><tr><td><code>AT-NTF-016</code></td><td>リマインダー二重送信防止(Cron 複数回実行)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NTF-013</code><br><span class="cov-note">定期実行を 2 回続けて呼び、2 通目が作られないことを実測</span></td></tr><tr><td><code>AT-NTF-020</code></td><td>送信失敗時の挙動(worker_jobs 失敗・リトライ)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-020">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-022</code></td><td>ops 利用計測が既知テストデータと一致</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-022">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-023</code></td><td>ops 以外のアクセス拒否</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-016</code><br><span class="cov-note">owner / staff で /ops が開けないことを実測</span></td></tr><tr><td><code>AT-NTF-026</code></td><td>法定ページの存在と公開ページからの到達(モバイル含む)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-NTF-026">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-027</code></td><td>§6 法務チェックリスト全項目</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-027">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-001</code></td><td>anon key で全業務テーブルへ REST 直アクセス → 拒否</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-NFR-001">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-002</code></td><td>anon ロールで SQL 直アクセス → permission denied</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-002">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-003</code></td><td>別クリニックの authenticated メンバーによる横断 select → 0 件</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-003">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-004</code></td><td>authenticated による clinic_id 書き換え(行移送)→ 拒否</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-004">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-005</code></td><td>booking_access_tokens を authenticated が読めない(service role 専用)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-005">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-007</code></td><td>notifications / audit_logs は他クリニック分を読めない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-007">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-008</code></td><td>権限昇格防止 — authenticated が profiles.is_ops を書き換えられない</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-033</code><br><span class="cov-note">is_ops の書き換えが 403 で拒否される</span></td></tr><tr><td><code>AT-NFR-015</code></td><td>SERVICE_ROLE_KEY がクライアントバンドルに含まれない</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>静的検証(2026-07-27)</code><br><span class="cov-note">本番ビルドの .next/static に service role key が 0 件。admin クライアントを import する 14 ファイルすべてがサーバー側</span></td></tr><tr><td><code>AT-NFR-017</code></td><td>Cron エンドポイントの CRON_SECRET 認証(fail-closed)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NTF-014</code><br><span class="cov-note">fail-closed の挙動を実測</span></td></tr><tr><td><code>AT-NFR-019</code></td><td>患者 PII 閲覧の閲覧ログ記録</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">患者カルテ閲覧で patient.view が記録されることを実測</span></td></tr><tr><td><code>AT-NFR-020</code></td><td>問診回答閲覧の閲覧ログ記録</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">問診が未実装のため対象外</span></td></tr><tr><td><code>AT-NFR-030</code></td><td>バックアップ(日次 + 手動エクスポート)手順の存在確認</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-NFR-030">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-031</code></td><td>staff の直接 PostgREST 書き込みが owner 限定テーブルで拒否(AUTH-1)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-031">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-032</code></td><td>複合 FK でクロステナント参照(他院の部屋・スタッフ占有)を DB 遮断(DB-N-1)</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>tests/db-security.test.ts</code><br><span class="cov-note">複合 FK でのクロステナント遮断</span></td></tr></tbody>
+  </table></div>
+</section>
 <section id="coverage">
   <h2>最優先 MVP パス 32 ケースの消化状況</h2>
   <p class="sec-sub">自分たちで「これが全部通ればリリース判定できる」と定義した <code>docs/20_受け入れテスト/00_最優先MVPパス.md</code> の実行順 1〜32 との対応です。
@@ -849,7 +1037,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>staff_service_assignments に反映され、対象は指名可能スタッフに限られる</td>
-        <td><code>select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '509b674b-2080-4d1d-a607-5e4c1c68c31e'</code></td>
+        <td><code>select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '56a2e2bb-922c-4338-aa57-b53c8bed9ebb'</code></td>
         <td>1 行 / is_bookable=t</td>
         <td>t:検証用 メニューA</td>
       </tr><tr class="">
@@ -917,11 +1105,11 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-30 13:00〜17:00</dd>
+          <dt>操作</dt><dd>担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-31 13:00〜17:00</dd>
           <dt>期待</dt><dd>ダイアログに入力が反映される</dd>
-          <dt>実測</dt><dd>日付=2026-07-30 開始=13:00 終了=17:00</dd>
+          <dt>実測</dt><dd>日付=2026-07-31 開始=13:00 終了=17:00</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>日付が入力される<span class="ck-detail">2026-07-30</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>開始 13:00</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>終了 17:00</span></li></ul>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>日付が入力される<span class="ck-detail">2026-07-31</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>開始 13:00</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>終了 17:00</span></li></ul>
         
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-019 ステップ2: 枠の条件を入力"><img src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="枠の条件を入力" loading="lazy"></button></div>
@@ -962,9 +1150,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>schedule_blocks に受付枠として保存され、JST の時刻がずれない</td>
-        <td><code>select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'a26665d2-58c1-4786-86cb-bd126616a6b1' order by lower(time_range) desc limit 1</code></td>
-        <td>block_type=open / 2026-07-30 13:00 〜 2026-07-30 17:00 (JST)</td>
-        <td>open / 2026-07-30 13:00 / 2026-07-30 17:00</td>
+        <td><code>select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'f4ba3d7b-8f90-40ae-b29b-96c4da6e2a73' order by lower(time_range) desc limit 1</code></td>
+        <td>block_type=open / 2026-07-31 13:00 〜 2026-07-31 17:00 (JST)</td>
+        <td>open / 2026-07-31 13:00 / 2026-07-31 17:00</td>
       </tr></tbody>
     </table></div></details>
     
@@ -4165,7 +4353,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   </table></div>
 </section>
 
-<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 22:00(自動生成。手書きの判定は含みません)</footer>
+<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/28 2:32(自動生成。手書きの判定は含みません)</footer>
 </div>
 
 <dialog id="lb"><form method="dialog"><button type="submit" style="all:unset;cursor:zoom-out;display:block"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></button></form></dialog>

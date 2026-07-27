@@ -1,0 +1,43 @@
+{
+  "id": "AT-NFR-002",
+  "priority": "P0",
+  "phase": "E",
+  "order": 406,
+  "title": "未ログイン(anon)では業務テーブルへ読み書きできない",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/07_非機能・セキュリティ.md"
+  ],
+  "intent": "公開ページで使う鍵はブラウザに配られる。その鍵で書き込みができると、誰でも予約データを改変できる。",
+  "startedAt": "2026-07-27T17:22:40.711Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "公開用の鍵で読み書きを試みる",
+      "action": "anon キーで業務テーブルを取得し、患者の追加も試みる",
+      "expect": "読み出しは 401、書き込みも拒否",
+      "actual": "読み出し=patients:401 / bookings:401 / clinics:401 / services:401 / audit_logs:401 / 患者数は 4 件のまま",
+      "checks": [
+        {
+          "label": "読み出しが拒否される(401)",
+          "ok": true,
+          "detail": "patients:401 / bookings:401 / clinics:401 / services:401 / audit_logs:401"
+        },
+        {
+          "label": "患者が増えていない",
+          "ok": true
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:40.867Z"
+}

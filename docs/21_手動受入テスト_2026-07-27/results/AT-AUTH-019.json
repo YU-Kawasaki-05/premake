@@ -1,0 +1,86 @@
+{
+  "id": "AT-AUTH-019",
+  "priority": "P0",
+  "phase": "F",
+  "order": 503,
+  "title": "期限が切れた招待リンクは使えない",
+  "spec": "v2-03",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "古い招待メールが残っていても、期限を過ぎていれば入れないこと。退職者への招待が残っている場合のリスクを抑える。",
+  "notes": "期限切れの状態を作るため、有効期限を過去にした招待レコードを直接作成している。",
+  "startedAt": "2026-07-27T17:24:46.269Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "期限切れのリンクを開く",
+      "action": "有効期限が 1 時間前に切れた招待リンクを開く",
+      "expect": "「招待リンクが無効です」と表示され、入力欄は出ない",
+      "actual": "HTTP 200 / 無効の表示=true / 入力欄=0",
+      "checks": [
+        {
+          "label": "無効と表示される",
+          "ok": true
+        },
+        {
+          "label": "入力欄が出ない",
+          "ok": true
+        },
+        {
+          "label": "メンバーが増えていない",
+          "ok": true,
+          "detail": "4→4"
+        }
+      ],
+      "evidence": [
+        "01_期限切れのリンクを開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "でたらめなトークンで開く",
+      "action": "存在しない招待トークンを URL に入れて開く",
+      "expect": "同じく無効として扱われ、クリニック名も漏れない",
+      "actual": "HTTP 200 / クリニック名の表示=false",
+      "note": "トークンは 32 バイトのランダム値をハッシュ化して保存しており、推測は現実的に不可能。",
+      "checks": [
+        {
+          "label": "入力欄が出ない",
+          "ok": true
+        },
+        {
+          "label": "クリニック名が漏れない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_でたらめなトークンで開く.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "招待トークンは平文ではなくハッシュで保存されている",
+      "query": "select length(token_hash), token_hash = encode(digest('at-invite-expired-token-000000000002','sha256'),'hex') as is_hash from invitations where clinic_id = '10000000-0000-4000-a000-000000000001' and email = 'at-expired@example.com'",
+      "expect": "64 文字の SHA-256 ハッシュ",
+      "actual": "64 / t",
+      "ok": true
+    },
+    {
+      "label": "検証用アカウント・招待を削除して環境を元に戻した",
+      "query": "delete from auth.users where email in ('at-newstaff@example.com','at-expired@example.com')",
+      "expect": "0 件",
+      "actual": "0 件",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:24:49.325Z"
+}

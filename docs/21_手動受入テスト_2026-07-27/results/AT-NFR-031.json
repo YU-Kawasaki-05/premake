@@ -1,0 +1,40 @@
+{
+  "id": "AT-NFR-031",
+  "priority": "P0",
+  "phase": "E",
+  "order": 405,
+  "title": "看護師(staff)が院長専用の設定を API 経由で書き換えられない",
+  "spec": "v2-02 / v2-03",
+  "refs": [
+    "20_受け入れテスト/07_非機能・セキュリティ.md"
+  ],
+  "intent": "画面では院長専用ページに入れないことを確認済み(AT-AUTH-025)。しかし画面を経由しなければ書けてしまうなら、権限分離は成立していない。",
+  "startedAt": "2026-07-27T17:22:40.318Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "院長専用の 3 種類の書き換えを試みる",
+      "action": "スタッフの JWT で「公開予約の可否」「メニュー料金」「自分の権限」を PATCH する",
+      "expect": "すべて拒否され、値は変わらない",
+      "actual": "クリニック設定(料金・公開予約の可否):HTTP204(変化なし) / メニューの料金:HTTP204(変化なし) / 自分の権限(roles)を owner に昇格:HTTP204(変化なし)",
+      "note": "とくに 3 つ目(自分を owner に昇格)が通ると、以降すべての院長権限を取得できる。",
+      "checks": [
+        {
+          "label": "3 種類すべて書き換えられない",
+          "ok": true,
+          "detail": "全て拒否"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:40.711Z"
+}

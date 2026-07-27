@@ -289,6 +289,55 @@ const phaseSections = PHASES.map((p) => {
 
 const openIssues = allIssues.filter((i) => i.status !== "fixed");
 const fixedIssues = allIssues.filter((i) => i.status === "fixed");
+// リリースゲート(P0 全数合格)の現在地 — p0-coverage.mjs が出力した JSON を読む
+let p0 = null;
+try {
+  p0 = JSON.parse(readFileSync(`${RESULTS_DIR}/_p0-coverage.json`, "utf8"));
+} catch {
+  /* 未生成なら省略 */
+}
+const HOW_LABEL = {
+  direct: { t: "この報告書で実施", c: "vd-pass" },
+  covered: { t: "別ケースで確認", c: "vd-pass" },
+  auto: { t: "自動テストで担保", c: "vd-pass" },
+  staging: { t: "本番相当環境が必要", c: "vd-partial" },
+  out: { t: "運用方針で対象外", c: "vd-na" },
+  todo: { t: "未消化", c: "vd-fail" },
+};
+const p0Section = !p0
+  ? ""
+  : `<section id="gate">
+  <h2>リリースゲート「P0 全数合格」に対する現在地</h2>
+  <p class="sec-sub">自分たちで「P0(最重要)を全数合格させることがリリースの条件」と定義しています(<code>docs/20_受け入れテスト/00_概要.md</code>)。
+  仕様書から P0 を機械的に抽出し、1 件ずつ現在の状態を突き合わせました。<b>この表がリリース判断の根拠です。</b></p>
+  <div class="chips" style="margin-bottom:16px">
+    <span class="chip big">P0 合計 ${p0.summary.total}</span>
+    <span class="chip big ok">実施 ${p0.summary.direct}</span>
+    <span class="chip big ok">別ケースで確認 ${p0.summary.covered}</span>
+    <span class="chip big ok">自動テスト ${p0.summary.auto}</span>
+    <span class="chip big warn">本番環境待ち ${p0.summary.staging}</span>
+    <span class="chip big">対象外 ${p0.summary.out}</span>
+    <span class="chip big ${p0.summary.todo + p0.summary.failed ? "ng" : "ok"}">未消化 ${p0.summary.todo} / 不合格 ${p0.summary.failed}</span>
+  </div>
+  <div class="callout ${p0.summary.todo + p0.summary.failed ? "warn" : "ok"}"><span class="lab">判定</span>
+    <p>${
+      p0.summary.todo + p0.summary.failed === 0
+        ? `P0 ${p0.summary.total} 件のうち <b>${p0.summary.total - p0.summary.staging - p0.summary.out} 件が確認済み</b>、${p0.summary.out} 件が運用方針で対象外、残る <b>${p0.summary.staging} 件(メールの実到達)だけが本番相当環境を待っている</b>状態です。不合格・未消化はありません。`
+        : `未消化 ${p0.summary.todo} 件 / 不合格 ${p0.summary.failed} 件が残っています。`
+    }</p></div>
+  <div class="table-scroll"><table>
+    <thead><tr><th>テスト ID</th><th>内容</th><th>状態</th><th>根拠</th></tr></thead>
+    <tbody>${p0.rows
+      .map((r) => {
+        const h = HOW_LABEL[r.how];
+        return `<tr><td><code>${esc(r.id)}</code></td><td>${esc(r.title)}</td>
+        <td><span class="vd ${h.c}">${h.t}</span>${r.verdict && r.verdict !== "PASS" ? ` ${verdictChip(r.verdict)}` : ""}</td>
+        <td>${r.how === "direct" ? `<a href="#${esc(r.id)}">この報告書のケース</a>` : ""}${r.ref ? `<code>${esc(r.ref)}</code>` : ""}${r.note ? `<br><span class="cov-note">${esc(r.note)}</span>` : ""}</td></tr>`;
+      })
+      .join("")}</tbody>
+  </table></div>
+</section>`;
+
 const byId = new Map(cases.map((c) => [c.id, c]));
 const coverageRows = COVERAGE.map((r) => {
   const done = byId.get(r.by.split(" + ")[0]);
@@ -511,7 +560,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     ${PHASES.filter((p) => cases.some((c) => c.phase === p.key))
       .map((p) => `<a href="#phase-${p.key}">フェーズ${p.key}</a>`)
       .join("")}
-    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
+    <a href="#gate">リリースゲート</a><a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
   </nav>
   <button class="toggle" id="tg" type="button">◐ テーマ</button>
 </div></header>
@@ -559,7 +608,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <p>${count("FAIL") ? `不合格 ${count("FAIL")} 件があります。詳細は「検出した問題」を参照してください。` : "実施済みのケースはすべて合格しています。ただし本書は作成途中であり、未実施のフェーズが残っている場合は最終判定になりません(サマリのケース数を参照)。"}</p></div>
 </section>
 
-${coverageSection}
+${p0Section}\n${coverageSection}
 ${phaseSections}
 ${issuesSection}
 ${limitsSection}

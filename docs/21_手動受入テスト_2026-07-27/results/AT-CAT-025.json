@@ -1,0 +1,22 @@
+{
+  "id": "AT-CAT-025",
+  "priority": "P0",
+  "phase": "G",
+  "order": 603,
+  "title": "予約が入っている施術枠は削除できない",
+  "spec": "v2-08",
+  "refs": [
+    "20_受け入れテスト/02_メニュー・リソース・枠.md"
+  ],
+  "intent": "枠を消しても予約が残ると、台帳と枠の整合が崩れる。逆に予約ごと消えると患者の予約が無断で消滅する。",
+  "startedAt": "2026-07-27T17:32:25.034Z",
+  "steps": [],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": "この時点で予約が紐づいた施術枠が存在しないため検証できませんでした。",
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "NA",
+  "finishedAt": "2026-07-27T17:32:26.867Z"
+}

@@ -1,0 +1,86 @@
+{
+  "id": "AT-AUTH-017",
+  "priority": "P0",
+  "phase": "F",
+  "order": 501,
+  "title": "招待された人が新規登録して院内メンバーになる",
+  "spec": "v2-03",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "本番の立ち上げで院長・看護師が必ず通る経路。ここが通らないと誰もシステムに入れない。",
+  "notes": "招待の発行は AT-AUTH-015 で画面から検証済み。ここでは受諾側の動作に集中するため、招待レコードを直接作って平文トークンで /invite/<token> を開いている(メール送信がない環境の運用と同じ)。",
+  "startedAt": "2026-07-27T17:24:39.857Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "招待リンクを開く",
+      "action": "渡された招待リンク /invite/<token> を未ログインで開く",
+      "expect": "クリニック名と、氏名・パスワードの入力欄が表示される",
+      "actual": "HTTP 200 / クリニック名の表示=true / 入力欄=1",
+      "checks": [
+        {
+          "label": "招待画面が開く",
+          "ok": true
+        },
+        {
+          "label": "どのクリニックへの招待か分かる",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_招待リンクを開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "氏名とパスワードを設定して参加",
+      "action": "氏名「AT検証 新スタッフ」とパスワードを入力して送信",
+      "expect": "アカウントが作られ、クリニックのメンバー(staff)として台帳へ入れる",
+      "actual": "遷移先=/demo / メンバー 3→4 / 登録内容=staff / active",
+      "note": "招待に記録された役割(staff)がそのまま適用される。招待を受ける側が役割を選べない設計。",
+      "checks": [
+        {
+          "label": "メンバーが 1 名増える",
+          "ok": true,
+          "detail": "3→4"
+        },
+        {
+          "label": "役割が招待どおり staff",
+          "ok": true,
+          "detail": "staff"
+        },
+        {
+          "label": "在籍状態(active)で登録される",
+          "ok": true,
+          "detail": "active"
+        },
+        {
+          "label": "院内の画面へ入れている",
+          "ok": true,
+          "detail": "/demo"
+        }
+      ],
+      "evidence": [
+        "02_氏名とパスワードを設定して参加.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "招待が受諾済みとして記録される(使い回しの防止)",
+      "query": "select accepted_at is not null from invitations where clinic_id = '10000000-0000-4000-a000-000000000001' and email = 'at-newstaff@example.com'",
+      "expect": "受諾済み(accepted_at が入る)",
+      "actual": "受諾済み",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:24:45.151Z"
+}

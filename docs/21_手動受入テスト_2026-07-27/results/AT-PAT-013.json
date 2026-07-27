@@ -1,0 +1,58 @@
+{
+  "id": "AT-PAT-013",
+  "priority": "P0",
+  "phase": "E",
+  "order": 407,
+  "title": "患者検索に不正な文字列を入れても壊れない・他院の患者が出ない",
+  "spec": "v2-15",
+  "refs": [
+    "20_受け入れテスト/04_患者・問診.md"
+  ],
+  "intent": "検索語はそのままデータベースの問い合わせに載る。特殊文字で条件を書き換えられると、他院の患者を引き出せてしまう(PostgREST の or 構文インジェクション)。",
+  "startedAt": "2026-07-27T17:22:40.868Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "特殊文字を含む検索語を投入",
+      "action": "患者検索に 「*」 / 「%」 / 「a,email.neq.null」 / 「'; select 1 --」 / 「他院」 を順に入力",
+      "expect": "画面が壊れず、他院の患者も出ない",
+      "actual": "「*」漏洩=false 異常=false / 「%」漏洩=false 異常=false / 「a,email.neq.null」漏洩=false 異常=false / 「'; select 1 --」漏洩=false 異常=false / 「他院」漏洩=false 異常=false",
+      "note": "検索語はサーバー側で無害化(sanitizeSearchTerm)され、さらに clinic_id で絞られる二重防御。",
+      "checks": [
+        {
+          "label": "他院の患者が出ない",
+          "ok": true
+        },
+        {
+          "label": "画面が壊れない",
+          "ok": true
+        },
+        {
+          "label": "検証を実施できた",
+          "ok": true,
+          "detail": "5/5 件"
+        }
+      ],
+      "evidence": [
+        "01_特殊文字を含む検索語を投入.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [
+    {
+      "label": "患者検索が監査ログに記録される(誰が何を検索したか追跡できる)",
+      "query": "select action, actor_type from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action = 'patient.search' order by created_at desc limit 1",
+      "expect": "patient.search / member",
+      "actual": "patient.search / member",
+      "ok": true
+    }
+  ],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:49.806Z"
+}
