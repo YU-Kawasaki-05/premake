@@ -12,6 +12,11 @@ export default defineConfig(({ mode }) => ({
     env: loadEnv(mode, process.cwd(), ""),
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "./src") },
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      // server-only は既定で「Client Component から使うな」と投げる実装に解決される。
+      // テストは Node で走る = サーバー相当なので、Next と同じ空実装(react-server 条件)に向ける。
+      "server-only": path.resolve(__dirname, "./node_modules/server-only/empty.js"),
+    },
   },
 }));

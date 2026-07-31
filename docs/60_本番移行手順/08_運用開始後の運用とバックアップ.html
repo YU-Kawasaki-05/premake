@@ -192,7 +192,8 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 <section><h2>8-2. 定期的に確認すること</h2>
 <div class="tablewrap"><table><thead><tr><th>頻度</th><th>確認内容</th><th>場所</th></tr></thead><tbody>
 <tr><td><strong>毎日</strong></td><td><strong>「承認待ち」の予約が放置されていないか</strong>(公開Web予約は院内が承認するまで確定しません。承認漏れ=予約の取りこぼしになります)</td><td>アプリの台帳(日ビュー)。予約を開いて「確定にする」</td></tr>
-<tr><td>毎日〜週1</td><td>定期実行が成功しているか(メールが遅延なく送られているか)</td><td>Vercel の Logs / Cron Jobs</td></tr>
+<tr><td><strong>毎日</strong></td><td><strong>Sentry に新しいエラーが出ていないか</strong>(下の「Sentry の見方」を参照。<code>SENTRY_DSN</code> を登録している場合)</td><td>Sentry の「Issues」。あわせて「Crons」の <code>reminder-cron</code> が緑(OK)で並んでいるか</td></tr>
+<tr><td>毎日〜週1</td><td>定期実行が成功しているか(メールが遅延なく送られているか)</td><td>Sentry の「Crons」(自動通知あり)。使っていない場合は Vercel の Logs / Cron Jobs(<a href="05_定期実行(リマインダー)の確認.html">STEP 5</a> の 5-7)</td></tr>
 <tr><td><strong>週1</strong></td><td><strong>メール送信に「失敗」が無いか</strong>(下の「通知の送信状況の見方」を参照)</td><td>アプリの 設定 →「通知の送信状況」。あわせて Resend の Logs</td></tr>
 <tr><td>週1</td><td>バックアップが取れているか</td><td>Supabase の Backups</td></tr>
 <tr><td>月1</td><td>患者マスタに<strong>同じ人の二重登録</strong>が増えていないか(重複患者をまとめる機能はありません)</td><td>アプリの患者一覧。詳細は <a href="09_未対応事項と注意点.html">未対応事項 A-4</a></td></tr>
@@ -213,17 +214,27 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 <p>一時的な送信失敗は<strong>最大 3 回まで自動で再送</strong>されます。ここで「<strong>失敗</strong>」と表示されているのは、<strong>その 3 回に達してしまったもの</strong>です。<strong>それ以上は自動で送られることはありません</strong>ので、放置すると患者に連絡が届かないままになります。</p>
 <p>「失敗」を見つけたときは、<strong>エラー欄の内容を確認したうえで、その患者に電話など別の方法で連絡</strong>してください。メールアドレスの打ち間違いが原因であれば、患者情報を修正します。同じ失敗が続く場合は、メールサービス(Resend)側の設定やドメイン認証(<a href="04_メール送信の設定.html">STEP 4</a>)を疑い、開発担当者に相談してください。</p>
 <p class="small muted">「待機中」が長く残り続ける場合は、メールを送る定期実行そのものが止まっている可能性があります。<a href="05_定期実行(リマインダー)の確認.html">STEP 5</a> の確認方法と、<code class="inline">CRON_SECRET</code> の設定を確認してください。</p></div>
+
+<h3>Sentry の見方(新しいエラーの確認) <span class="badge op">クリニック担当者</span></h3>
+<p><a href="03_アプリのデプロイと環境変数.html">STEP 3</a> の 3-7 で <code class="inline">SENTRY_DSN</code> を登録していると、アプリ内部で起きたエラーが <strong>Sentry</strong> に自動で記録されます。<strong>1 日 1 回、朝の開院準備のついでに開く</strong>だけで十分です。</p>
+<div class="tablewrap"><table><thead><tr><th style="width:26%">見る場所</th><th>何を見るか</th></tr></thead><tbody>
+<tr><td><strong>Issues</strong></td><td>エラーの一覧です。<strong>「Unresolved(未解決)」で今日・昨日の日付のもの</strong>があるかを見ます。<strong>1 件も無ければ何もしなくて OK</strong> です</td></tr>
+<tr><td><strong>Crons</strong></td><td>定期実行(メール送信)の実行履歴です。<code>reminder-cron</code> が緑(OK)で並んでいれば健全です。<strong>Missed / Error</strong> があれば <a href="05_定期実行(リマインダー)の確認.html">STEP 5</a> の 5-7 を確認してください</td></tr>
+</tbody></table></div>
+<div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>新しいエラーを見つけたときの動き方</p><p>内容を読む必要はありません。<strong>そのエラーのページの URL を開発担当者に送る</strong>だけで十分です(いつ・どの画面で・何回起きたかが記録されています)。あわせて、<strong>スタッフが「その操作ができなくて困っている」かどうか</strong>を確認して伝えると対応が早くなります。</p><p>Sentry の設定で通知メールを有効にしておけば(3-7 の手順 5)、<strong>新しいエラーが出た時点でメールが届く</strong>ため、毎日の確認は「念のため」の位置づけになります。</p></div>
+<div class="callout warn"><p class="ct"><span class="ic">&#9888;</span><code class="inline">SENTRY_DSN</code> を登録していない場合</p><p>エラーはどこにも記録されず、<strong>気づく手段はスタッフや患者からの申告だけ</strong>になります。「使えないから電話で受ける」とスタッフが諦めてしまうと、不具合が報告されないまま続きます。<strong>3-7 の登録を強く推奨します</strong>(無料・作業は 10 分程度です)。</p></div>
 </section>
 
 <section><h2>8-3. パスワード・鍵の管理</h2><ul class="disc"><li><strong>パスワード管理ツールを使う</strong>: Supabase・Vercel・Resend のログイン、DB パスワード、各キーを保管。</li><li><strong>service_role キー・CRON_SECRET は秘密</strong>: 外部に共有しない。漏れた疑いがあれば各サービスで再発行し、Vercel の環境変数を更新して再デプロイ。</li><li><strong>アカウントは使い回さない・共有しない</strong>: 看護師ごとに個別アカウントを招待(誰が操作したか記録が残ります)。</li><li><strong>招待リンクの有効期限は7日</strong>: 期限切れは再発行。未使用リンクは放置しない。</li><li><strong>退職時はアカウントを無効化</strong>: アプリのスタッフ管理で対象者を無効(アーカイブ)にします。無効にしたスタッフは、患者向けの公開予約ページの指名候補にも出なくなります。</li></ul></section>
 
-<section><h2>8-4. 障害時の連絡先(記入して印刷・保管)</h2><p>「ログインできない」「メールが届かない」「画面が真っ白」等が起きたときのために、連絡先を埋めておきましょう。</p><div class="tablewrap"><table><thead><tr><th>項目</th><th>連絡先 / メモ(記入してください)</th></tr></thead><tbody><tr><td>開発担当者(アプリを作った人)</td><td>&nbsp;</td></tr><tr><td>Supabase の状況確認</td><td><code>status.supabase.com</code></td></tr><tr><td>Vercel の状況確認</td><td><code>vercel-status.com</code></td></tr><tr><td>Resend の状況確認</td><td><code>resend-status.com</code></td></tr><tr><td>本番アプリの URL</td><td>&nbsp;</td></tr><tr><td>ops(運営)アカウントのメール</td><td>&nbsp;(パスワードは書かない)</td></tr></tbody></table></div><div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>困ったときの初手</p><p>まず各サービスの「状況確認(status)」ページで障害が出ていないか確認します。サービス側が正常なら、Vercel の「Logs」でエラー内容を開発担当者に伝えると解決が早くなります。</p></div></section>
+<section><h2>8-4. 障害時の連絡先(記入して印刷・保管)</h2><p>「ログインできない」「メールが届かない」「画面が真っ白」等が起きたときのために、連絡先を埋めておきましょう。</p><div class="tablewrap"><table><thead><tr><th>項目</th><th>連絡先 / メモ(記入してください)</th></tr></thead><tbody><tr><td>開発担当者(アプリを作った人)</td><td>&nbsp;</td></tr><tr><td>Supabase の状況確認</td><td><code>status.supabase.com</code></td></tr><tr><td>Vercel の状況確認</td><td><code>vercel-status.com</code></td></tr><tr><td>Resend の状況確認</td><td><code>resend-status.com</code></td></tr><tr><td>エラー監視(Sentry)の画面</td><td><code>sentry.io</code>(未登録なら 3-7 参照)</td></tr><tr><td>本番アプリの URL</td><td>&nbsp;</td></tr><tr><td>ops(運営)アカウントのメール</td><td>&nbsp;(パスワードは書かない)</td></tr></tbody></table></div><div class="callout tip"><p class="ct"><span class="ic">&#9758;</span>困ったときの初手</p><p>まず各サービスの「状況確認(status)」ページで障害が出ていないか確認します。サービス側が正常なら、<strong>Sentry の「Issues」に同じ時刻のエラーが出ていないか</strong>を見て、そのページの URL を開発担当者に伝えると解決が早くなります(Sentry 未登録の場合は Vercel の「Logs」の内容を伝えてください)。</p></div></section>
 
 <section><h2>この STEP のチェックリスト</h2><ul class="check">
 <li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">Supabase の自動バックアップが有効(Pro プラン)</span></span></label></li>
 <li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">手動エクスポートの取り方と保管ルールを決めた</span></span></label></li>
 <li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">本番データベースに db reset・seed を実行しないことを、作業する全員で確認した</span></span></label></li>
 <li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">毎日の確認(「承認待ち」の予約が放置されていないか)を担当者と時間帯まで決めた</span><span class="ck-d">公開Web予約を使うため、承認漏れは予約の取りこぼしに直結します</span></span></label></li>
+<li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">毎日の確認に「Sentry の新規エラー」を加えた(SENTRY_DSN を登録している場合)</span><span class="ck-d">Issues の未解決に今日・昨日のものが無いか。あわせて Crons の reminder-cron が緑で並んでいるか</span></span></label></li>
 <li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">週次の確認項目(定期実行・「通知の送信状況」の失敗・バックアップ)を運用に組み込んだ</span></span></label></li>
 <li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">設定 →「通知の送信状況」を開き、一覧が表示されることと「失敗」の見つけ方を確認した</span></span></label></li>
 <li><label><input type="checkbox"><span class="ck-body"><span class="ck-t">パスワード・鍵をパスワード管理ツールに保管した</span></span></label></li>
