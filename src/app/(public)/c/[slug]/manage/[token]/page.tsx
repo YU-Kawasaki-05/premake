@@ -61,8 +61,10 @@ export default async function ManagePage(props: PageProps<"/c/[slug]/manage/[tok
         token={token}
         slug={slug}
         clinicName={booking.clinicName}
+        clinicPhone={booking.clinicPhone}
         status={booking.status}
         cancelDeadlineHours={booking.cancelDeadlineHours}
+        pastCancelDeadline={booking.pastCancelDeadline}
       />
     </main>
   );

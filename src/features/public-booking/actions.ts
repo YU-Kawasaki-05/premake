@@ -8,6 +8,7 @@ import { enqueueNotification, resolveClinicInternalEmail } from "@/features/noti
 import type { SessionStep } from "@/features/services/session-template";
 import { recordAudit } from "@/lib/audit";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { cancelDeadlineMessage, isPastCancelDeadline } from "./cancel-deadline";
 import { generateBookingToken, hashBookingToken } from "./token";
 
 export type GuestBookingState = {
@@ -230,11 +231,14 @@ export type ManagedBooking = {
   bookingNo: string;
   clinicName: string;
   clinicSlug: string;
+  clinicPhone: string | null;
   status: string;
   serviceName: string | null;
   startISO: string | null;
   endISO: string | null;
   cancelDeadlineHours: number;
+  /** キャンセル期限切れ(判定は cancelByToken と同じ isPastCancelDeadline) */
+  pastCancelDeadline: boolean;
 };
 
 /** 管理トークンから予約内容を取得(患者向け表示用) */
@@ -250,7 +254,7 @@ export async function getManagedBooking(token: string): Promise<ManagedBooking |
   const { data: booking } = await admin
     .from("bookings")
     .select(
-      "booking_no, status, service:services!bookings_service_id_fkey(name), clinic:clinics(name, slug, cancel_deadline_hours), sessions:booking_sessions!booking_sessions_booking_id_fkey(time_range, status, seq)",
+      "booking_no, status, service:services!bookings_service_id_fkey(name), clinic:clinics(name, slug, phone, cancel_deadline_hours), sessions:booking_sessions!booking_sessions_booking_id_fkey(time_range, status, seq)",
     )
     .eq("id", tok.booking_id)
     .maybeSingle();
@@ -268,11 +272,16 @@ export async function getManagedBooking(token: string): Promise<ManagedBooking |
     bookingNo: booking.booking_no,
     clinicName: booking.clinic.name,
     clinicSlug: booking.clinic.slug,
+    clinicPhone: booking.clinic.phone,
     status: booking.status,
     serviceName: booking.service?.name ?? null,
     startISO: fr?.start ?? null,
     endISO: lr?.end ?? null,
     cancelDeadlineHours: booking.clinic.cancel_deadline_hours,
+    pastCancelDeadline: isPastCancelDeadline(
+      fr?.start ?? null,
+      booking.clinic.cancel_deadline_hours,
+    ),
   };
 }
 
@@ -362,10 +371,8 @@ export async function cancelByToken(token: string): Promise<{ error?: string; ok
   if (firstSession) {
     const r = parseRangeSafe(firstSession.time_range as string);
     const deadlineH = booking.clinic?.cancel_deadline_hours ?? 24;
-    if (r && Date.parse(r.start) - Date.now() < deadlineH * 60 * 60 * 1000) {
-      return {
-        error: `キャンセル期限(${deadlineH}時間前)を過ぎています。クリニックへご連絡ください`,
-      };
+    if (isPastCancelDeadline(r?.start ?? null, deadlineH)) {
+      return { error: cancelDeadlineMessage(deadlineH) };
     }
   }
 
