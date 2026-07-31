@@ -45,19 +45,13 @@ export function ReserveFlow({
   if (state.done) {
     return (
       <div className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-6 text-center">
-        <h1 className="font-serif text-xl font-semibold">
-          {state.done.pending ? "予約を受け付けました" : "ご予約が確定しました"}
-        </h1>
+        <h1 className="font-serif text-xl font-semibold">予約を受け付けました</h1>
         <p className="mt-3 text-sm leading-6 text-[var(--ink-soft)]">
           予約番号 <span className="font-semibold tabular-nums">{state.done.bookingNo}</span>
           <br />
           {state.done.manageToken
-            ? state.done.pending
-              ? "クリニックの確認後に確定します。確認・キャンセルは下記リンクから行えます。"
-              : "確認・変更・キャンセルは下記リンクから行えます。"
-            : state.done.pending
-              ? "クリニックの確認後に確定します。確認・キャンセル用のリンクはメールでお送りします。"
-              : "確認・変更・キャンセル用のリンクはメールでお送りします。"}
+            ? "クリニックの確認後に確定します。確認・キャンセルは下記リンクから行えます。"
+            : "クリニックの確認後に確定します。確認・キャンセル用のリンクはメールでお送りします。"}
         </p>
         {state.done.manageToken && (
           <>

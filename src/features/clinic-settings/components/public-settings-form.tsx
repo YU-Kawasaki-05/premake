@@ -20,7 +20,6 @@ import { SavedNote } from "./saved-note";
 
 type Defaults = {
   public_booking_enabled: boolean;
-  booking_approval_mode: "auto" | "manual";
   cancel_deadline_hours: number;
 };
 
@@ -47,13 +46,15 @@ export function PublicSettingsForm({ slug, defaults }: { slug: string; defaults:
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="booking_approval_mode">Web 予約の確定方法</Label>
-          <Select name="booking_approval_mode" defaultValue={defaults.booking_approval_mode}>
+          {/* auto(メール確認後に自動確定)は確認リンクのステップが未実装のため選択肢から外している。
+              実装後に SelectItem と zod 側(publicSettingsSchema)を戻す。現状 manual 固定なので
+              DB 値を default に流す必要がない。 */}
+          <Select name="booking_approval_mode" defaultValue="manual">
             <SelectTrigger id="booking_approval_mode" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="manual">院内で確認してから確定(推奨)</SelectItem>
-              <SelectItem value="auto">メール確認後に自動確定</SelectItem>
             </SelectContent>
           </Select>
         </div>

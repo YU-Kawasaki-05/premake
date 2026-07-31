@@ -202,8 +202,8 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 </ul></div>
 
 <div class="callout info"><p class="ct"><span class="ic">&#9432;</span>A-3.【条件つき】公開予約を「自動確定」にする場合の仕組みが未実装</p>
-<p>設定画面の「Web 予約の確定方法」では <strong>「院内で確認してから確定(推奨)」</strong> と <strong>「メール確認後に自動確定」</strong> を選べます。しかし後者(自動確定)の前提となる<strong>「患者がメールの確認リンクを踏んで初めて確定する」「一定時間(30 分)内に確認されなければ枠を自動で解放する」仕組みは未実装</strong>です。</p>
-<p>そのため、<strong>「院内で確認してから確定(推奨)」のまま運用してください</strong>。今回の推奨運用はこちらです。将来「自動確定に切り替えたい」と判断したときは、<strong>切り替える前に</strong>開発担当者へ追加実装を依頼してください。</p></div>
+<p>設定画面の「Web 予約の確定方法」で選べるのは <strong>「院内で確認してから確定(推奨)」</strong> だけです。かつてあった <strong>「メール確認後に自動確定」</strong> は、その前提となる<strong>「患者がメールの確認リンクを踏んで初めて確定する」「一定時間(30 分)内に確認されなければ枠を自動で解放する」仕組みが未実装</strong>で、選ぶと申し込みと同時に確定になってしまうため、<strong>選択肢から削除しました</strong>。</p>
+<p>そのため、いまは<strong>「院内で確認してから確定」以外を選べません</strong>。今回の推奨運用もこちらです。将来「自動確定に切り替えたい」と判断したときは、上記の仕組みの追加実装(と選択肢の復活)を開発担当者へ依頼してください。</p></div>
 
 <div class="callout info"><p class="ct"><span class="ic">&#9432;</span>A-4.【条件つき】重複した患者どうしの統合(マージ)が未実装</p>
 <p>公開Web予約は、はじめは<strong>患者マスタ(患者の台帳)と結び付いていない状態</strong>で入ります。これを既存の患者に結び付ける機能(<strong>名寄せ</strong>)は実装済みで、台帳から数クリックで行えます(下の「使い方」参照)。</p>
@@ -239,10 +239,10 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 <section><h2>B. 今回のリリースに含まれない機能・使わない機能</h2>
 <p>次は<strong>『現状こういう扱い』</strong>という前提で運用してください。使えると誤解しないための一覧です。</p>
 <div class="tablewrap"><table><thead><tr><th>機能</th><th>現状の扱い</th><th>補足</th></tr></thead><tbody>
-<tr><td><strong>患者向け公開Web予約</strong></td><td><strong>使います(オンにします)。</strong>承認モードは<strong>「院内で確認してから確定」(手動承認)</strong></td><td>以前挙げていた露出の問題(退職者・施術不可スタッフ・本名)は<strong>すべて解消済み</strong>です。オンにする前に <strong>A-1(法定ページの法務確認)</strong> を必ず終えてください。「メール確認後に自動確定」は A-3 のため当面使いません</td></tr>
+<tr><td><strong>患者向け公開Web予約</strong></td><td><strong>使います(オンにします)。</strong>承認モードは<strong>「院内で確認してから確定」(手動承認)</strong></td><td>以前挙げていた露出の問題(退職者・施術不可スタッフ・本名)は<strong>すべて解消済み</strong>です。オンにする前に <strong>A-1(法定ページの法務確認)</strong> を必ず終えてください。「メール確認後に自動確定」は A-3 のため選択肢から削除済みです</td></tr>
 <tr><td><strong>オンライン問診</strong></td><td><strong>紙で運用します</strong>(今回のリリースの方針として決定)</td><td>「未実装だから仕方なく紙」ではなく、<strong>最初のリリースの範囲を絞る判断として紙運用に決めた</strong>ものです(仕様書 v2-18 に明記)。侵襲的な施術の<strong>既往歴・アレルギー・妊娠の確認は患者安全に直結するため、紙の問診で必ず取得</strong>してください。オンライン化は次の開発段階(Phase 2)の候補です</td></tr>
 <tr><td><strong>患者どうしの統合(重複患者のマージ)</strong></td><td>未実装</td><td><strong>A-4</strong> 参照。ゲスト予約を患者マスタに結び付ける「名寄せ」は実装済みです</td></tr>
-<tr><td><strong>公開予約の「メール確認後に自動確定」</strong></td><td>設定では選べますが<strong>仕組みが未完成</strong></td><td><strong>A-3</strong> 参照。「院内で確認してから確定」で運用します</td></tr>
+<tr><td><strong>公開予約の「メール確認後に自動確定」</strong></td><td><strong>仕組みが未完成</strong>のため<strong>選択肢から削除済み</strong></td><td><strong>A-3</strong> 参照。「院内で確認してから確定」で運用します</td></tr>
 <tr><td><strong>不正アクセス対策(レート制限)</strong></td><td>未実装</td><td><strong>A-2</strong> 参照。手動承認と日々の台帳確認で補います</td></tr>
 <tr><td>週ビュー(スタッフ別のレーン表示) / 承認待ち専用の一覧画面 / Google ログイン / 患者タグ</td><td>今回のスコープ外</td><td>仕様として除外済みです。<strong>日ビューの台帳</strong>で運用します。次の開発段階の候補です</td></tr>
 <tr><td>クレジットカード決済</td><td>機能はありません</td><td>会計は院内の既存の方法で行ってください</td></tr>
