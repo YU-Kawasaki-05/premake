@@ -9,7 +9,7 @@
     "20_受け入れテスト/05_公開予約.md"
   ],
   "intent": "管理画面の URL はメールに載る。URL の一部を書き換えて他人の予約を開けないこと、トークンが平文で保存されていないこと。",
-  "startedAt": "2026-07-27T12:51:04.956Z",
+  "startedAt": "2026-07-31T09:15:09.653Z",
   "steps": [
     {
       "n": 1,
@@ -33,7 +33,7 @@
   "dbChecks": [
     {
       "label": "トークンは平文ではなくハッシュで保存され、有効期限がある",
-      "query": "select token_hash is not null as hashed, length(token_hash) as len, expires_at > now() as valid, purpose from booking_access_tokens where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' limit 1",
+      "query": "select token_hash is not null as hashed, length(token_hash) as len, expires_at > now() as valid, purpose from booking_access_tokens where booking_id = '2da234cc-f2d1-4613-92dd-0cb85abac1a2' limit 1",
       "expect": "ハッシュ値(64 文字の SHA-256)が保存され、期限が未来",
       "actual": "t / 64 / t / manage",
       "ok": true
@@ -45,5 +45,5 @@
   "partialReason": null,
   "aborted": false,
   "verdict": "PASS",
-  "finishedAt": "2026-07-27T12:51:05.276Z"
+  "finishedAt": "2026-07-31T09:15:10.174Z"
 }

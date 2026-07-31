@@ -402,8 +402,9 @@ verdicts.push(
       await page.goto(`${BASE}/c/demo/manage/${soon.plain}`, { waitUntil: "domcontentloaded" });
       await page.waitForTimeout(900);
       const soonBtn = await page.getByRole("button", { name: "予約をキャンセル" }).count();
-      const soonBody = await page.locator("body").innerText();
-      // 実際に押してみて、サーバー側で拒否されることまで確認する
+      const soonBody = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+      // 2026-07-31(Issue #14)修正後の期待: 期限超過ならボタン自体を出さず、案内文と連絡先を表示する。
+      // 万一ボタンが出ていたら(回帰)、押してサーバー側の拒否が生きていることまで実測して記録する
       let serverRejected = false;
       let toastText = "";
       if (soonBtn > 0) {
@@ -418,39 +419,39 @@ verdicts.push(
       }
       await c.step({
         label: "期限外(2 時間後)の予約",
-        action: "2 時間後に迫った予約の管理画面を開き、キャンセルを試みる",
-        expect: "キャンセルできない。期限を過ぎている旨が案内される",
-        actual: `キャンセルボタン=${soonBtn}個 / 押した結果=${serverRejected ? "サーバーが拒否" : "拒否されず"} / 画面=「${toastText.slice(0, 110)}」`,
-        note: "ボタン自体は表示されるが、押すとサーバー側の期限チェックで拒否される(予約は確定のまま)。表示の出し分けは行われていない。",
+        action: "2 時間後に迫った予約の管理画面を開く",
+        expect: "キャンセルボタンが表示されず、期限を過ぎている旨と連絡先(電話)が案内される",
+        actual: `キャンセルボタン=${soonBtn}個 / 画面=「${soonBody.slice(0, 130)}」`,
+        note: "表示の出し分けは UX、防御はサーバー(cancelByToken)の二段構え。判定は isPastCancelDeadline() をサーバーと画面で共有しており、二重実装によるズレは構造的に起きない(Issue #14 / 2026-07-31 修正)。",
         page,
         fullPage: true,
         checks: [
           {
-            label: "期限外のキャンセルが成立しない",
-            ok: serverRejected,
-            detail: `予約の状態=${sqlOne(`select status from bookings where id = '${soon.bid}'`)}`,
+            label: "キャンセルボタンが表示されない(#14 修正)",
+            ok: soonBtn === 0,
+            detail: `ボタン=${soonBtn}個`,
           },
           {
             label: "期限を過ぎた旨が案内される",
-            ok: /期限|過ぎ|ご連絡/.test(toastText),
-            detail: toastText.slice(0, 90),
+            ok: /期限.{0,12}過ぎています/.test(soonBody) && /ご連絡/.test(soonBody),
+            detail: soonBody.slice(0, 90),
+          },
+          {
+            label: "連絡先(TEL)が案内される",
+            ok: /TEL/.test(soonBody),
           },
         ],
       });
       if (soonBtn > 0) {
-        c.partial(
-          "キャンセル期限を過ぎていても「予約をキャンセル」ボタンは表示されます。押すとサーバー側で拒否され予約は変わりませんが、患者は操作してから断られることになります(表示の出し分けが未実装)。",
-        );
         c.issue({
           severity: "low",
           status: "open",
-          summary: "キャンセル期限を過ぎた予約でも、患者側にキャンセルボタンが表示される",
-          detail:
-            "管理画面は予約の状態(キャンセル済み・完了・来院)だけを見てボタンの出し分けをしており、キャンセル期限は見ていません。期限後に押すとサーバー側で拒否され「キャンセル期限(24時間前)を過ぎています」と表示されます。データは変わらないため安全性の問題はありません。",
-          impact:
-            "患者が操作してから断られるため、問い合わせの電話が増える可能性があります。データ不整合は起きません。",
-          workaround:
-            "画面側で最初のセッション開始時刻と期限を比較し、期限を過ぎていればボタンを出さずに連絡先を案内する(manage-booking-view.tsx の alreadyClosed の判定に期限を追加)。",
+          summary: "【回帰】期限超過の予約に再びキャンセルボタンが表示されている",
+          detail: `Issue #14(2026-07-31 修正済み)の回帰。押した結果=${serverRejected ? "サーバーは拒否(防御は残存)" : "サーバーも拒否せず(重大)"} / 画面=「${toastText.slice(0, 90)}」`,
+          impact: serverRejected
+            ? "患者が操作してから断られる(データ不整合は起きない)。"
+            : "期限後キャンセルが成立し得る。即時の調査が必要。",
+          workaround: "manage-booking-view.tsx の pastCancelDeadline 分岐を確認する。",
         });
       }
 

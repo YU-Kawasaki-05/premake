@@ -9,12 +9,12 @@
     "20_受け入れテスト/05_公開予約.md"
   ],
   "intent": "電話をかけずにキャンセルできること。キャンセルされた枠がすぐ他の患者に開放され、院内にも通知が届くこと。",
-  "startedAt": "2026-07-27T12:51:05.276Z",
+  "startedAt": "2026-07-31T09:15:10.174Z",
   "steps": [
     {
       "n": 1,
       "label": "管理画面を開く",
-      "action": "予約番号 B-260727-CB81 で管理画面に入る",
+      "action": "予約番号 B-260731-CF4E で管理画面に入る",
       "expect": "キャンセルの入口と、キャンセル期限(24 時間前まで)の案内がある",
       "actual": "キャンセルボタン=1個 / 期限の記載=true",
       "checks": [
@@ -55,7 +55,7 @@
       "label": "キャンセルが完了する",
       "action": "「キャンセルする」で確定",
       "expect": "キャンセル済みの表示になり、枠が解放される",
-      "actual": "画面=「デモクリニック 予約番号 B-260727-CB81 メニュー メディカルピーリング 日時 7/29(水) 10:00–」 / DB: status=cancelled 生きている枠=0",
+      "actual": "画面=「デモクリニック 予約番号 B-260731-CF4E メニュー メディカルピーリング 日時 8/2(日) 10:00–1」 / DB: status=cancelled 生きている枠=0",
       "checks": [
         {
           "label": "状態がキャンセルになる",
@@ -77,7 +77,7 @@
   "dbChecks": [
     {
       "label": "患者と院内の双方に通知が積まれる",
-      "query": "select kind, recipient_type from notifications where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' order by created_at",
+      "query": "select kind, recipient_type from notifications where booking_id = '2da234cc-f2d1-4613-92dd-0cb85abac1a2' order by created_at",
       "expect": "booking_cancelled(patient) と booking_cancelled_internal(member)",
       "actual": "booking_requested:patient / booking_created_internal:member / booking_cancelled:patient / booking_cancelled_internal:member",
       "ok": true
@@ -96,5 +96,5 @@
   "partialReason": null,
   "aborted": false,
   "verdict": "PASS",
-  "finishedAt": "2026-07-27T12:51:11.429Z"
+  "finishedAt": "2026-07-31T09:15:16.373Z"
 }
