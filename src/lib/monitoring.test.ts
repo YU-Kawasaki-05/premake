@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   finishReminderCronCheckIn,
   initMonitoring,
+  reportError,
   reportRequestError,
   startReminderCronCheckIn,
 } from "./monitoring";
@@ -31,6 +32,13 @@ describe("monitoring (SENTRY_DSN 未設定)", () => {
           routeType: "route",
         },
       ),
+    ).resolves.toBeUndefined();
+  });
+
+  it("汎用エラー報告(reportError)も no-op で、context の有無どちらでも落ちない", async () => {
+    await expect(reportError(new Error("boom"))).resolves.toBeUndefined();
+    await expect(
+      reportError(new Error("boom"), { audit_action: "assignment.create" }),
     ).resolves.toBeUndefined();
   });
 });
