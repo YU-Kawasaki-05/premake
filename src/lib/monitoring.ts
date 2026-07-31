@@ -97,6 +97,24 @@ export async function reportRequestError(
   await Sentry.flush(FLUSH_TIMEOUT_MS);
 }
 
+/**
+ * 業務を止めずに拾いたいサーバー側の失敗を Sentry へ送る(DSN 未設定なら no-op)。
+ * 監査ログの書き込み失敗(#13 の無音欠落)のような「握り潰すが気づきたい」経路用。
+ * エラーメッセージ・context に患者由来の値が入らないことを呼び出し元で保証すること。
+ */
+export async function reportError(
+  error: unknown,
+  context?: Record<string, unknown>,
+): Promise<void> {
+  const Sentry = await getSentry();
+  if (!Sentry) return;
+  Sentry.withScope((scope) => {
+    if (context) scope.setContext("app", context);
+    Sentry.captureException(error, { mechanism: { type: "generic", handled: true } });
+  });
+  await Sentry.flush(FLUSH_TIMEOUT_MS);
+}
+
 /** 実行中のチェックイン。監視無効時は null */
 export type CronCheckIn = { checkInId: string; startedAtMs: number } | null;
 
