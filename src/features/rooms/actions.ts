@@ -138,38 +138,48 @@ export async function setAssignment(
   if (!targetMember) return { error: "スタッフが見つかりません" };
   if (!service) return { error: "メニューが見つかりません" };
 
+  let assignmentId: string | undefined;
   if (enabled) {
-    const { error } = await supabase.from("staff_service_assignments").insert({
-      clinic_id: clinic.id,
-      member_id: memberId,
-      service_id: serviceId,
-    });
+    const { data, error } = await supabase
+      .from("staff_service_assignments")
+      .insert({
+        clinic_id: clinic.id,
+        member_id: memberId,
+        service_id: serviceId,
+      })
+      .select("id")
+      .maybeSingle();
     // 23505 = unique_violation(既に割当済み)。冪等に成功扱いする。
     if (error && error.code !== "23505") {
       console.error("[rooms] assignment create failed", error);
       return { error: "変更に失敗しました" };
     }
+    assignmentId = data?.id;
   } else {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("staff_service_assignments")
       .delete()
       .eq("clinic_id", clinic.id)
       .eq("member_id", memberId)
-      .eq("service_id", serviceId);
+      .eq("service_id", serviceId)
+      .select("id");
     if (error) {
       console.error("[rooms] assignment delete failed", error);
       return { error: "変更に失敗しました" };
     }
+    assignmentId = data?.[0]?.id;
   }
 
   await recordAudit({
     clinicId: clinic.id,
     actorUserId: user.id,
     actorType: "member",
-    action: "staff_service_assignment.set",
+    action: enabled ? "assignment.create" : "assignment.delete",
     targetType: "staff_service_assignment",
-    targetId: `${memberId}:${serviceId}`,
-    diff: { enabled },
+    // audit_logs.target_id は uuid 型。複合キー(member:service)は入らないので
+    // 割当行の id を入れ、対象スタッフ・メニューは diff で辿れるようにする。
+    targetId: assignmentId,
+    diff: { memberId, serviceId, assigned: enabled },
   });
   revalidatePath(`/${slug}/rooms`);
   return {};
