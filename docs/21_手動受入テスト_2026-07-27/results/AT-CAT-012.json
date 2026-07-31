@@ -9,7 +9,7 @@
     "20_受け入れテスト/02_メニュー・リソース・枠.md"
   ],
   "intent": "担当割当が無いスタッフは公開予約の空き枠に一切現れない。ここを設定し忘れると「予約できる枠が 1 件も出ない」という問い合わせになる。",
-  "startedAt": "2026-07-27T17:30:53.348Z",
+  "startedAt": "2026-07-31T09:15:57.219Z",
   "steps": [
     {
       "n": 1,
@@ -52,7 +52,7 @@
   "dbChecks": [
     {
       "label": "staff_service_assignments に反映され、対象は指名可能スタッフに限られる",
-      "query": "select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '56a2e2bb-922c-4338-aa57-b53c8bed9ebb'",
+      "query": "select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '123b7c58-dc19-43e9-b9d9-c9d361435117'",
       "expect": "1 行 / is_bookable=t",
       "actual": "t:検証用 メニューA",
       "ok": true
@@ -61,24 +61,15 @@
       "label": "【既知の弱点】担当設定の変更が監査ログに残るか",
       "query": "select count(*) from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action like 'assignment%'",
       "expect": "本来は assignment.* が記録されるべき(AT-CAT-014)",
-      "actual": "assignment 系の監査ログ 0 件",
+      "actual": "assignment 系の監査ログ 1 件",
       "ok": true
     }
   ],
-  "issues": [
-    {
-      "severity": "low",
-      "summary": "担当設定の変更が監査ログに記録されない(AT-CAT-014)",
-      "detail": "割当の追加後も action like 'assignment%' の監査ログは 0 件でした。他の操作(部屋作成・ログイン等)は記録されています。",
-      "impact": "「担当が外れていて予約が取れない」等の問い合わせ時に、いつ誰が変更したのか追跡できません。患者影響はありませんが運用調査が難しくなります。",
-      "workaround": "変更時に運用側で記録を残す。改修は recordAudit() の呼び出し追加のみで済む軽微なもの。",
-      "status": "open"
-    }
-  ],
+  "issues": [],
   "notes": "",
   "naReason": null,
-  "partialReason": "担当割当そのものは正しく保存されますが、この変更は監査ログに残りません(AT-CAT-014 の既知不具合)。誰がいつ担当を付け外ししたかを後から追跡できないため、運用でカバーするか改修が必要です。",
+  "partialReason": null,
   "aborted": false,
-  "verdict": "PARTIAL",
-  "finishedAt": "2026-07-27T17:30:57.738Z"
+  "verdict": "PASS",
+  "finishedAt": "2026-07-31T09:16:01.621Z"
 }

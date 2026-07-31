@@ -10,7 +10,7 @@
   ],
   "intent": "メール確認方式(auto)を使う場合、確認されないまま枠が押さえられ続けないようにする仕組み。",
   "notes": "auto モード自体に確認ステップが無いため(AT-PUB-010 参照)、この機能も存在しない。",
-  "startedAt": "2026-07-27T12:51:27.931Z",
+  "startedAt": "2026-07-31T09:15:30.256Z",
   "steps": [],
   "dbChecks": [
     {
@@ -26,5 +26,5 @@
   "partialReason": null,
   "aborted": false,
   "verdict": "NA",
-  "finishedAt": "2026-07-27T12:51:27.994Z"
+  "finishedAt": "2026-07-31T09:15:30.327Z"
 }

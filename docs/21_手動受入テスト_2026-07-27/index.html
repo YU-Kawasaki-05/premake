@@ -173,11 +173,11 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <p class="lede">クリニックで実際に使う操作を、ブラウザを動かして 1 手順ずつ確認した記録です。各手順のスクリーンショットを画面が移り変わる順に並べ、<b>何を期待し、何が起き、なぜ合格と判断したか</b>を併記しています。画面だけでは分からない「本当にデータが保存されたか」はデータベースへ直接問い合わせて裏を取っています。</p>
   <div class="chips">
     <span class="chip big">ケース 82</span>
-    <span class="chip big ok">合格 68</span>
-    <span class="chip big warn">一部制限 10</span>
+    <span class="chip big ok">合格 70</span>
+    <span class="chip big warn">一部制限 8</span>
     <span class="chip big">検証不能 4</span>
     <span class="chip big ok">不合格 0</span>
-    <span class="chip">生成 2026/07/28 2:52</span>
+    <span class="chip">生成 2026/07/31 18:16</span>
   </div>
 </div>
 
@@ -204,9 +204,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <div class="table-scroll"><table>
     <thead><tr><th>フェーズ</th><th>範囲</th><th>ケース</th><th>合格</th><th>一部制限</th><th>検証不能</th><th>不合格</th></tr></thead>
     <tbody><tr><td>A</td><td>中核フロー(院内予約 → 確認 → 施術 → キャンセル/変更)</td>
-    <td>26</td><td class="num-ok">23</td><td class="num-warn">3</td>
+    <td>26</td><td class="num-ok">24</td><td class="num-warn">2</td>
     <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>B</td><td>公開予約(患者がインターネットから予約する導線)</td>
-    <td>30</td><td class="num-ok">24</td><td class="num-warn">3</td>
+    <td>30</td><td class="num-ok">25</td><td class="num-warn">2</td>
     <td class="num-na">3</td><td class="num-ng">0</td></tr><tr><td>C</td><td>立ち上げ導線(本番で担当者が実際に行う初期設定)</td>
     <td>4</td><td class="num-ok">3</td><td class="num-warn">1</td>
     <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>D</td><td>通知・運営・法定ページ</td>
@@ -446,7 +446,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <td>—</td>
   </tr><tr class="">
     <td>7</td><td><code>AT-CAT-012</code></td>
-    <td><span class="vd vd-partial">一部制限あり</span></td>
+    <td><span class="vd vd-pass">合格</span></td>
     <td>—</td>
   </tr><tr class="">
     <td>8</td><td><code>AT-CAT-019</code></td>
@@ -990,12 +990,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   </div>
   </article><article class="case" id="AT-CAT-012">
     <header class="case-head">
-      <div class="case-id"><code>AT-CAT-012</code><span class="pri pri-p1">P1</span><span class="vd vd-partial">一部制限あり</span></div>
+      <div class="case-id"><code>AT-CAT-012</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
       <h3>担当マトリクス(誰がどのメニューを担当できるか)の割当</h3>
       <p class="case-intent">担当割当が無いスタッフは公開予約の空き枠に一切現れない。ここを設定し忘れると「予約できる枠が 1 件も出ない」という問い合わせになる。</p>
       <p class="case-meta">対象要件 <code>v2-07</code> ／ 詳細手順 <code>docs/20_受け入れテスト/02_メニュー・リソース・枠.md</code></p>
     </header>
-    <div class="callout warn"><span class="lab">一部に制限があります</span><p>担当割当そのものは正しく保存されますが、この変更は監査ログに残りません(AT-CAT-014 の既知不具合)。誰がいつ担当を付け外ししたかを後から追跡できないため、運用でカバーするか改修が必要です。</p></div>
+    
     <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
         <button type="button" class="shot" data-src="evidence/AT-CAT-012/01_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%81%AE%E8%A1%A8%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-CAT-012 ステップ1: 担当設定の表を開く">
           <img src="evidence/AT-CAT-012/01_%E6%8B%85%E5%BD%93%E8%A8%AD%E5%AE%9A%E3%81%AE%E8%A1%A8%E3%82%92%E9%96%8B%E3%81%8F.png" alt="担当設定の表を開く" loading="lazy">
@@ -1043,7 +1043,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>staff_service_assignments に反映され、対象は指名可能スタッフに限られる</td>
-        <td><code>select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '56a2e2bb-922c-4338-aa57-b53c8bed9ebb'</code></td>
+        <td><code>select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '123b7c58-dc19-43e9-b9d9-c9d361435117'</code></td>
         <td>1 行 / is_bookable=t</td>
         <td>t:検証用 メニューA</td>
       </tr><tr class="">
@@ -1051,18 +1051,10 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
         <td>【既知の弱点】担当設定の変更が監査ログに残るか</td>
         <td><code>select count(*) from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action like 'assignment%'</code></td>
         <td>本来は assignment.* が記録されるべき(AT-CAT-014)</td>
-        <td>assignment 系の監査ログ 0 件</td>
+        <td>assignment 系の監査ログ 1 件</td>
       </tr></tbody>
     </table></div></details>
-    <div class="callout crit">
-    <span class="lab">未解決の問題 ／ 深刻度 low</span>
-    <p><b>担当設定の変更が監査ログに記録されない(AT-CAT-014)</b></p>
-    <p>割当の追加後も action like 'assignment%' の監査ログは 0 件でした。他の操作(部屋作成・ログイン等)は記録されています。</p>
-    <p><b>影響:</b> 「担当が外れていて予約が取れない」等の問い合わせ時に、いつ誰が変更したのか追跡できません。患者影響はありませんが運用調査が難しくなります。</p>
     
-    <p><b>回避策:</b> 変更時に運用側で記録を残す。改修は recordAudit() の呼び出し追加のみで済む軽微なもの。</p>
-    
-  </div>
   </article><article class="case" id="AT-CAT-019">
     <header class="case-head">
       <div class="case-id"><code>AT-CAT-019</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
@@ -1111,11 +1103,11 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-31 13:00〜17:00</dd>
+          <dt>操作</dt><dd>担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-08-03 13:00〜17:00</dd>
           <dt>期待</dt><dd>ダイアログに入力が反映される</dd>
-          <dt>実測</dt><dd>日付=2026-07-31 開始=13:00 終了=17:00</dd>
+          <dt>実測</dt><dd>日付=2026-08-03 開始=13:00 終了=17:00</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>日付が入力される<span class="ck-detail">2026-07-31</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>開始 13:00</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>終了 17:00</span></li></ul>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>日付が入力される<span class="ck-detail">2026-08-03</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>開始 13:00</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>終了 17:00</span></li></ul>
         
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-019 ステップ2: 枠の条件を入力"><img src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="枠の条件を入力" loading="lazy"></button></div>
@@ -1156,9 +1148,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>schedule_blocks に受付枠として保存され、JST の時刻がずれない</td>
-        <td><code>select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'f4ba3d7b-8f90-40ae-b29b-96c4da6e2a73' order by lower(time_range) desc limit 1</code></td>
-        <td>block_type=open / 2026-07-31 13:00 〜 2026-07-31 17:00 (JST)</td>
-        <td>open / 2026-07-31 13:00 / 2026-07-31 17:00</td>
+        <td><code>select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'b4c56eb1-9306-4d4d-ae03-26817805538d' order by lower(time_range) desc limit 1</code></td>
+        <td>block_type=open / 2026-08-03 13:00 〜 2026-08-03 17:00 (JST)</td>
+        <td>open / 2026-08-03 13:00 / 2026-08-03 17:00</td>
       </tr></tbody>
     </table></div></details>
     
@@ -3201,7 +3193,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>「検証用 メニューA」の予約ページを開く</dd>
+          <dt>操作</dt><dd>「アートメイク カウンセリングのみ」の予約ページを開く</dd>
           <dt>期待</dt><dd>指名欄が表示されない</dd>
           <dt>実測</dt><dd>指名欄=false</dd>
         </dl>
@@ -3232,11 +3224,11 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>メニュー「アートメイク 眉(2回目まで)」(所要 165 分)で、指名なしの空き枠(9 枠)を確認したうえで 鈴木 を指名して再表示</dd>
+          <dt>操作</dt><dd>メニュー「アートメイク 眉(2回目まで)」(所要 165 分)で、指名なしの空き枠(14 枠)を確認したうえで 鈴木 を指名して再表示</dd>
           <dt>期待</dt><dd>指名したスタッフの受付枠に由来する時刻だけが残る</dd>
-          <dt>実測</dt><dd>指名なし=9 枠 / 指名後=5 枠(14:15,14:30,14:45,15:00,15:15)</dd>
+          <dt>実測</dt><dd>指名なし=14 枠 / 指名後=9 枠(13:15,13:30,13:45,14:00,14:15,14:30 …)</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>指名操作ができる<span class="ck-detail">鈴木</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>指名後の枠がすべて当該スタッフの受付枠内にある<span class="ck-detail">対象外=なし</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>指名で枠が絞られる(または同数)<span class="ck-detail">9→5</span></span></li></ul>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>指名操作ができる<span class="ck-detail">鈴木</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>指名後の枠がすべて当該スタッフの受付枠内にある<span class="ck-detail">対象外=なし</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>指名で枠が絞られる(または同数)<span class="ck-detail">14→9</span></span></li></ul>
         <p class="why"><b>判定の根拠</b> 指名後の枠がすべて、そのスタッフの受付枠の範囲に収まっているかで判定している。</p>
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-021/01__%E9%88%B4%E6%9C%A8_%E3%82%92%E6%8C%87%E5%90%8D%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-021 ステップ1: 「鈴木」を指名する"><img src="evidence/AT-PUB-021/01__%E9%88%B4%E6%9C%A8_%E3%82%92%E6%8C%87%E5%90%8D%E3%81%99%E3%82%8B.png" alt="「鈴木」を指名する" loading="lazy"></button></div>
@@ -3270,9 +3262,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
         <dl>
           <dt>操作</dt><dd>その日に受付枠を持つスタッフから、当該メニューの担当割当を外して再表示</dd>
           <dt>期待</dt><dd>そのスタッフの枠に由来する空き枠が消える</dd>
-          <dt>実測</dt><dd>22 → 0 枠(削除した割当=2 件)</dd>
+          <dt>実測</dt><dd>29 → 0 枠(削除した割当=2 件)</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>割当を外すと空き枠が減る<span class="ck-detail">22→0</span></span></li></ul>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>割当を外すと空き枠が減る<span class="ck-detail">29→0</span></span></li></ul>
         <p class="why"><b>判定の根拠</b> 「担当割当を忘れると空き枠が 1 件も出ない」という運用上の落とし穴の裏返しでもある。</p>
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-022/01_%E6%8B%85%E5%BD%93%E5%89%B2%E5%BD%93%E3%82%92%E5%A4%96%E3%81%99%E3%81%A8%E6%9E%A0%E3%81%8C%E6%B6%88%E3%81%88%E3%82%8B.png" data-cap="AT-PUB-022 ステップ1: 担当割当を外すと枠が消える"><img src="evidence/AT-PUB-022/01_%E6%8B%85%E5%BD%93%E5%89%B2%E5%BD%93%E3%82%92%E5%A4%96%E3%81%99%E3%81%A8%E6%9E%A0%E3%81%8C%E6%B6%88%E3%81%88%E3%82%8B.png" alt="担当割当を外すと枠が消える" loading="lazy"></button></div>
@@ -3284,9 +3276,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
         <dl>
           <dt>操作</dt><dd>担当割当を元に戻して再表示</dd>
           <dt>期待</dt><dd>空き枠が元の件数に戻る</dd>
-          <dt>実測</dt><dd>0 → 22 枠(元: 22 枠)</dd>
+          <dt>実測</dt><dd>0 → 29 枠(元: 29 枠)</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>元の件数に戻る<span class="ck-detail">22/22</span></span></li></ul>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>元の件数に戻る<span class="ck-detail">29/29</span></span></li></ul>
         
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-022/02_%E5%89%B2%E5%BD%93%E3%82%92%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" data-cap="AT-PUB-022 ステップ2: 割当を戻すと復活する"><img src="evidence/AT-PUB-022/02_%E5%89%B2%E5%BD%93%E3%82%92%E6%88%BB%E3%81%99%E3%81%A8%E5%BE%A9%E6%B4%BB%E3%81%99%E3%82%8B.png" alt="割当を戻すと復活する" loading="lazy"></button></div>
@@ -3332,11 +3324,11 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>予約番号 B-260727-CB81 と at-pub@example.com を入力して照会</dd>
+          <dt>操作</dt><dd>予約番号 B-260731-CF4E と at-pub@example.com を入力して照会</dd>
           <dt>期待</dt><dd>自分の予約の管理画面が開き、日時とメニューが表示される</dd>
-          <dt>実測</dt><dd>遷移先=/c/demo/manage/ObXysePkESCgWYIyRJ2t0-2Lm_UeuxWWLHmGWxSDhYY / 予約番号の表示=true</dd>
+          <dt>実測</dt><dd>遷移先=/c/demo/manage/LSHwyYS8AxMaedtwVL9Xch3cxV1FCUapMFC78pIg4X4 / 予約番号の表示=true</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>管理画面へ遷移する<span class="ck-detail">/c/demo/manage/ObXysePkESCgWYIyRJ2t0-2Lm_UeuxWWLHmGWxSDhYY</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約番号が表示される</span></li></ul>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>管理画面へ遷移する<span class="ck-detail">/c/demo/manage/LSHwyYS8AxMaedtwVL9Xch3cxV1FCUapMFC78pIg4X4</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約番号が表示される</span></li></ul>
         <p class="why"><b>判定の根拠</b> 管理画面の URL には推測できないトークンが入る(番号だけでは開けない)。</p>
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-023/02_%E6%AD%A3%E3%81%97%E3%81%84%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E7%85%A7%E4%BC%9A.png" data-cap="AT-PUB-023 ステップ2: 正しい組み合わせで照会"><img src="evidence/AT-PUB-023/02_%E6%AD%A3%E3%81%97%E3%81%84%E7%B5%84%E3%81%BF%E5%90%88%E3%82%8F%E3%81%9B%E3%81%A7%E7%85%A7%E4%BC%9A.png" alt="正しい組み合わせで照会" loading="lazy"></button></div>
@@ -3368,7 +3360,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>予約番号 B-260727-CB81 に、無関係のメールアドレスを組み合わせて照会</dd>
+          <dt>操作</dt><dd>予約番号 B-260731-CF4E に、無関係のメールアドレスを組み合わせて照会</dd>
           <dt>期待</dt><dd>管理画面は開かず、予約の存在も分からない応答になる</dd>
           <dt>実測</dt><dd>遷移先=/c/demo/lookup / 画面=「予約の確認・キャンセル 予約時の予約番号とメールアドレスを入力してください。 予約番号 メールアドレス 該当する予約が見つかりませんで」</dd>
         </dl>
@@ -3423,7 +3415,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>予約番号 B-260727-CB81 で管理画面に入る</dd>
+          <dt>操作</dt><dd>予約番号 B-260731-CF4E で管理画面に入る</dd>
           <dt>期待</dt><dd>キャンセルの入口と、キャンセル期限(24 時間前まで)の案内がある</dd>
           <dt>実測</dt><dd>キャンセルボタン=1個 / 期限の記載=true</dd>
         </dl>
@@ -3453,7 +3445,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
         <dl>
           <dt>操作</dt><dd>「キャンセルする」で確定</dd>
           <dt>期待</dt><dd>キャンセル済みの表示になり、枠が解放される</dd>
-          <dt>実測</dt><dd>画面=「デモクリニック 予約番号 B-260727-CB81 メニュー メディカルピーリング 日時 7/29(水) 10:00–」 / DB: status=cancelled 生きている枠=0</dd>
+          <dt>実測</dt><dd>画面=「デモクリニック 予約番号 B-260731-CF4E メニュー メディカルピーリング 日時 8/2(日) 10:00–1」 / DB: status=cancelled 生きている枠=0</dd>
         </dl>
         <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>状態がキャンセルになる<span class="ck-detail">cancelled</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>押さえていた枠が解放される<span class="ck-detail">0 件</span></span></li></ul>
         
@@ -3468,7 +3460,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>患者と院内の双方に通知が積まれる</td>
-        <td><code>select kind, recipient_type from notifications where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' order by created_at</code></td>
+        <td><code>select kind, recipient_type from notifications where booking_id = '2da234cc-f2d1-4613-92dd-0cb85abac1a2' order by created_at</code></td>
         <td>booking_cancelled(patient) と booking_cancelled_internal(member)</td>
         <td>booking_requested:patient / booking_created_internal:member / booking_cancelled:patient / booking_cancelled_internal:member</td>
       </tr><tr class="">
@@ -3482,12 +3474,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     
   </article><article class="case" id="AT-PUB-026">
     <header class="case-head">
-      <div class="case-id"><code>AT-PUB-026</code><span class="pri pri-p1">P1</span><span class="vd vd-partial">一部制限あり</span></div>
+      <div class="case-id"><code>AT-PUB-026</code><span class="pri pri-p1">P1</span><span class="vd vd-pass">合格</span></div>
       <h3>キャンセル期限を過ぎた予約は患者側でキャンセルできない</h3>
       <p class="case-intent">直前キャンセルを電話に誘導し、クリニックが状況を把握できるようにするための制限。設定した時間(現在 24 時間前)より後は画面から操作できないこと。</p>
       <p class="case-meta">対象要件 <code>v2-22</code> ／ 詳細手順 <code>docs/20_受け入れテスト/05_公開予約.md</code></p>
     </header>
-    <div class="callout warn"><span class="lab">一部に制限があります</span><p>キャンセル期限を過ぎていても「予約をキャンセル」ボタンは表示されます。押すとサーバー側で拒否され予約は変わりませんが、患者は操作してから断られることになります(表示の出し分けが未実装)。</p></div>
+    
     <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
         <button type="button" class="shot" data-src="evidence/AT-PUB-026/01_%E6%9C%9F%E9%99%90%E5%86%85_48_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" data-cap="AT-PUB-026 ステップ1: 期限内(48 時間後)の予約">
           <img src="evidence/AT-PUB-026/01_%E6%9C%9F%E9%99%90%E5%86%85_48_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" alt="期限内(48 時間後)の予約" loading="lazy">
@@ -3518,26 +3510,18 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>2 時間後に迫った予約の管理画面を開き、キャンセルを試みる</dd>
-          <dt>期待</dt><dd>キャンセルできない。期限を過ぎている旨が案内される</dd>
-          <dt>実測</dt><dd>キャンセルボタン=1個 / 押した結果=サーバーが拒否 / 画面=「デモクリニック 予約番号 B-AT0001-SOON メニュー メディカルピーリング 日時 7/27(月) 23:51–7/28(火) 00:36 状態 確定 この予約をキャンセルしますか? キャンセルする 戻る キャン」</dd>
+          <dt>操作</dt><dd>2 時間後に迫った予約の管理画面を開く</dd>
+          <dt>期待</dt><dd>キャンセルボタンが表示されず、期限を過ぎている旨と連絡先(電話)が案内される</dd>
+          <dt>実測</dt><dd>キャンセルボタン=0個 / 画面=「デモクリニック 予約番号 B-AT0001-SOON メニュー メディカルピーリング 日時 7/31(金) 20:15–21:00 状態 確定 キャンセル期限(24時間前)を過ぎています。クリニックへご連絡ください。 TEL 03-0000-0000 デモクリ」</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>期限外のキャンセルが成立しない<span class="ck-detail">予約の状態=confirmed</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>期限を過ぎた旨が案内される<span class="ck-detail">デモクリニック 予約番号 B-AT0001-SOON メニュー メディカルピーリング 日時 7/27(月) 23:51–7/28(火) 00:36 状態 確定 この予約をキャンセル</span></span></li></ul>
-        <p class="why"><b>判定の根拠</b> ボタン自体は表示されるが、押すとサーバー側の期限チェックで拒否される(予約は確定のまま)。表示の出し分けは行われていない。</p>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>キャンセルボタンが表示されない(#14 修正)<span class="ck-detail">ボタン=0個</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>期限を過ぎた旨が案内される<span class="ck-detail">デモクリニック 予約番号 B-AT0001-SOON メニュー メディカルピーリング 日時 7/31(金) 20:15–21:00 状態 確定 キャンセル期限(24時間前)を過ぎて</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>連絡先(TEL)が案内される</span></li></ul>
+        <p class="why"><b>判定の根拠</b> 表示の出し分けは UX、防御はサーバー(cancelByToken)の二段構え。判定は isPastCancelDeadline() をサーバーと画面で共有しており、二重実装によるズレは構造的に起きない(Issue #14 / 2026-07-31 修正)。</p>
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PUB-026/02_%E6%9C%9F%E9%99%90%E5%A4%96_2_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" data-cap="AT-PUB-026 ステップ2: 期限外(2 時間後)の予約"><img src="evidence/AT-PUB-026/02_%E6%9C%9F%E9%99%90%E5%A4%96_2_%E6%99%82%E9%96%93%E5%BE%8C_%E3%81%AE%E4%BA%88%E7%B4%84.png" alt="期限外(2 時間後)の予約" loading="lazy"></button></div>
     </div>
   </div></div>
     
-    <div class="callout crit">
-    <span class="lab">未解決の問題 ／ 深刻度 low</span>
-    <p><b>キャンセル期限を過ぎた予約でも、患者側にキャンセルボタンが表示される</b></p>
-    <p>管理画面は予約の状態(キャンセル済み・完了・来院)だけを見てボタンの出し分けをしており、キャンセル期限は見ていません。期限後に押すとサーバー側で拒否され「キャンセル期限(24時間前)を過ぎています」と表示されます。データは変わらないため安全性の問題はありません。</p>
-    <p><b>影響:</b> 患者が操作してから断られるため、問い合わせの電話が増える可能性があります。データ不整合は起きません。</p>
     
-    <p><b>回避策:</b> 画面側で最初のセッション開始時刻と期限を比較し、期限を過ぎていればボタンを出さずに連絡先を案内する(manage-booking-view.tsx の alreadyClosed の判定に期限を追加)。</p>
-    
-  </div>
   </article><article class="case" id="AT-PUB-027">
     <header class="case-head">
       <div class="case-id"><code>AT-PUB-027</code><span class="pri pri-p1">P1</span><span class="vd vd-na">検証不能</span></div>
@@ -3586,7 +3570,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>トークンは平文ではなくハッシュで保存され、有効期限がある</td>
-        <td><code>select token_hash is not null as hashed, length(token_hash) as len, expires_at &gt; now() as valid, purpose from booking_access_tokens where booking_id = '5daf6671-0d6d-4642-8c3f-61cf747d585a' limit 1</code></td>
+        <td><code>select token_hash is not null as hashed, length(token_hash) as len, expires_at &gt; now() as valid, purpose from booking_access_tokens where booking_id = '2da234cc-f2d1-4613-92dd-0cb85abac1a2' limit 1</code></td>
         <td>ハッシュ値(64 文字の SHA-256)が保存され、期限が未来</td>
         <td>t / 64 / t / manage</td>
       </tr></tbody>
@@ -4914,18 +4898,10 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
 <section id="issues"><h2>検出した問題</h2>
      <p class="sec-sub">見つかったものは隠さず全部載せています。この作業内で直したものは「修正済み」、判断や別作業が必要なものは「未解決」に分けています。</p>
      <div class="chips" style="margin-bottom:18px">
-       <span class="chip big ng">未解決 5</span>
+       <span class="chip big ng">未解決 3</span>
        <span class="chip big warn">修正済み 1</span>
      </div>
      <h3>未解決(判断・追加作業が必要)</h3><div class="callout crit">
-    <span class="lab">未解決の問題 ／ 深刻度 low ／ AT-CAT-012</span>
-    <p><b>担当設定の変更が監査ログに記録されない(AT-CAT-014)</b></p>
-    <p>割当の追加後も action like 'assignment%' の監査ログは 0 件でした。他の操作(部屋作成・ログイン等)は記録されています。</p>
-    <p><b>影響:</b> 「担当が外れていて予約が取れない」等の問い合わせ時に、いつ誰が変更したのか追跡できません。患者影響はありませんが運用調査が難しくなります。</p>
-    
-    <p><b>回避策:</b> 変更時に運用側で記録を残す。改修は recordAudit() の呼び出し追加のみで済む軽微なもの。</p>
-    
-  </div><div class="callout crit">
     <span class="lab">未解決の問題 ／ 深刻度 medium ／ AT-PUB-010</span>
     <p><b>承認モード「メール確認後に自動確定(auto)」に、メール確認のステップが実装されていない</b></p>
     <p>auto に設定して申し込んだところ、確認リンクを経ずにその場で確定(confirmed)になりました。積まれた通知は booking_confirmed / booking_created_internal で、確認用のメールは送られていません。</p>
@@ -4940,14 +4916,6 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <p><b>影響:</b> 予約内容の不正閲覧・いたずら予約による枠の占有・メール送信の誘発。公開予約を本格運用するなら実装が望ましい水準です。</p>
     
     <p><b>回避策:</b> 当面は Vercel/Cloudflare 側の WAF・ボット対策で緩和できます。恒久対応は Upstash 等での IP/対象単位の制限(申し送り #3)。</p>
-    
-  </div><div class="callout crit">
-    <span class="lab">未解決の問題 ／ 深刻度 low ／ AT-PUB-026</span>
-    <p><b>キャンセル期限を過ぎた予約でも、患者側にキャンセルボタンが表示される</b></p>
-    <p>管理画面は予約の状態(キャンセル済み・完了・来院)だけを見てボタンの出し分けをしており、キャンセル期限は見ていません。期限後に押すとサーバー側で拒否され「キャンセル期限(24時間前)を過ぎています」と表示されます。データは変わらないため安全性の問題はありません。</p>
-    <p><b>影響:</b> 患者が操作してから断られるため、問い合わせの電話が増える可能性があります。データ不整合は起きません。</p>
-    
-    <p><b>回避策:</b> 画面側で最初のセッション開始時刻と期限を比較し、期限を過ぎていればボタンを出さずに連絡先を案内する(manage-booking-view.tsx の alreadyClosed の判定に期限を追加)。</p>
     
   </div><div class="callout crit">
     <span class="lab">未解決の問題 ／ 深刻度 low ／ AT-AUTH-027</span>
@@ -5016,7 +4984,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   </table></div>
 </section>
 
-<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/28 2:52(自動生成。手書きの判定は含みません)</footer>
+<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/31 18:16(自動生成。手書きの判定は含みません)</footer>
 </div>
 
 <dialog id="lb"><form method="dialog"><button type="submit" style="all:unset;cursor:zoom-out;display:block"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></button></form></dialog>

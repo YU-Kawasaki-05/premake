@@ -9,7 +9,7 @@
     "20_受け入れテスト/02_メニュー・リソース・枠.md"
   ],
   "intent": "受付枠は「患者がインターネットから予約できる時間帯」そのもの。ここが作れないと公開予約が成立しないため P0。",
-  "startedAt": "2026-07-27T17:30:57.741Z",
+  "startedAt": "2026-07-31T09:16:01.623Z",
   "steps": [
     {
       "n": 1,
@@ -31,14 +31,14 @@
     {
       "n": 2,
       "label": "枠の条件を入力",
-      "action": "担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-31 13:00〜17:00",
+      "action": "担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-08-03 13:00〜17:00",
       "expect": "ダイアログに入力が反映される",
-      "actual": "日付=2026-07-31 開始=13:00 終了=17:00",
+      "actual": "日付=2026-08-03 開始=13:00 終了=17:00",
       "checks": [
         {
           "label": "日付が入力される",
           "ok": true,
-          "detail": "2026-07-31"
+          "detail": "2026-08-03"
         },
         {
           "label": "開始 13:00",
@@ -95,9 +95,9 @@
   "dbChecks": [
     {
       "label": "schedule_blocks に受付枠として保存され、JST の時刻がずれない",
-      "query": "select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'f4ba3d7b-8f90-40ae-b29b-96c4da6e2a73' order by lower(time_range) desc limit 1",
-      "expect": "block_type=open / 2026-07-31 13:00 〜 2026-07-31 17:00 (JST)",
-      "actual": "open / 2026-07-31 13:00 / 2026-07-31 17:00",
+      "query": "select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'b4c56eb1-9306-4d4d-ae03-26817805538d' order by lower(time_range) desc limit 1",
+      "expect": "block_type=open / 2026-08-03 13:00 〜 2026-08-03 17:00 (JST)",
+      "actual": "open / 2026-08-03 13:00 / 2026-08-03 17:00",
       "ok": true
     }
   ],
@@ -107,5 +107,5 @@
   "partialReason": null,
   "aborted": false,
   "verdict": "PASS",
-  "finishedAt": "2026-07-27T17:31:11.503Z"
+  "finishedAt": "2026-07-31T09:16:15.556Z"
 }
