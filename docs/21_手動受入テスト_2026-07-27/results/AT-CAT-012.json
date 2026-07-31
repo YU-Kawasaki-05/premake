@@ -9,7 +9,7 @@
     "20_受け入れテスト/02_メニュー・リソース・枠.md"
   ],
   "intent": "担当割当が無いスタッフは公開予約の空き枠に一切現れない。ここを設定し忘れると「予約できる枠が 1 件も出ない」という問い合わせになる。",
-  "startedAt": "2026-07-26T20:07:40.945Z",
+  "startedAt": "2026-07-27T17:30:53.348Z",
   "steps": [
     {
       "n": 1,
@@ -52,7 +52,7 @@
   "dbChecks": [
     {
       "label": "staff_service_assignments に反映され、対象は指名可能スタッフに限られる",
-      "query": "select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '509b674b-2080-4d1d-a607-5e4c1c68c31e'",
+      "query": "select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '56a2e2bb-922c-4338-aa57-b53c8bed9ebb'",
       "expect": "1 行 / is_bookable=t",
       "actual": "t:検証用 メニューA",
       "ok": true
@@ -80,5 +80,5 @@
   "partialReason": "担当割当そのものは正しく保存されますが、この変更は監査ログに残りません(AT-CAT-014 の既知不具合)。誰がいつ担当を付け外ししたかを後から追跡できないため、運用でカバーするか改修が必要です。",
   "aborted": false,
   "verdict": "PARTIAL",
-  "finishedAt": "2026-07-26T20:07:45.428Z"
+  "finishedAt": "2026-07-27T17:30:57.738Z"
 }

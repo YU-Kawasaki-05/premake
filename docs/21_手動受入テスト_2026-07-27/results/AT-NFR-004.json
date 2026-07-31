@@ -1,0 +1,45 @@
+{
+  "id": "AT-NFR-004",
+  "priority": "P0",
+  "phase": "E",
+  "order": 403,
+  "title": "自院のデータを他院へ移送(clinic_id の書き換え)できない",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/07_非機能・セキュリティ.md"
+  ],
+  "intent": "自分が触れる行の clinic_id を他院に書き換えられると、他院の台帳に自分のデータを混ぜ込めてしまう(逆に自院のデータを消せる)。",
+  "startedAt": "2026-07-27T17:22:39.891Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "自院の予約の clinic_id を他院に書き換えようとする",
+      "action": "スタッフの JWT で PATCH /rest/v1/bookings?id=eq.<自院の予約> {clinic_id:<他院>}",
+      "expect": "拒否され、clinic_id は変わらない",
+      "actual": "HTTP 403 / clinic_id: 変化なし / 応答={\"code\":\"42501\",\"details\":null,\"hint\":null,\"message\":\"new row violates row-level security ",
+      "note": "RLS の WITH CHECK 句で「更新後の行も自院に属すること」を要求していれば拒否される。",
+      "checks": [
+        {
+          "label": "clinic_id が変わっていない",
+          "ok": true,
+          "detail": "10000000-0000-4000-a000-000000000001"
+        },
+        {
+          "label": "書き込みが拒否される",
+          "ok": true,
+          "detail": "HTTP 403"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:40.061Z"
+}

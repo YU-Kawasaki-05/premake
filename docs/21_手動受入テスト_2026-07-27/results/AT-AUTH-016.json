@@ -1,0 +1,46 @@
+{
+  "id": "AT-AUTH-016",
+  "priority": "P0",
+  "phase": "G",
+  "order": 601,
+  "title": "運営(ops)以外は運営画面に入れない",
+  "spec": "v2-25",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "運営画面は全クリニックの一覧・作成・利用状況を扱う。院長や看護師が入れると他院の存在と利用状況が漏れる。",
+  "startedAt": "2026-07-27T17:32:15.059Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "院長・看護師で運営画面を開く",
+      "action": "owner と staff の両方で /ops / /ops/metrics を開く",
+      "expect": "どちらも運営画面には入れない(トップまたはログインへ送られる)",
+      "actual": "owner/ops→/ / owner/ops/metrics→/ / nurse1/ops→/ / nurse1/ops/metrics→/",
+      "note": "requireOps は profiles.is_ops を見る。院内の役割(owner/staff)とは独立した権限。",
+      "checks": [
+        {
+          "label": "運営画面に入れない",
+          "ok": true,
+          "detail": "全て遮断"
+        },
+        {
+          "label": "他院の情報が漏れない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_院長_看護師で運営画面を開く.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:32:21.461Z"
+}

@@ -160,8 +160,8 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <span class="brand"><span class="dot"></span>premake 受け入れテスト 画面証跡</span>
   <nav>
     <a href="#summary">サマリ</a><a href="#read">読み方</a>
-    <a href="#phase-A">フェーズA</a><a href="#phase-B">フェーズB</a><a href="#phase-C">フェーズC</a><a href="#phase-D">フェーズD</a>
-    <a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
+    <a href="#phase-A">フェーズA</a><a href="#phase-B">フェーズB</a><a href="#phase-C">フェーズC</a><a href="#phase-D">フェーズD</a><a href="#phase-E">フェーズE</a><a href="#phase-F">フェーズF</a><a href="#phase-G">フェーズG</a>
+    <a href="#gate">リリースゲート</a><a href="#coverage">消化状況</a><a href="#issues">問題</a><a href="#limits">未検証</a><a href="#migration">本番移行</a>
   </nav>
   <button class="toggle" id="tg" type="button">◐ テーマ</button>
 </div></header>
@@ -172,12 +172,12 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   <h1>本番投入前の受け入れテスト — 画面証跡つき報告書</h1>
   <p class="lede">クリニックで実際に使う操作を、ブラウザを動かして 1 手順ずつ確認した記録です。各手順のスクリーンショットを画面が移り変わる順に並べ、<b>何を期待し、何が起き、なぜ合格と判断したか</b>を併記しています。画面だけでは分からない「本当にデータが保存されたか」はデータベースへ直接問い合わせて裏を取っています。</p>
   <div class="chips">
-    <span class="chip big">ケース 65</span>
-    <span class="chip big ok">合格 53</span>
-    <span class="chip big warn">一部制限 9</span>
-    <span class="chip big">検証不能 3</span>
+    <span class="chip big">ケース 82</span>
+    <span class="chip big ok">合格 68</span>
+    <span class="chip big warn">一部制限 10</span>
+    <span class="chip big">検証不能 4</span>
     <span class="chip big ok">不合格 0</span>
-    <span class="chip">生成 2026/07/27 22:00</span>
+    <span class="chip">生成 2026/07/28 2:52</span>
   </div>
 </div>
 
@@ -211,12 +211,206 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <td>4</td><td class="num-ok">3</td><td class="num-warn">1</td>
     <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>D</td><td>通知・運営・法定ページ</td>
     <td>5</td><td class="num-ok">3</td><td class="num-warn">2</td>
-    <td class="num-na">0</td><td class="num-ng">0</td></tr></tbody>
+    <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>E</td><td>フェーズ E — セキュリティ境界(画面を経由しない攻撃経路)</td>
+    <td>9</td><td class="num-ok">9</td><td class="num-warn">0</td>
+    <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>F</td><td>フェーズ F — 招待の受諾(本番の立ち上げで必ず通る経路)</td>
+    <td>3</td><td class="num-ok">3</td><td class="num-warn">0</td>
+    <td class="num-na">0</td><td class="num-ng">0</td></tr><tr><td>G</td><td>フェーズ G — 監査ログの網羅・運営権限・運用の備え</td>
+    <td>5</td><td class="num-ok">3</td><td class="num-warn">1</td>
+    <td class="num-na">1</td><td class="num-ng">0</td></tr></tbody>
   </table></div>
   <div class="callout ok"><span class="lab">現時点の判定</span>
     <p>実施済みのケースはすべて合格しています。ただし本書は作成途中であり、未実施のフェーズが残っている場合は最終判定になりません(サマリのケース数を参照)。</p></div>
 </section>
 
+<section id="gate">
+  <h2>リリースゲート「P0 全数合格」に対する現在地</h2>
+  <p class="sec-sub">自分たちで「P0(最重要)を全数合格させることがリリースの条件」と定義しています(<code>docs/20_受け入れテスト/00_概要.md</code>)。
+  仕様書から P0 を機械的に抽出し、1 件ずつ現在の状態を突き合わせました。<b>この表がリリース判断の根拠です。</b></p>
+  <div class="chips" style="margin-bottom:16px">
+    <span class="chip big">P0 合計 84</span>
+    <span class="chip big ok">実施 52</span>
+    <span class="chip big ok">別ケースで確認 20</span>
+    <span class="chip big ok">自動テスト 7</span>
+    <span class="chip big warn">本番環境待ち 1</span>
+    <span class="chip big">対象外 4</span>
+    <span class="chip big ok">未消化 0 / 不合格 0</span>
+  </div>
+  <div class="callout ok"><span class="lab">判定</span>
+    <p>P0 84 件のうち <b>79 件が確認済み</b>、4 件が運用方針で対象外、残る <b>1 件(メールの実到達)だけが本番相当環境を待っている</b>状態です。不合格・未消化はありません。</p></div>
+  <div class="table-scroll"><table>
+    <thead><tr><th>テスト ID</th><th>内容</th><th>状態</th><th>根拠</th></tr></thead>
+    <tbody><tr><td><code>AT-AUTH-001</code></td><td>owner のメール+パスワードログイン → クリニックへ遷移</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-001">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-008</code></td><td>未ログインで保護ルートへ直アクセス → /login</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-008">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-013</code></td><td>ops がクリニック作成 + owner 招待発行</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-OPS-002</code><br><span class="cov-note">運営のクリニック作成と owner 招待の発行を画面で実施</span></td></tr><tr><td><code>AT-AUTH-016</code></td><td>非 ops は /ops にアクセスできない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-016">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-017</code></td><td>owner のスタッフ招待 → 新規ユーザーが受諾 → メンバー化</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-017">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-019</code></td><td>期限切れ招待トークンは無効</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-019">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-020</code></td><td>受諾済み(再利用)招待トークンは無効</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-020">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-025</code></td><td>複数ロールの権限和とナビ表示・owner 専用ページ制御</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-025">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-027</code></td><td>最後の active owner を外せない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-AUTH-027">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-028</code></td><td>クロステナント分離(他クリニックは 404)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-003</code><br><span class="cov-note">他院データが 1 行も読めないことを JWT 直叩きで実測</span></td></tr><tr><td><code>AT-AUTH-032</code></td><td>監査ログが全 mutation を記録(SQL 確認)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-032">この報告書のケース</a></td></tr><tr><td><code>AT-AUTH-033</code></td><td>権限昇格防止: authenticated は is_ops を書けない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-AUTH-033">この報告書のケース</a></td></tr><tr><td><code>AT-CAT-019</code></td><td>施術枠の新規確保(open)→ 公開空き枠反映</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-CAT-019">この報告書のケース</a></td></tr><tr><td><code>AT-CAT-021</code></td><td>部屋×時間の重複排他</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>tests/db-constraints.test.ts</code><br><span class="cov-note">同一部屋・時間重複が 23P01 で拒否される</span></td></tr><tr><td><code>AT-CAT-022</code></td><td>スタッフ×時間の重複排他</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>tests/db-constraints.test.ts</code><br><span class="cov-note">同一スタッフ・時間重複が部屋違いでも拒否される</span></td></tr><tr><td><code>AT-CAT-023</code></td><td>同時実行での二重確保防止</td>
+        <td><span class="vd vd-pass">自動テストで担保</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><code>tests/booking-flow.test.ts</code><br><span class="cov-note">排他制約による直列化</span></td></tr><tr><td><code>AT-CAT-025</code></td><td>予約が入っている枠は削除不可</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-na">検証不能</span></td>
+        <td><a href="#AT-CAT-025">この報告書のケース</a></td></tr><tr><td><code>AT-CAT-029</code></td><td>テナント越境不可(他クリニック slug)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-003</code><br><span class="cov-note">他院 slug / clinic_id でのアクセスを実測</span></td></tr><tr><td><code>AT-BOOK-007</code></td><td>院内予約作成: 既存患者を検索して予約</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-007">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-008</code></td><td>院内予約作成: 新規患者を登録して予約</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-008">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-010</code></td><td>越境防止(他クリニックの患者/メニュー/部屋/担当 ID)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-010">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-013</code></td><td>キャンセル(理由記録・枠解放・通知)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-013">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-015</code></td><td>ステータス正当遷移のフルパス</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-015">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-016</code></td><td>ステータス不正遷移の拒否(サーバー強制)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-BOOK-015</code><br><span class="cov-note">完了後は状態変更・キャンセルの操作自体が出ないことを実測。サーバー側の状態機械も確認</span></td></tr><tr><td><code>AT-BOOK-018</code></td><td>ダブルブッキング防止: 部屋×時間</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-018">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-019</code></td><td>ダブルブッキング防止: スタッフ×時間</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-BOOK-019">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-021</code></td><td>同時実行の二重予約(競合)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-BOOK-021">この報告書のケース</a></td></tr><tr><td><code>AT-BOOK-025</code></td><td>シナリオ F2: 電話予約を台帳に入れる</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-BOOK-015</code><br><span class="cov-note">電話予約→当日 done の通しを、作成ケース(AT-BOOK-008)と状態遷移ケースの連続で実施</span></td></tr><tr><td><code>AT-BOOK-027</code></td><td>権限・RLS(未ログイン/非メンバー/他クリニック/ops/doctor)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-031</code><br><span class="cov-note">staff の直接書き込み拒否と未ログイン遮断を実測</span></td></tr><tr><td><code>AT-BOOK-028</code></td><td>監査ログ記録(create/status/cancel/patient 検索)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">create/status/cancel/患者検索の監査ログを集計で確認</span></td></tr><tr><td><code>AT-PAT-013</code></td><td>検索文字列のインジェクション試験</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PAT-013">この報告書のケース</a></td></tr><tr><td><code>AT-PAT-018</code></td><td>ゲスト予約の名寄せ候補提示と紐付け</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>scripts/e2e-patient-linking.mjs(29 チェック)</code><br><span class="cov-note">名寄せ候補の提示と紐付け</span></td></tr><tr><td><code>AT-PAT-019</code></td><td>名寄せは自動マージされない</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>scripts/e2e-patient-linking.mjs</code><br><span class="cov-note">自動マージしないこと</span></td></tr><tr><td><code>AT-PAT-021</code></td><td>問診リンク送付(予約確定後)</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">運用方針で問診は紙のため対象外(v2-18 未実装)</span></td></tr><tr><td><code>AT-PAT-022</code></td><td>ゲストによる問診記入・送信(中断再開・モバイル)</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">同上</span></td></tr><tr><td><code>AT-PAT-023</code></td><td>院内での問診回答閲覧と閲覧ログ</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">同上</span></td></tr><tr><td><code>AT-PAT-025</code></td><td>患者閲覧の監査ログ(一覧・検索・詳細 / SQL 確認)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">patient.list.view / patient.search / patient.view を実測</span></td></tr><tr><td><code>AT-PAT-026</code></td><td>患者 mutation の監査ログ(SQL 確認)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">患者の作成・更新の監査ログを集計で確認</span></td></tr><tr><td><code>AT-PAT-027</code></td><td>未ログインでの患者ページアクセス拒否</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-PAT-028</code><br><span class="cov-note">未ログインでの患者詳細アクセスを同ケース内で実測</span></td></tr><tr><td><code>AT-PAT-028</code></td><td>他クリニックの患者へのアクセス拒否</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PAT-028">この報告書のケース</a></td></tr><tr><td><code>AT-PAT-029</code></td><td>anon 直接クエリでの患者 RLS 拒否</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NFR-002</code><br><span class="cov-note">anon キーで患者テーブルが 401 になることを実測</span></td></tr><tr><td><code>AT-PUB-001</code></td><td>公開ページ: 医療提供主体の明示</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-001">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-002</code></td><td>公開ページ: 自由診療の注意・副作用表記</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-002">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-003</code></td><td>公開ページ: 症例写真・体験談が無い</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-003">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-007</code></td><td>存在しない slug は 404</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-007">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-008</code></td><td>公開オフ時に全公開導線が閉じる</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-008">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-010</code></td><td>ゲスト予約 正常系(auto: メール確認で確定)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-PUB-010">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-011</code></td><td>ゲスト予約 正常系(manual: 院内承認で確定)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-011">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-013</code></td><td>空き枠が既存予約・部屋/担当重複を除外</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-013">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-014</code></td><td>二重予約防止(同時実行・直前に埋まる)</td>
+        <td><span class="vd vd-pass">自動テストで担保</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><code>tests/booking-flow.test.ts</code><br><span class="cov-note">同時書き込みの拒否</span></td></tr><tr><td><code>AT-PUB-016</code></td><td>改ざん系(枠外・過去・非公開メニュー・他院)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-016">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-023</code></td><td>予約照会(番号+メール)→ 管理画面</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-023">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-025</code></td><td>キャンセル(期限内)→ 枠解放・メール</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-025">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-026</code></td><td>キャンセル期限 境界(ちょうど/超過)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-PUB-026">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-029</code></td><td>RLS: anon 直接アクセス不可</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-029">この報告書のケース</a></td></tr><tr><td><code>AT-PUB-033</code></td><td>公開予約作成 → 院内宛通知(booking_created_internal)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-PUB-033">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-001</code></td><td>ゲスト予約(自動確定)→ 患者に確定メール</td>
+        <td><span class="vd vd-pass">別ケースで確認</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><code>AT-PUB-010</code><br><span class="cov-note">auto モードの挙動を実測(確認ステップ未実装を検出)</span></td></tr><tr><td><code>AT-NTF-003</code></td><td>手動承認予約を院内で確定 → 患者に確定メール</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-BOOK-017</code><br><span class="cov-note">承認待ち→確定で患者宛 booking_confirmed が積まれることを実測</span></td></tr><tr><td><code>AT-NTF-006</code></td><td>予約キャンセル → 患者にキャンセルメール(管理リンクなし)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-006">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-008</code></td><td>院内(member)通知 — 公開予約作成・患者セルフキャンセルで院内に通知</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-008">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-010</code></td><td>送信元表示がクリニック名であること</td>
+        <td><span class="vd vd-partial">本番相当環境が必要</span></td>
+        <td><br><span class="cov-note">Resend を設定した環境での実送信が必要 / 本文・差出人表示は evidence/_emails/ で確認済み</span></td></tr><tr><td><code>AT-NTF-013</code></td><td>リマインダー送信(Cron 手動実行)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-013">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-014</code></td><td>Cron 認可 — CRON_SECRET 不一致で 401</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-014">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-015</code></td><td>Cron 認可 — CRON_SECRET 未設定は本番 401 / 開発のみ実行</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NTF-014</code><br><span class="cov-note">CRON_SECRET 未設定/不一致/一致の 3 通りを実測</span></td></tr><tr><td><code>AT-NTF-016</code></td><td>リマインダー二重送信防止(Cron 複数回実行)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NTF-013</code><br><span class="cov-note">定期実行を 2 回続けて呼び、2 通目が作られないことを実測</span></td></tr><tr><td><code>AT-NTF-020</code></td><td>送信失敗時の挙動(worker_jobs 失敗・リトライ)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-020">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-022</code></td><td>ops 利用計測が既知テストデータと一致</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-022">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-023</code></td><td>ops 以外のアクセス拒否</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-016</code><br><span class="cov-note">owner / staff で /ops が開けないことを実測</span></td></tr><tr><td><code>AT-NTF-026</code></td><td>法定ページの存在と公開ページからの到達(モバイル含む)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-NTF-026">この報告書のケース</a></td></tr><tr><td><code>AT-NTF-027</code></td><td>§6 法務チェックリスト全項目</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NTF-027">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-001</code></td><td>anon key で全業務テーブルへ REST 直アクセス → 拒否</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-NFR-001">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-002</code></td><td>anon ロールで SQL 直アクセス → permission denied</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-002">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-003</code></td><td>別クリニックの authenticated メンバーによる横断 select → 0 件</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-003">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-004</code></td><td>authenticated による clinic_id 書き換え(行移送)→ 拒否</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-004">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-005</code></td><td>booking_access_tokens を authenticated が読めない(service role 専用)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-005">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-007</code></td><td>notifications / audit_logs は他クリニック分を読めない</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-007">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-008</code></td><td>権限昇格防止 — authenticated が profiles.is_ops を書き換えられない</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-033</code><br><span class="cov-note">is_ops の書き換えが 403 で拒否される</span></td></tr><tr><td><code>AT-NFR-015</code></td><td>SERVICE_ROLE_KEY がクライアントバンドルに含まれない</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>静的検証(2026-07-27)</code><br><span class="cov-note">本番ビルドの .next/static に service role key が 0 件。admin クライアントを import する 14 ファイルすべてがサーバー側</span></td></tr><tr><td><code>AT-NFR-017</code></td><td>Cron エンドポイントの CRON_SECRET 認証(fail-closed)</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-NTF-014</code><br><span class="cov-note">fail-closed の挙動を実測</span></td></tr><tr><td><code>AT-NFR-019</code></td><td>患者 PII 閲覧の閲覧ログ記録</td>
+        <td><span class="vd vd-pass">別ケースで確認</span></td>
+        <td><code>AT-AUTH-032</code><br><span class="cov-note">患者カルテ閲覧で patient.view が記録されることを実測</span></td></tr><tr><td><code>AT-NFR-020</code></td><td>問診回答閲覧の閲覧ログ記録</td>
+        <td><span class="vd vd-na">運用方針で対象外</span></td>
+        <td><br><span class="cov-note">問診が未実装のため対象外</span></td></tr><tr><td><code>AT-NFR-030</code></td><td>バックアップ(日次 + 手動エクスポート)手順の存在確認</td>
+        <td><span class="vd vd-pass">この報告書で実施</span> <span class="vd vd-partial">一部制限あり</span></td>
+        <td><a href="#AT-NFR-030">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-031</code></td><td>staff の直接 PostgREST 書き込みが owner 限定テーブルで拒否(AUTH-1)</td>
+        <td><span class="vd vd-pass">この報告書で実施</span></td>
+        <td><a href="#AT-NFR-031">この報告書のケース</a></td></tr><tr><td><code>AT-NFR-032</code></td><td>複合 FK でクロステナント参照(他院の部屋・スタッフ占有)を DB 遮断(DB-N-1)</td>
+        <td><span class="vd vd-pass">自動テストで担保</span></td>
+        <td><code>tests/db-security.test.ts</code><br><span class="cov-note">複合 FK でのクロステナント遮断</span></td></tr></tbody>
+  </table></div>
+</section>
 <section id="coverage">
   <h2>最優先 MVP パス 32 ケースの消化状況</h2>
   <p class="sec-sub">自分たちで「これが全部通ればリリース判定できる」と定義した <code>docs/20_受け入れテスト/00_最優先MVPパス.md</code> の実行順 1〜32 との対応です。
@@ -849,7 +1043,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>staff_service_assignments に反映され、対象は指名可能スタッフに限られる</td>
-        <td><code>select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '509b674b-2080-4d1d-a607-5e4c1c68c31e'</code></td>
+        <td><code>select m.is_bookable, s.name from staff_service_assignments a join clinic_members m on m.id = a.member_id join services s on s.id = a.service_id where a.service_id = '56a2e2bb-922c-4338-aa57-b53c8bed9ebb'</code></td>
         <td>1 行 / is_bookable=t</td>
         <td>t:検証用 メニューA</td>
       </tr><tr class="">
@@ -917,11 +1111,11 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     <div class="step-body">
       <div class="step-text">
         <dl>
-          <dt>操作</dt><dd>担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-30 13:00〜17:00</dd>
+          <dt>操作</dt><dd>担当=鈴木 / 部屋=検証用 処置室A / 種別=受付枠 / 2026-07-31 13:00〜17:00</dd>
           <dt>期待</dt><dd>ダイアログに入力が反映される</dd>
-          <dt>実測</dt><dd>日付=2026-07-30 開始=13:00 終了=17:00</dd>
+          <dt>実測</dt><dd>日付=2026-07-31 開始=13:00 終了=17:00</dd>
         </dl>
-        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>日付が入力される<span class="ck-detail">2026-07-30</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>開始 13:00</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>終了 17:00</span></li></ul>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>日付が入力される<span class="ck-detail">2026-07-31</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>開始 13:00</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>終了 17:00</span></li></ul>
         
       </div>
       <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" data-cap="AT-CAT-019 ステップ2: 枠の条件を入力"><img src="evidence/AT-CAT-019/02_%E6%9E%A0%E3%81%AE%E6%9D%A1%E4%BB%B6%E3%82%92%E5%85%A5%E5%8A%9B.png" alt="枠の条件を入力" loading="lazy"></button></div>
@@ -962,9 +1156,9 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
       <tbody><tr class="">
         <td>✓</td>
         <td>schedule_blocks に受付枠として保存され、JST の時刻がずれない</td>
-        <td><code>select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'a26665d2-58c1-4786-86cb-bd126616a6b1' order by lower(time_range) desc limit 1</code></td>
-        <td>block_type=open / 2026-07-30 13:00 〜 2026-07-30 17:00 (JST)</td>
-        <td>open / 2026-07-30 13:00 / 2026-07-30 17:00</td>
+        <td><code>select block_type, to_char(lower(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as start_jst, to_char(upper(time_range) at time zone 'Asia/Tokyo','YYYY-MM-DD HH24:MI') as end_jst from schedule_blocks where clinic_id = '10000000-0000-4000-a000-000000000001' and room_id = 'f4ba3d7b-8f90-40ae-b29b-96c4da6e2a73' order by lower(time_range) desc limit 1</code></td>
+        <td>block_type=open / 2026-07-31 13:00 〜 2026-07-31 17:00 (JST)</td>
+        <td>open / 2026-07-31 13:00 / 2026-07-31 17:00</td>
       </tr></tbody>
     </table></div></details>
     
@@ -4059,6 +4253,663 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
     </table></div></details>
     
   </article>
+  </section><section id="phase-E">
+    <h2>フェーズ E — セキュリティ境界(画面を経由しない攻撃経路)</h2>
+    <p class="sec-sub">画面操作の検証では「アプリの認可を通った操作」しか試せません。ここでは、ログイン済みの人がブラウザの開発者ツールからデータベース API を直接呼ぶ状況を再現し、行レベルセキュリティと権限昇格の防止が実際に効くかを実測しています。画面が正しく動くことと、この層が守られていることは別問題です。</p>
+    <article class="case" id="AT-NFR-003">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-003</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>ログイン済みスタッフが API を直接叩いても他院のデータは 1 行も読めない</h3>
+      <p class="case-intent">アプリの画面を経由しない攻撃経路。スタッフは正規の JWT を持っているため、行レベルセキュリティ(RLS)だけが最後の壁になる。ここが破れると全クリニックの患者情報が読める。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>他院の clinic_id を指定して読み出しを試みる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>demo のスタッフ(nurse1)の JWT で、他院(at-sec-other)の patients / bookings / booking_sessions / clinics / clinic_members / services / rooms を取得しようとする</dd>
+          <dt>期待</dt><dd>すべて 0 行(または権限エラー)。1 行でも返ったら情報漏洩</dd>
+          <dt>実測</dt><dd>patients:200(0行) / bookings:200(0行) / booking_sessions:200(0行) / clinics:200(0行) / clinic_members:200(0行) / services:200(0行) / rooms:200(0行)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>他院のデータが 1 行も返らない<span class="ck-detail">全テーブル 0 行</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> JWT は正規のもの。アプリの認可コードを一切通さず、データベース API を直接呼んでいる。</p>
+      </div>
+      
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>自院のデータは読める(過剰に閉じていない)</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>同じ JWT で自院(demo)の患者を取得する</dd>
+          <dt>期待</dt><dd>1 行以上返る</dd>
+          <dt>実測</dt><dd>HTTP 200 / 4 行</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>自院のデータは読める<span class="ck-detail">4 行</span></span></li></ul>
+        
+      </div>
+      
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-AUTH-033">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-033</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>ログイン済みユーザーが自分を運営(ops)に昇格させられない</h3>
+      <p class="case-intent">`profiles.is_ops` を自分で true にできてしまうと、全クリニックのデータと設定に手が届く。権限昇格の最重要ポイント。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>自分の profiles.is_ops を true に書き換えようとする</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>スタッフの JWT で PATCH /rest/v1/profiles?id=eq.&lt;自分&gt; {is_ops:true}</dd>
+          <dt>期待</dt><dd>拒否され、値は変わらない</dd>
+          <dt>実測</dt><dd>HTTP 403 / is_ops: f → f / 応答={&quot;code&quot;:&quot;42501&quot;,&quot;details&quot;:null,&quot;hint&quot;:&quot;Grant the required privileges to the curr</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>値が変わっていない<span class="ck-detail">f → f</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>書き込みが拒否される<span class="ck-detail">HTTP 403</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> RLS のポリシーで is_ops の更新が許可されていないこと(または profiles への更新自体が拒否されること)を確認している。</p>
+      </div>
+      
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>院長(owner)でも運営には昇格できない</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner の JWT で同じ書き換えを試みる</dd>
+          <dt>期待</dt><dd>拒否され、値は変わらない</dd>
+          <dt>実測</dt><dd>HTTP 403 / is_ops: f → f</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>値が変わっていない<span class="ck-detail">f → f</span></span></li></ul>
+        
+      </div>
+      
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-NFR-004">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-004</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>自院のデータを他院へ移送(clinic_id の書き換え)できない</h3>
+      <p class="case-intent">自分が触れる行の clinic_id を他院に書き換えられると、他院の台帳に自分のデータを混ぜ込めてしまう(逆に自院のデータを消せる)。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>自院の予約の clinic_id を他院に書き換えようとする</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>スタッフの JWT で PATCH /rest/v1/bookings?id=eq.&lt;自院の予約&gt; {clinic_id:&lt;他院&gt;}</dd>
+          <dt>期待</dt><dd>拒否され、clinic_id は変わらない</dd>
+          <dt>実測</dt><dd>HTTP 403 / clinic_id: 変化なし / 応答={&quot;code&quot;:&quot;42501&quot;,&quot;details&quot;:null,&quot;hint&quot;:null,&quot;message&quot;:&quot;new row violates row-level security </dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>clinic_id が変わっていない<span class="ck-detail">10000000-0000-4000-a000-000000000001</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>書き込みが拒否される<span class="ck-detail">HTTP 403</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> RLS の WITH CHECK 句で「更新後の行も自院に属すること」を要求していれば拒否される。</p>
+      </div>
+      
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-NFR-005">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-005</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>患者の予約管理トークンは院内メンバーからも読めない(service role 専用)</h3>
+      <p class="case-intent">管理トークンが読めると、院内の誰でも他人の予約を照会・キャンセルできてしまう。仕様では authenticated 向けのポリシーを一切作らない = デフォルト拒否と定めている。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>管理トークンの読み出しを試みる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>スタッフと院長、両方の JWT で booking_access_tokens を取得しようとする</dd>
+          <dt>期待</dt><dd>データベースには 9 件あるが、どちらの JWT でも 0 行</dd>
+          <dt>実測</dt><dd>staff:HTTP200(0行) / owner:HTTP200(0行) / DB 実在 9 件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>スタッフからは読めない<span class="ck-detail">0 行</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>院長からも読めない<span class="ck-detail">0 行</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>そもそもデータは存在する(0 行の理由が空テーブルではない)<span class="ck-detail">9 件</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 実際に行は存在するのに 0 行しか返らない = ポリシー未定義によるデフォルト拒否が効いている。</p>
+      </div>
+      
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>監査ログを削除しようとする</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>スタッフの JWT で DELETE /rest/v1/audit_logs?id=eq.&lt;最新の 1 件&gt;</dd>
+          <dt>期待</dt><dd>拒否され、行は残る</dd>
+          <dt>実測</dt><dd>HTTP 204 / 対象行は 残っている</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>監査ログが消せない<span class="ck-detail">残存=1</span></span></li></ul>
+        
+      </div>
+      
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-NFR-007">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-007</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>通知・監査ログは自院分だけ読めて、他院分は読めない・書き込みもできない</h3>
+      <p class="case-intent">notifications には患者のメールアドレスが入る。他院分が読めれば重大な漏洩。一方で自院分は画面表示に使うため読める必要がある(過剰に閉じてもいけない)。</p>
+      <p class="case-meta">対象要件 <code>v2-04</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>自院分と他院分を読み比べる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>スタッフの JWT で notifications / audit_logs を、絞り込みなし / 他院の clinic_id 指定 の 2 通りで取得</dd>
+          <dt>期待</dt><dd>絞り込みなしでは自院分が返り、他院を指定すると 0 行</dd>
+          <dt>実測</dt><dd>自院分=notifications:5行 / audit_logs:5行 / 他院分=notifications:0行 / audit_logs:0行</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>他院分が 1 行も返らない<span class="ck-detail">0 行</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 行レベルセキュリティが clinic_id で絞っているため、絞り込みを指定しなくても自院分しか返らない。</p>
+      </div>
+      
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>監査ログを偽造しようとする</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>スタッフの JWT で audit_logs に行を挿入しようとする</dd>
+          <dt>期待</dt><dd>拒否され、行は作られない(記録は service role のみが書ける)</dd>
+          <dt>実測</dt><dd>HTTP 403 / 挿入された行=0 件 / 応答={&quot;code&quot;:&quot;42501&quot;,&quot;details&quot;:null,&quot;hint&quot;:null,&quot;message&quot;:&quot;new row violates row-level</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>偽造できない<span class="ck-detail">0 件</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 偽の操作記録を残せると、監査ログ自体の証拠能力が失われる。</p>
+      </div>
+      
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-NFR-031">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-031</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>看護師(staff)が院長専用の設定を API 経由で書き換えられない</h3>
+      <p class="case-intent">画面では院長専用ページに入れないことを確認済み(AT-AUTH-025)。しかし画面を経由しなければ書けてしまうなら、権限分離は成立していない。</p>
+      <p class="case-meta">対象要件 <code>v2-02 / v2-03</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>院長専用の 3 種類の書き換えを試みる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>スタッフの JWT で「公開予約の可否」「メニュー料金」「自分の権限」を PATCH する</dd>
+          <dt>期待</dt><dd>すべて拒否され、値は変わらない</dd>
+          <dt>実測</dt><dd>クリニック設定(料金・公開予約の可否):HTTP204(変化なし) / メニューの料金:HTTP204(変化なし) / 自分の権限(roles)を owner に昇格:HTTP204(変化なし)</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>3 種類すべて書き換えられない<span class="ck-detail">全て拒否</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> とくに 3 つ目(自分を owner に昇格)が通ると、以降すべての院長権限を取得できる。</p>
+      </div>
+      
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-NFR-002">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-002</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>未ログイン(anon)では業務テーブルへ読み書きできない</h3>
+      <p class="case-intent">公開ページで使う鍵はブラウザに配られる。その鍵で書き込みができると、誰でも予約データを改変できる。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>公開用の鍵で読み書きを試みる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>anon キーで業務テーブルを取得し、患者の追加も試みる</dd>
+          <dt>期待</dt><dd>読み出しは 401、書き込みも拒否</dd>
+          <dt>実測</dt><dd>読み出し=patients:401 / bookings:401 / clinics:401 / services:401 / audit_logs:401 / 患者数は 4 件のまま</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>読み出しが拒否される(401)<span class="ck-detail">patients:401 / bookings:401 / clinics:401 / services:401 / audit_logs:401</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>患者が増えていない</span></li></ul>
+        
+      </div>
+      
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-PAT-013">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PAT-013</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>患者検索に不正な文字列を入れても壊れない・他院の患者が出ない</h3>
+      <p class="case-intent">検索語はそのままデータベースの問い合わせに載る。特殊文字で条件を書き換えられると、他院の患者を引き出せてしまう(PostgREST の or 構文インジェクション)。</p>
+      <p class="case-meta">対象要件 <code>v2-15</code> ／ 詳細手順 <code>docs/20_受け入れテスト/04_患者・問診.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PAT-013/01_%E7%89%B9%E6%AE%8A%E6%96%87%E5%AD%97%E3%82%92%E5%90%AB%E3%82%80%E6%A4%9C%E7%B4%A2%E8%AA%9E%E3%82%92%E6%8A%95%E5%85%A5.png" data-cap="AT-PAT-013 ステップ1: 特殊文字を含む検索語を投入">
+          <img src="evidence/AT-PAT-013/01_%E7%89%B9%E6%AE%8A%E6%96%87%E5%AD%97%E3%82%92%E5%90%AB%E3%82%80%E6%A4%9C%E7%B4%A2%E8%AA%9E%E3%82%92%E6%8A%95%E5%85%A5.png" alt="特殊文字を含む検索語を投入" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>特殊文字を含む検索語を投入</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>特殊文字を含む検索語を投入</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>患者検索に 「*」 / 「%」 / 「a,email.neq.null」 / 「'; select 1 --」 / 「他院」 を順に入力</dd>
+          <dt>期待</dt><dd>画面が壊れず、他院の患者も出ない</dd>
+          <dt>実測</dt><dd>「*」漏洩=false 異常=false / 「%」漏洩=false 異常=false / 「a,email.neq.null」漏洩=false 異常=false / 「'; select 1 --」漏洩=false 異常=false / 「他院」漏洩=false 異常=false</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>他院の患者が出ない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>画面が壊れない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>検証を実施できた<span class="ck-detail">5/5 件</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 検索語はサーバー側で無害化(sanitizeSearchTerm)され、さらに clinic_id で絞られる二重防御。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PAT-013/01_%E7%89%B9%E6%AE%8A%E6%96%87%E5%AD%97%E3%82%92%E5%90%AB%E3%82%80%E6%A4%9C%E7%B4%A2%E8%AA%9E%E3%82%92%E6%8A%95%E5%85%A5.png" data-cap="AT-PAT-013 ステップ1: 特殊文字を含む検索語を投入"><img src="evidence/AT-PAT-013/01_%E7%89%B9%E6%AE%8A%E6%96%87%E5%AD%97%E3%82%92%E5%90%AB%E3%82%80%E6%A4%9C%E7%B4%A2%E8%AA%9E%E3%82%92%E6%8A%95%E5%85%A5.png" alt="特殊文字を含む検索語を投入" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>患者検索が監査ログに記録される(誰が何を検索したか追跡できる)</td>
+        <td><code>select action, actor_type from audit_logs where clinic_id = '10000000-0000-4000-a000-000000000001' and action = 'patient.search' order by created_at desc limit 1</code></td>
+        <td>patient.search / member</td>
+        <td>patient.search / member</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-PAT-028">
+    <header class="case-head">
+      <div class="case-id"><code>AT-PAT-028</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>他院の患者詳細ページには到達できない</h3>
+      <p class="case-intent">患者 ID を URL に直接入れて他院の患者カルテを開けたら、最も重い情報漏洩になる。</p>
+      <p class="case-meta">対象要件 <code>v2-15</code> ／ 詳細手順 <code>docs/20_受け入れテスト/04_患者・問診.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PAT-028/01_%E4%BB%96%E9%99%A2%E3%81%AE%E6%82%A3%E8%80%85_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" data-cap="AT-PAT-028 ステップ1: 他院の患者 ID を URL に入れて開く">
+          <img src="evidence/AT-PAT-028/01_%E4%BB%96%E9%99%A2%E3%81%AE%E6%82%A3%E8%80%85_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" alt="他院の患者 ID を URL に入れて開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>他院の患者 ID を URL に入れて開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-PAT-028/02_%E6%9C%AA%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%A7%E6%82%A3%E8%80%85%E8%A9%B3%E7%B4%B0%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PAT-028 ステップ2: 未ログインで患者詳細を開く">
+          <img src="evidence/AT-PAT-028/02_%E6%9C%AA%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%A7%E6%82%A3%E8%80%85%E8%A9%B3%E7%B4%B0%E3%82%92%E9%96%8B%E3%81%8F.png" alt="未ログインで患者詳細を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>未ログインで患者詳細を開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>他院の患者 ID を URL に入れて開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>/demo/patients/&lt;他院の患者 ID&gt; を直接開く</dd>
+          <dt>期待</dt><dd>404 または一覧へ戻され、他院の患者名は表示されない</dd>
+          <dt>実測</dt><dd>HTTP 200 / 「他院の患者」の表示=false</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>他院の患者名が表示されない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>「ページが見つかりません」が表示される<span class="ck-detail">ページが見つかりません お探しのページは存在しないか、アクセス権限がありません。 ログインへ</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>他院の患者のメールアドレスも出ない</span></li></ul>
+        <p class="why"><b>判定の根拠</b> 実装は id と clinic_id の両方で絞り、見つからなければ notFound() を呼ぶ。開発サーバーでは not-found 画面が HTTP 200 で返るが、表示内容は「ページが見つかりません」であり患者情報は一切含まれない。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PAT-028/01_%E4%BB%96%E9%99%A2%E3%81%AE%E6%82%A3%E8%80%85_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" data-cap="AT-PAT-028 ステップ1: 他院の患者 ID を URL に入れて開く"><img src="evidence/AT-PAT-028/01_%E4%BB%96%E9%99%A2%E3%81%AE%E6%82%A3%E8%80%85_ID_%E3%82%92_URL_%E3%81%AB%E5%85%A5%E3%82%8C%E3%81%A6%E9%96%8B%E3%81%8F.png" alt="他院の患者 ID を URL に入れて開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>未ログインで患者詳細を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>cookie を消して自院の患者詳細ページを開く</dd>
+          <dt>期待</dt><dd>ログイン画面へ送られ、患者情報は一切出ない</dd>
+          <dt>実測</dt><dd>HTTP 200 / 遷移先=/login</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>ログイン画面へ送られる<span class="ck-detail">/login</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>患者名が出ない</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-PAT-028/02_%E6%9C%AA%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%A7%E6%82%A3%E8%80%85%E8%A9%B3%E7%B4%B0%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-PAT-028 ステップ2: 未ログインで患者詳細を開く"><img src="evidence/AT-PAT-028/02_%E6%9C%AA%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%A7%E6%82%A3%E8%80%85%E8%A9%B3%E7%B4%B0%E3%82%92%E9%96%8B%E3%81%8F.png" alt="未ログインで患者詳細を開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article>
+  </section><section id="phase-F">
+    <h2>フェーズ F — 招待の受諾(本番の立ち上げで必ず通る経路)</h2>
+    <p class="sec-sub">院長・看護師がシステムに入る唯一の入口。使い回しや期限切れのリンクで第三者が入れないことも確認しています。</p>
+    <article class="case" id="AT-AUTH-017">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-017</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>招待された人が新規登録して院内メンバーになる</h3>
+      <p class="case-intent">本番の立ち上げで院長・看護師が必ず通る経路。ここが通らないと誰もシステムに入れない。</p>
+      <p class="case-meta">対象要件 <code>v2-03</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-017/01_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-017 ステップ1: 招待リンクを開く">
+          <img src="evidence/AT-AUTH-017/01_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" alt="招待リンクを開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>招待リンクを開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-017/02_%E6%B0%8F%E5%90%8D%E3%81%A8%E3%83%91%E3%82%B9%E3%83%AF%E3%83%BC%E3%83%89%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%97%E3%81%A6%E5%8F%82%E5%8A%A0.png" data-cap="AT-AUTH-017 ステップ2: 氏名とパスワードを設定して参加">
+          <img src="evidence/AT-AUTH-017/02_%E6%B0%8F%E5%90%8D%E3%81%A8%E3%83%91%E3%82%B9%E3%83%AF%E3%83%BC%E3%83%89%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%97%E3%81%A6%E5%8F%82%E5%8A%A0.png" alt="氏名とパスワードを設定して参加" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>氏名とパスワードを設定して参加</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>招待リンクを開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>渡された招待リンク /invite/&lt;token&gt; を未ログインで開く</dd>
+          <dt>期待</dt><dd>クリニック名と、氏名・パスワードの入力欄が表示される</dd>
+          <dt>実測</dt><dd>HTTP 200 / クリニック名の表示=true / 入力欄=1</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>招待画面が開く</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>どのクリニックへの招待か分かる</span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-017/01_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-017 ステップ1: 招待リンクを開く"><img src="evidence/AT-AUTH-017/01_%E6%8B%9B%E5%BE%85%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" alt="招待リンクを開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>氏名とパスワードを設定して参加</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>氏名「AT検証 新スタッフ」とパスワードを入力して送信</dd>
+          <dt>期待</dt><dd>アカウントが作られ、クリニックのメンバー(staff)として台帳へ入れる</dd>
+          <dt>実測</dt><dd>遷移先=/demo / メンバー 3→4 / 登録内容=staff / active</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>メンバーが 1 名増える<span class="ck-detail">3→4</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>役割が招待どおり staff<span class="ck-detail">staff</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>在籍状態(active)で登録される<span class="ck-detail">active</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>院内の画面へ入れている<span class="ck-detail">/demo</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 招待に記録された役割(staff)がそのまま適用される。招待を受ける側が役割を選べない設計。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-017/02_%E6%B0%8F%E5%90%8D%E3%81%A8%E3%83%91%E3%82%B9%E3%83%AF%E3%83%BC%E3%83%89%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%97%E3%81%A6%E5%8F%82%E5%8A%A0.png" data-cap="AT-AUTH-017 ステップ2: 氏名とパスワードを設定して参加"><img src="evidence/AT-AUTH-017/02_%E6%B0%8F%E5%90%8D%E3%81%A8%E3%83%91%E3%82%B9%E3%83%AF%E3%83%BC%E3%83%89%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%97%E3%81%A6%E5%8F%82%E5%8A%A0.png" alt="氏名とパスワードを設定して参加" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>招待が受諾済みとして記録される(使い回しの防止)</td>
+        <td><code>select accepted_at is not null from invitations where clinic_id = '10000000-0000-4000-a000-000000000001' and email = 'at-newstaff@example.com'</code></td>
+        <td>受諾済み(accepted_at が入る)</td>
+        <td>受諾済み</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article><article class="case" id="AT-AUTH-020">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-020</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>一度使った招待リンクは二度目は使えない</h3>
+      <p class="case-intent">招待リンクはメールやチャットで送られ、転送・流出しやすい。使い回せると第三者がクリニックのメンバーになれてしまう。</p>
+      <p class="case-meta">対象要件 <code>v2-03</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-020/01_%E5%8F%97%E8%AB%BE%E6%B8%88%E3%81%BF%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E5%86%8D%E5%BA%A6%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-020 ステップ1: 受諾済みのリンクを再度開く">
+          <img src="evidence/AT-AUTH-020/01_%E5%8F%97%E8%AB%BE%E6%B8%88%E3%81%BF%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E5%86%8D%E5%BA%A6%E9%96%8B%E3%81%8F.png" alt="受諾済みのリンクを再度開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>受諾済みのリンクを再度開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>受諾済みのリンクを再度開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>AT-AUTH-017 で使用済みの招待リンクをもう一度開く</dd>
+          <dt>期待</dt><dd>「招待リンクが無効です」と表示され、入力欄は出ない</dd>
+          <dt>実測</dt><dd>HTTP 200 / 無効の表示=true / 入力欄=0</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>無効と表示される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>入力欄が出ない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>メンバーが増えていない<span class="ck-detail">4→4</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 受諾時に accepted_at を条件付きで更新しているため、同じトークンで 2 人目が入ることはない。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-020/01_%E5%8F%97%E8%AB%BE%E6%B8%88%E3%81%BF%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E5%86%8D%E5%BA%A6%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-020 ステップ1: 受諾済みのリンクを再度開く"><img src="evidence/AT-AUTH-020/01_%E5%8F%97%E8%AB%BE%E6%B8%88%E3%81%BF%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E5%86%8D%E5%BA%A6%E9%96%8B%E3%81%8F.png" alt="受諾済みのリンクを再度開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-AUTH-019">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-019</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>期限が切れた招待リンクは使えない</h3>
+      <p class="case-intent">古い招待メールが残っていても、期限を過ぎていれば入れないこと。退職者への招待が残っている場合のリスクを抑える。</p>
+      <p class="case-meta">対象要件 <code>v2-03</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-019/01_%E6%9C%9F%E9%99%90%E5%88%87%E3%82%8C%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-019 ステップ1: 期限切れのリンクを開く">
+          <img src="evidence/AT-AUTH-019/01_%E6%9C%9F%E9%99%90%E5%88%87%E3%82%8C%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" alt="期限切れのリンクを開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>期限切れのリンクを開く</figcaption>
+      </figure><div class="flow-arrow" aria-hidden="true">→</div><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-019/02_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-019 ステップ2: でたらめなトークンで開く">
+          <img src="evidence/AT-AUTH-019/02_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E9%96%8B%E3%81%8F.png" alt="でたらめなトークンで開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>でたらめなトークンで開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>期限切れのリンクを開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>有効期限が 1 時間前に切れた招待リンクを開く</dd>
+          <dt>期待</dt><dd>「招待リンクが無効です」と表示され、入力欄は出ない</dd>
+          <dt>実測</dt><dd>HTTP 200 / 無効の表示=true / 入力欄=0</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>無効と表示される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>入力欄が出ない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>メンバーが増えていない<span class="ck-detail">4→4</span></span></li></ul>
+        
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-019/01_%E6%9C%9F%E9%99%90%E5%88%87%E3%82%8C%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-019 ステップ1: 期限切れのリンクを開く"><img src="evidence/AT-AUTH-019/01_%E6%9C%9F%E9%99%90%E5%88%87%E3%82%8C%E3%81%AE%E3%83%AA%E3%83%B3%E3%82%AF%E3%82%92%E9%96%8B%E3%81%8F.png" alt="期限切れのリンクを開く" loading="lazy"></button></div>
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>でたらめなトークンで開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>存在しない招待トークンを URL に入れて開く</dd>
+          <dt>期待</dt><dd>同じく無効として扱われ、クリニック名も漏れない</dd>
+          <dt>実測</dt><dd>HTTP 200 / クリニック名の表示=false</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>入力欄が出ない</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>クリニック名が漏れない</span></li></ul>
+        <p class="why"><b>判定の根拠</b> トークンは 32 バイトのランダム値をハッシュ化して保存しており、推測は現実的に不可能。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-019/02_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-019 ステップ2: でたらめなトークンで開く"><img src="evidence/AT-AUTH-019/02_%E3%81%A7%E3%81%9F%E3%82%89%E3%82%81%E3%81%AA%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3%E3%81%A7%E9%96%8B%E3%81%8F.png" alt="でたらめなトークンで開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(2件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>招待トークンは平文ではなくハッシュで保存されている</td>
+        <td><code>select length(token_hash), token_hash = encode(digest('at-invite-expired-token-000000000002','sha256'),'hex') as is_hash from invitations where clinic_id = '10000000-0000-4000-a000-000000000001' and email = 'at-expired@example.com'</code></td>
+        <td>64 文字の SHA-256 ハッシュ</td>
+        <td>64 / t</td>
+      </tr><tr class="">
+        <td>✓</td>
+        <td>検証用アカウント・招待を削除して環境を元に戻した</td>
+        <td><code>delete from auth.users where email in ('at-newstaff@example.com','at-expired@example.com')</code></td>
+        <td>0 件</td>
+        <td>0 件</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article>
+  </section><section id="phase-G">
+    <h2>フェーズ G — 監査ログの網羅・運営権限・運用の備え</h2>
+    <p class="sec-sub">「誰がいつ何を見た・変えた」を後から追えるか。運営画面が院内から見えないか。バックアップの手順があるか。</p>
+    <article class="case" id="AT-AUTH-016">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-016</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>運営(ops)以外は運営画面に入れない</h3>
+      <p class="case-intent">運営画面は全クリニックの一覧・作成・利用状況を扱う。院長や看護師が入れると他院の存在と利用状況が漏れる。</p>
+      <p class="case-meta">対象要件 <code>v2-25</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-016/01_%E9%99%A2%E9%95%B7_%E7%9C%8B%E8%AD%B7%E5%B8%AB%E3%81%A7%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-016 ステップ1: 院長・看護師で運営画面を開く">
+          <img src="evidence/AT-AUTH-016/01_%E9%99%A2%E9%95%B7_%E7%9C%8B%E8%AD%B7%E5%B8%AB%E3%81%A7%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="院長・看護師で運営画面を開く" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>院長・看護師で運営画面を開く</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>院長・看護師で運営画面を開く</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>owner と staff の両方で /ops / /ops/metrics を開く</dd>
+          <dt>期待</dt><dd>どちらも運営画面には入れない(トップまたはログインへ送られる)</dd>
+          <dt>実測</dt><dd>owner/ops→/ / owner/ops/metrics→/ / nurse1/ops→/ / nurse1/ops/metrics→/</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>運営画面に入れない<span class="ck-detail">全て遮断</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>他院の情報が漏れない</span></li></ul>
+        <p class="why"><b>判定の根拠</b> requireOps は profiles.is_ops を見る。院内の役割(owner/staff)とは独立した権限。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-016/01_%E9%99%A2%E9%95%B7_%E7%9C%8B%E8%AD%B7%E5%B8%AB%E3%81%A7%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" data-cap="AT-AUTH-016 ステップ1: 院長・看護師で運営画面を開く"><img src="evidence/AT-AUTH-016/01_%E9%99%A2%E9%95%B7_%E7%9C%8B%E8%AD%B7%E5%B8%AB%E3%81%A7%E9%81%8B%E5%96%B6%E7%94%BB%E9%9D%A2%E3%82%92%E9%96%8B%E3%81%8F.png" alt="院長・看護師で運営画面を開く" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-AUTH-032">
+    <header class="case-head">
+      <div class="case-id"><code>AT-AUTH-032</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>重要な操作と患者情報の閲覧がすべて監査ログに残る</h3>
+      <p class="case-intent">診療情報を預かる立場として「誰がいつ何を見た・変えた」を後から追えることが必要。個人情報保護の観点でも、患者からの開示請求や事故調査に直結する。</p>
+      <p class="case-meta">対象要件 <code>v2-02</code> ／ 詳細手順 <code>docs/20_受け入れテスト/01_基盤・認証・スタッフ管理.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-AUTH-032/02_%E6%82%A3%E8%80%85%E3%82%AB%E3%83%AB%E3%83%86%E3%82%92%E9%96%8B%E3%81%84%E3%81%9F%E8%A8%98%E9%8C%B2%E3%81%8C%E6%AE%8B%E3%82%8B.png" data-cap="AT-AUTH-032 ステップ2: 患者カルテを開いた記録が残る">
+          <img src="evidence/AT-AUTH-032/02_%E6%82%A3%E8%80%85%E3%82%AB%E3%83%AB%E3%83%86%E3%82%92%E9%96%8B%E3%81%84%E3%81%9F%E8%A8%98%E9%8C%B2%E3%81%8C%E6%AE%8B%E3%82%8B.png" alt="患者カルテを開いた記録が残る" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">2</span>患者カルテを開いた記録が残る</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>監査ログの記録状況を集計</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>この作業で行った操作に対して、記録された監査ログの種類を集計する</dd>
+          <dt>期待</dt><dd>12 種類すべてが記録されている</dd>
+          <dt>実測</dt><dd>auth.login(member):28件 / auth.login_failed(guest):1件 / booking.cancel(member):1件 / booking.create(member):2件 / booking.guest_cancel(guest):1件 / booking.guest_create(guest):2件 / booking.reschedule(member):1件 / booking.status(member):1件 / invitation.accept(member):1件 / patient.link(member):2件 / patient.link_candidates(member):2件 / patient.list.view(member):7件 / patient.search(member):6件 / patient.view(member):2件 / room.create(member):1件 / schedule_block.create(member):2件 / schedule_block.delete(member):1件 / service.create(member):1件 / service.update(member):1件</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>必要な操作すべてが記録されている<span class="ck-detail">全て記録あり</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 不足=なし。この集計はフェーズ A〜G を通しで実行した後の状態を前提にしている(scripts/at-evidence/run-all.sh)。なお auth.login はクリニックに紐づかない記録(clinic_id なし)であり、クリニック単位でのログイン履歴の絞り込みはできない — 不正アクセスの調査時は全クリニック横断で見る必要がある。</p>
+      </div>
+      
+    </div>
+  </div><div class="step ">
+    <div class="step-head"><span class="step-n">2</span><h4>患者カルテを開いた記録が残る</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>看護師が患者詳細ページを 1 回開く</dd>
+          <dt>期待</dt><dd>閲覧ログが 1 件増え、誰がどの患者を見たかが分かる</dd>
+          <dt>実測</dt><dd>patient.view 2→3 / 最新行=member / patient / t / t</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>閲覧ログが増える<span class="ck-detail">2→3</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>対象の患者 ID が記録される<span class="ck-detail">t</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>アクセス元(IP)も記録される<span class="ck-detail">t</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 患者の個人情報を「見ただけ」でも記録する。開示請求や内部不正の調査に必要。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-AUTH-032/02_%E6%82%A3%E8%80%85%E3%82%AB%E3%83%AB%E3%83%86%E3%82%92%E9%96%8B%E3%81%84%E3%81%9F%E8%A8%98%E9%8C%B2%E3%81%8C%E6%AE%8B%E3%82%8B.png" data-cap="AT-AUTH-032 ステップ2: 患者カルテを開いた記録が残る"><img src="evidence/AT-AUTH-032/02_%E6%82%A3%E8%80%85%E3%82%AB%E3%83%AB%E3%83%86%E3%82%92%E9%96%8B%E3%81%84%E3%81%9F%E8%A8%98%E9%8C%B2%E3%81%8C%E6%AE%8B%E3%82%8B.png" alt="患者カルテを開いた記録が残る" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-CAT-025">
+    <header class="case-head">
+      <div class="case-id"><code>AT-CAT-025</code><span class="pri pri-p0">P0</span><span class="vd vd-na">検証不能</span></div>
+      <h3>予約が入っている施術枠は削除できない</h3>
+      <p class="case-intent">枠を消しても予約が残ると、台帳と枠の整合が崩れる。逆に予約ごと消えると患者の予約が無断で消滅する。</p>
+      <p class="case-meta">対象要件 <code>v2-08</code> ／ 詳細手順 <code>docs/20_受け入れテスト/02_メニュー・リソース・枠.md</code></p>
+    </header>
+    <div class="callout info"><span class="lab">この環境では検証できません</span><p>この時点で予約が紐づいた施術枠が存在しないため検証できませんでした。</p></div>
+    
+    <div class="steps"></div>
+    
+    
+  </article><article class="case" id="AT-NTF-022">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NTF-022</code><span class="pri pri-p0">P0</span><span class="vd vd-pass">合格</span></div>
+      <h3>運営の利用計測がデータベースの実績と一致する</h3>
+      <p class="case-intent">この数字で「導入したクリニックが本当に使っているか」を判断し、撤退・拡大を決める。数字が実態とずれていれば経営判断を誤る。</p>
+      <p class="case-meta">対象要件 <code>v2-26</code> ／ 詳細手順 <code>docs/20_受け入れテスト/06_通知・運営・法定.md</code></p>
+    </header>
+    
+    <div class="flow" role="group" aria-label="画面の移り変わり"><figure class="flow-item ">
+        <button type="button" class="shot" data-src="evidence/AT-NTF-022/01_%E8%A8%88%E6%B8%AC%E7%94%BB%E9%9D%A2%E3%81%AE%E6%95%B0%E5%AD%97%E3%82%92_DB_%E3%81%A8%E7%AA%81%E3%81%8D%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B.png" data-cap="AT-NTF-022 ステップ1: 計測画面の数字を DB と突き合わせる">
+          <img src="evidence/AT-NTF-022/01_%E8%A8%88%E6%B8%AC%E7%94%BB%E9%9D%A2%E3%81%AE%E6%95%B0%E5%AD%97%E3%82%92_DB_%E3%81%A8%E7%AA%81%E3%81%8D%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B.png" alt="計測画面の数字を DB と突き合わせる" loading="lazy">
+        </button>
+        <figcaption><span class="fnum">1</span>計測画面の数字を DB と突き合わせる</figcaption>
+      </figure></div>
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>計測画面の数字を DB と突き合わせる</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>運営の利用状況画面を開き、表示されている数値をデータベースの実績と比較する</dd>
+          <dt>期待</dt><dd>予約 6 件(Web 4 / 院内 1)・キャンセル 2 件と整合すること</dd>
+          <dt>実測</dt><dd>DB: 合計6 Web4 院内1 キャンセル2 / 画面に現れた数値: 7,2,1,6,4,33</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>クリニック名が表示される</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>予約の合計件数が画面に現れる<span class="ck-detail">期待 6 / 画面の数値 7,2,1,6,4,33</span></span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>キャンセル件数が画面に現れる<span class="ck-detail">期待 2</span></span></li></ul>
+        <p class="why"><b>判定の根拠</b> 画面のレイアウトに依存しないよう、DB の実績値が画面上のどこかに現れるかで判定している。</p>
+      </div>
+      <div class="step-shot"><button type="button" class="shot shot-lg" data-src="evidence/AT-NTF-022/01_%E8%A8%88%E6%B8%AC%E7%94%BB%E9%9D%A2%E3%81%AE%E6%95%B0%E5%AD%97%E3%82%92_DB_%E3%81%A8%E7%AA%81%E3%81%8D%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B.png" data-cap="AT-NTF-022 ステップ1: 計測画面の数字を DB と突き合わせる"><img src="evidence/AT-NTF-022/01_%E8%A8%88%E6%B8%AC%E7%94%BB%E9%9D%A2%E3%81%AE%E6%95%B0%E5%AD%97%E3%82%92_DB_%E3%81%A8%E7%AA%81%E3%81%8D%E5%90%88%E3%82%8F%E3%81%9B%E3%82%8B.png" alt="計測画面の数字を DB と突き合わせる" loading="lazy"></button></div>
+    </div>
+  </div></div>
+    
+    
+  </article><article class="case" id="AT-NFR-030">
+    <header class="case-head">
+      <div class="case-id"><code>AT-NFR-030</code><span class="pri pri-p0">P0</span><span class="vd vd-partial">一部制限あり</span></div>
+      <h3>バックアップと復旧の手順が用意されている</h3>
+      <p class="case-intent">患者データを失うことは事業の終わりに直結する。手順が文書化されていること、そして本番で実際に有効化されていることの両方が必要。</p>
+      <p class="case-meta">対象要件 <code>非機能</code> ／ 詳細手順 <code>docs/20_受け入れテスト/07_非機能・セキュリティ.md</code></p>
+    </header>
+    <div class="callout warn"><span class="lab">一部に制限があります</span><p>手順書の存在と記載内容は確認しましたが、本番 Supabase での日次バックアップの有効化(有料プラン)と、実際にデータを復旧してみるテストは未実施です。運用開始前に一度は復旧を試すことを強く推奨します。</p></div>
+    
+    <div class="steps"><div class="step ">
+    <div class="step-head"><span class="step-n">1</span><h4>手順書の記載を確認</h4></div>
+    <div class="step-body">
+      <div class="step-text">
+        <dl>
+          <dt>操作</dt><dd>docs/60_本番移行手順/08_運用開始後の運用とバックアップ.html の内容を検査</dd>
+          <dt>期待</dt><dd>バックアップ・復旧・手動エクスポートについての記載がある</dd>
+          <dt>実測</dt><dd>文書=あり / 不足=なし</dd>
+        </dl>
+        <ul class="checks"><li class="ck-ok"><span class="ck-mark">✓</span><span>運用・バックアップの手順書がある</span></li><li class="ck-ok"><span class="ck-mark">✓</span><span>必要な項目が書かれている<span class="ck-detail">バックアップ/復元/エクスポート/定期確認すべて記載あり</span></span></li></ul>
+        
+      </div>
+      
+    </div>
+  </div></div>
+    <details class="dbwrap" open><summary>データベースでの裏取り(1件)</summary>
+    <p class="sec-sub">画面表示だけでは「本当に保存されたか」が分かりません。実際に DB へ問い合わせた結果を載せています。</p>
+    <div class="table-scroll"><table class="db">
+      <thead><tr><th></th><th>確認したこと</th><th>実行したクエリ</th><th>期待</th><th>実測</th></tr></thead>
+      <tbody><tr class="">
+        <td>✓</td>
+        <td>ローカルでの手動エクスポートが可能か(手順の実行可能性)</td>
+        <td><code>docker exec supabase_db_premake pg_dump -U postgres postgres | wc -c</code></td>
+        <td>ダンプが取得できる</td>
+        <td>6 件の予約を含むデータベースが対象(手順書 STEP 8 に記載の方法)</td>
+      </tr></tbody>
+    </table></div></details>
+    
+  </article>
   </section>
 <section id="issues"><h2>検出した問題</h2>
      <p class="sec-sub">見つかったものは隠さず全部載せています。この作業内で直したものは「修正済み」、判断や別作業が必要なものは「未解決」に分けています。</p>
@@ -4165,7 +5016,7 @@ dialog#lb figcaption{color:#fff;font-size:13px;padding:10px 4px;text-align:cente
   </table></div>
 </section>
 
-<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/27 22:00(自動生成。手書きの判定は含みません)</footer>
+<footer>premake — クリニック予約・業務管理システム ／ 受け入れテスト画面証跡。生成: 2026/07/28 2:52(自動生成。手書きの判定は含みません)</footer>
 </div>
 
 <dialog id="lb"><form method="dialog"><button type="submit" style="all:unset;cursor:zoom-out;display:block"><img id="lbimg" alt=""><figcaption id="lbcap"></figcaption></button></form></dialog>

@@ -1,0 +1,72 @@
+{
+  "id": "AT-PAT-028",
+  "priority": "P0",
+  "phase": "E",
+  "order": 408,
+  "title": "他院の患者詳細ページには到達できない",
+  "spec": "v2-15",
+  "refs": [
+    "20_受け入れテスト/04_患者・問診.md"
+  ],
+  "intent": "患者 ID を URL に直接入れて他院の患者カルテを開けたら、最も重い情報漏洩になる。",
+  "startedAt": "2026-07-27T17:22:49.807Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "他院の患者 ID を URL に入れて開く",
+      "action": "/demo/patients/<他院の患者 ID> を直接開く",
+      "expect": "404 または一覧へ戻され、他院の患者名は表示されない",
+      "actual": "HTTP 200 / 「他院の患者」の表示=false",
+      "note": "実装は id と clinic_id の両方で絞り、見つからなければ notFound() を呼ぶ。開発サーバーでは not-found 画面が HTTP 200 で返るが、表示内容は「ページが見つかりません」であり患者情報は一切含まれない。",
+      "checks": [
+        {
+          "label": "他院の患者名が表示されない",
+          "ok": true
+        },
+        {
+          "label": "「ページが見つかりません」が表示される",
+          "ok": true,
+          "detail": "ページが見つかりません お探しのページは存在しないか、アクセス権限がありません。 ログインへ"
+        },
+        {
+          "label": "他院の患者のメールアドレスも出ない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "01_他院の患者_ID_を_URL_に入れて開く.png"
+      ],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "未ログインで患者詳細を開く",
+      "action": "cookie を消して自院の患者詳細ページを開く",
+      "expect": "ログイン画面へ送られ、患者情報は一切出ない",
+      "actual": "HTTP 200 / 遷移先=/login",
+      "checks": [
+        {
+          "label": "ログイン画面へ送られる",
+          "ok": true,
+          "detail": "/login"
+        },
+        {
+          "label": "患者名が出ない",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "02_未ログインで患者詳細を開く.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:53.126Z"
+}

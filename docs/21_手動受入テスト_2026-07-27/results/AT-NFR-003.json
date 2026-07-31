@@ -1,0 +1,56 @@
+{
+  "id": "AT-NFR-003",
+  "priority": "P0",
+  "phase": "E",
+  "order": 401,
+  "title": "ログイン済みスタッフが API を直接叩いても他院のデータは 1 行も読めない",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/07_非機能・セキュリティ.md"
+  ],
+  "intent": "アプリの画面を経由しない攻撃経路。スタッフは正規の JWT を持っているため、行レベルセキュリティ(RLS)だけが最後の壁になる。ここが破れると全クリニックの患者情報が読める。",
+  "notes": "検証用に第 2 クリニックと他院の患者を作成し、demo クリニックのスタッフの JWT で読み出しを試みている(終了後に削除)。",
+  "startedAt": "2026-07-27T17:22:39.417Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "他院の clinic_id を指定して読み出しを試みる",
+      "action": "demo のスタッフ(nurse1)の JWT で、他院(at-sec-other)の patients / bookings / booking_sessions / clinics / clinic_members / services / rooms を取得しようとする",
+      "expect": "すべて 0 行(または権限エラー)。1 行でも返ったら情報漏洩",
+      "actual": "patients:200(0行) / bookings:200(0行) / booking_sessions:200(0行) / clinics:200(0行) / clinic_members:200(0行) / services:200(0行) / rooms:200(0行)",
+      "note": "JWT は正規のもの。アプリの認可コードを一切通さず、データベース API を直接呼んでいる。",
+      "checks": [
+        {
+          "label": "他院のデータが 1 行も返らない",
+          "ok": true,
+          "detail": "全テーブル 0 行"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "自院のデータは読める(過剰に閉じていない)",
+      "action": "同じ JWT で自院(demo)の患者を取得する",
+      "expect": "1 行以上返る",
+      "actual": "HTTP 200 / 4 行",
+      "checks": [
+        {
+          "label": "自院のデータは読める",
+          "ok": true,
+          "detail": "4 行"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:39.496Z"
+}

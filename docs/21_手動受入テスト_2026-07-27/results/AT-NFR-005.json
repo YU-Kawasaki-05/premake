@@ -1,0 +1,66 @@
+{
+  "id": "AT-NFR-005",
+  "priority": "P0",
+  "phase": "E",
+  "order": 404,
+  "title": "患者の予約管理トークンは院内メンバーからも読めない(service role 専用)",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/07_非機能・セキュリティ.md"
+  ],
+  "intent": "管理トークンが読めると、院内の誰でも他人の予約を照会・キャンセルできてしまう。仕様では authenticated 向けのポリシーを一切作らない = デフォルト拒否と定めている。",
+  "startedAt": "2026-07-27T17:22:40.062Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "管理トークンの読み出しを試みる",
+      "action": "スタッフと院長、両方の JWT で booking_access_tokens を取得しようとする",
+      "expect": "データベースには 9 件あるが、どちらの JWT でも 0 行",
+      "actual": "staff:HTTP200(0行) / owner:HTTP200(0行) / DB 実在 9 件",
+      "note": "実際に行は存在するのに 0 行しか返らない = ポリシー未定義によるデフォルト拒否が効いている。",
+      "checks": [
+        {
+          "label": "スタッフからは読めない",
+          "ok": true,
+          "detail": "0 行"
+        },
+        {
+          "label": "院長からも読めない",
+          "ok": true,
+          "detail": "0 行"
+        },
+        {
+          "label": "そもそもデータは存在する(0 行の理由が空テーブルではない)",
+          "ok": true,
+          "detail": "9 件"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "監査ログを削除しようとする",
+      "action": "スタッフの JWT で DELETE /rest/v1/audit_logs?id=eq.<最新の 1 件>",
+      "expect": "拒否され、行は残る",
+      "actual": "HTTP 204 / 対象行は 残っている",
+      "checks": [
+        {
+          "label": "監査ログが消せない",
+          "ok": true,
+          "detail": "残存=1"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:22:40.247Z"
+}

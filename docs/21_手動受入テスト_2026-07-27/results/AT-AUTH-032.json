@@ -1,0 +1,69 @@
+{
+  "id": "AT-AUTH-032",
+  "priority": "P0",
+  "phase": "G",
+  "order": 602,
+  "title": "重要な操作と患者情報の閲覧がすべて監査ログに残る",
+  "spec": "v2-02",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "診療情報を預かる立場として「誰がいつ何を見た・変えた」を後から追えることが必要。個人情報保護の観点でも、患者からの開示請求や事故調査に直結する。",
+  "notes": "この作業(フェーズ A〜F)で実際に行った操作に対して、どの監査ログが残ったかを集計している。",
+  "startedAt": "2026-07-27T17:32:21.463Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "監査ログの記録状況を集計",
+      "action": "この作業で行った操作に対して、記録された監査ログの種類を集計する",
+      "expect": "12 種類すべてが記録されている",
+      "actual": "auth.login(member):28件 / auth.login_failed(guest):1件 / booking.cancel(member):1件 / booking.create(member):2件 / booking.guest_cancel(guest):1件 / booking.guest_create(guest):2件 / booking.reschedule(member):1件 / booking.status(member):1件 / invitation.accept(member):1件 / patient.link(member):2件 / patient.link_candidates(member):2件 / patient.list.view(member):7件 / patient.search(member):6件 / patient.view(member):2件 / room.create(member):1件 / schedule_block.create(member):2件 / schedule_block.delete(member):1件 / service.create(member):1件 / service.update(member):1件",
+      "note": "不足=なし。この集計はフェーズ A〜G を通しで実行した後の状態を前提にしている(scripts/at-evidence/run-all.sh)。なお auth.login はクリニックに紐づかない記録(clinic_id なし)であり、クリニック単位でのログイン履歴の絞り込みはできない — 不正アクセスの調査時は全クリニック横断で見る必要がある。",
+      "checks": [
+        {
+          "label": "必要な操作すべてが記録されている",
+          "ok": true,
+          "detail": "全て記録あり"
+        }
+      ],
+      "evidence": [],
+      "ok": true
+    },
+    {
+      "n": 2,
+      "label": "患者カルテを開いた記録が残る",
+      "action": "看護師が患者詳細ページを 1 回開く",
+      "expect": "閲覧ログが 1 件増え、誰がどの患者を見たかが分かる",
+      "actual": "patient.view 2→3 / 最新行=member / patient / t / t",
+      "note": "患者の個人情報を「見ただけ」でも記録する。開示請求や内部不正の調査に必要。",
+      "checks": [
+        {
+          "label": "閲覧ログが増える",
+          "ok": true,
+          "detail": "2→3"
+        },
+        {
+          "label": "対象の患者 ID が記録される",
+          "ok": true,
+          "detail": "t"
+        },
+        {
+          "label": "アクセス元(IP)も記録される",
+          "ok": true,
+          "detail": "t"
+        }
+      ],
+      "evidence": [
+        "02_患者カルテを開いた記録が残る.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:32:25.034Z"
+}

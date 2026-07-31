@@ -1,0 +1,50 @@
+{
+  "id": "AT-AUTH-020",
+  "priority": "P0",
+  "phase": "F",
+  "order": 502,
+  "title": "一度使った招待リンクは二度目は使えない",
+  "spec": "v2-03",
+  "refs": [
+    "20_受け入れテスト/01_基盤・認証・スタッフ管理.md"
+  ],
+  "intent": "招待リンクはメールやチャットで送られ、転送・流出しやすい。使い回せると第三者がクリニックのメンバーになれてしまう。",
+  "startedAt": "2026-07-27T17:24:45.151Z",
+  "steps": [
+    {
+      "n": 1,
+      "label": "受諾済みのリンクを再度開く",
+      "action": "AT-AUTH-017 で使用済みの招待リンクをもう一度開く",
+      "expect": "「招待リンクが無効です」と表示され、入力欄は出ない",
+      "actual": "HTTP 200 / 無効の表示=true / 入力欄=0",
+      "note": "受諾時に accepted_at を条件付きで更新しているため、同じトークンで 2 人目が入ることはない。",
+      "checks": [
+        {
+          "label": "無効と表示される",
+          "ok": true
+        },
+        {
+          "label": "入力欄が出ない",
+          "ok": true
+        },
+        {
+          "label": "メンバーが増えていない",
+          "ok": true,
+          "detail": "4→4"
+        }
+      ],
+      "evidence": [
+        "01_受諾済みのリンクを再度開く.png"
+      ],
+      "ok": true
+    }
+  ],
+  "dbChecks": [],
+  "issues": [],
+  "notes": "",
+  "naReason": null,
+  "partialReason": null,
+  "aborted": false,
+  "verdict": "PASS",
+  "finishedAt": "2026-07-27T17:24:46.269Z"
+}
