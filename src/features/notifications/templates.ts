@@ -136,7 +136,9 @@ export function renderNotification(
            <strong>${
              ctx.requiresApproval
                ? "この予約は承認待ちです。管理画面での承認操作が必要です。"
-               : "この予約は自動確定済みです。内容をご確認ください。"
+               : // auto 撤去後(Issue #11)にこの分岐へ入るのは「Cron 送信前に院内が確定した」場合のみ。
+                 // 「自動確定」は存在しないため、事実と食い違わない文言にする
+                 "この予約は確定済みです。内容をご確認ください。"
 }</strong>`,
           ctx.dashboardUrl,
           "管理画面で確認する",

@@ -55,7 +55,7 @@ MVP の最重要業務は **「看護師(受付)が院内予約を作成 → 病
 |---|---|---|---|---|---|
 | 5 | AT-CAT-010 (P1) | 部屋の作成 | owner | `rooms` 行追加、`room.create` 監査 | 削除はアーカイブのみ(ハードデリート無し) |
 | 6 | AT-CAT-001 (P1) | メニュー作成 | owner・カテゴリ | `services` 行、セッション構成が保存 | seed にアートメイク眉/ピーリング等あり |
-| 7 | AT-CAT-012 (P1) | 担当マトリクス割当 | owner | `staff_service_assignments` に反映 | 担当設定の監査が記録されない既知不具合(AT-CAT-014)。bookable スタッフのみ対象 |
+| 7 | AT-CAT-012 (P1) | 担当マトリクス割当 | owner | `staff_service_assignments` に反映 | 担当設定の監査は記録される(AT-CAT-014 の旧不具合は 2026-07-31 解消 / Issue #13)。bookable スタッフのみ対象 |
 | 8 | AT-CAT-019 (P0) | 施術枠(open)確保 | nurse1・部屋あり | `schedule_blocks` 1 件、公開空き枠に反映 | 院内予約は枠内なら schedule_block_id が紐づく(枠外も警告なしで作成可)。BUG-01(+9h ずれ)は修正済み。営業時間との突合は未実装 |
 
 参照: 5〜8 = [02_メニュー・リソース・枠.md](02_メニュー・リソース・枠.md)
