@@ -183,7 +183,7 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 </section>
 
 <section><h2>A. 本番前に必ず対応すべき事項(いま残っているもの)</h2>
-<p>残っているのは次の <strong>4 件</strong>です。上の 2 件は<strong>公開前に必ず</strong>、下の 2 件は<strong>条件つき</strong>(その運用をしないなら関係ありません)です。</p>
+<p>残っているのは次の <strong>5 件</strong>です。上の 2 件は<strong>公開前に必ず</strong>、続く 2 件は<strong>条件つき</strong>(その運用をしないなら関係ありません)、最後の 1 件は<strong>プログラムは対応済みで、設定を 1 つ入れるだけ</strong>です。</p>
 
 <div class="callout crit"><p class="ct"><span class="ic">&#9888;</span>A-1. 法定ページ(利用規約・プライバシーポリシー)の本文確定と弁護士確認 <span class="badge dev">開発担当者</span></p>
 <p>利用規約とプライバシーポリシーは、<strong>標準的な構成(目次つき)の「暫定版」までは整備済み</strong>です。見栄えの整ったページとして表示されます。ただし、</p>
@@ -202,14 +202,24 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 </ul></div>
 
 <div class="callout info"><p class="ct"><span class="ic">&#9432;</span>A-3.【条件つき】公開予約を「自動確定」にする場合の仕組みが未実装</p>
-<p>設定画面の「Web 予約の確定方法」では <strong>「院内で確認してから確定(推奨)」</strong> と <strong>「メール確認後に自動確定」</strong> を選べます。しかし後者(自動確定)の前提となる<strong>「患者がメールの確認リンクを踏んで初めて確定する」「一定時間(30 分)内に確認されなければ枠を自動で解放する」仕組みは未実装</strong>です。</p>
-<p>そのため、<strong>「院内で確認してから確定(推奨)」のまま運用してください</strong>。今回の推奨運用はこちらです。将来「自動確定に切り替えたい」と判断したときは、<strong>切り替える前に</strong>開発担当者へ追加実装を依頼してください。</p></div>
+<p>設定画面の「Web 予約の確定方法」で選べるのは <strong>「院内で確認してから確定(推奨)」</strong> だけです。かつてあった <strong>「メール確認後に自動確定」</strong> は、その前提となる<strong>「患者がメールの確認リンクを踏んで初めて確定する」「一定時間(30 分)内に確認されなければ枠を自動で解放する」仕組みが未実装</strong>で、選ぶと申し込みと同時に確定になってしまうため、<strong>選択肢から削除しました</strong>。</p>
+<p>そのため、いまは<strong>「院内で確認してから確定」以外を選べません</strong>。今回の推奨運用もこちらです。将来「自動確定に切り替えたい」と判断したときは、上記の仕組みの追加実装(と選択肢の復活)を開発担当者へ依頼してください。</p></div>
 
 <div class="callout info"><p class="ct"><span class="ic">&#9432;</span>A-4.【条件つき】重複した患者どうしの統合(マージ)が未実装</p>
 <p>公開Web予約は、はじめは<strong>患者マスタ(患者の台帳)と結び付いていない状態</strong>で入ります。これを既存の患者に結び付ける機能(<strong>名寄せ</strong>)は実装済みで、台帳から数クリックで行えます(下の「使い方」参照)。</p>
 <p>一方、<strong>すでに患者マスタに二重登録されてしまった患者を 1 件にまとめる機能はありません</strong>。運用でこう防いでください。</p>
 <ul class="disc"><li>紐付けのときに表示される<strong>候補一覧をよく確認し、同じ人を新規で作らない</strong>。</li><li>誤って二重に作ってしまったら、片方の患者にメモを残して<strong>以後は使わない</strong>ようにする。</li></ul>
 <p class="small muted">なお、以前あった危険な統合処理(取り消しのきかない上書き)は削除済みです。<strong>勝手に統合されてデータが失われることはありません。</strong></p></div>
+
+<div class="callout ok"><p class="ct"><span class="ic">&#10003;</span>A-5. 異常検知(エラー監視・定期実行の死活監視)は<strong>対応済み</strong> — 残るは <code class="inline">SENTRY_DSN</code> の登録だけ</p>
+<p>受け入れテストの時点では、<strong>メールの送信失敗以外に異常を知る手段がありませんでした</strong>(500 エラーが出続けていても、定期実行が止まっていても、誰も気づけない状態)。この点は<strong>プログラム側の対応が完了</strong>しています。</p>
+<ul class="disc">
+<li><strong>サーバー側のエラー</strong> — 画面表示・予約登録・メール送信などで例外が起きると、自動で監視サービス(Sentry)へ記録・通知されます。</li>
+<li><strong>定期実行(リマインダー・メール送信)の停止</strong> — 実行のたびに「動きました」と報告し、<strong>2 回続けて報告が来ないと通知</strong>されます(およそ 2 時間止まったら気づけます)。</li>
+</ul>
+<p>残っている作業は<strong>環境変数 <code class="inline">SENTRY_DSN</code> を 1 つ登録することだけ</strong>です。手順は <a href="03_アプリのデプロイと環境変数.html">STEP 3</a> の 3-7(無料アカウント作成 → プロジェクト作成 → DSN をコピー → Vercel に登録 → 再デプロイ。10 分程度)、見方は <a href="05_定期実行(リマインダー)の確認.html">STEP 5</a> の 5-7 と <a href="08_運用開始後の運用とバックアップ.html">STEP 8</a> の 8-2 です。</p>
+<p><strong>登録しないと「気づけない」状態のまま公開することになります。</strong><code class="inline">SENTRY_DSN</code> が未設定でも<strong>アプリの動きは一切変わりません</strong>(監視の処理は完全に停止します)。つまり<strong>未設定は「動くが気づけない」</strong>という状態です。運用開始直後こそ不具合が出やすいため、<strong>公開前に登録しておくことを強く推奨</strong>します。</p>
+<p class="small muted">なお、次の 3 つは今回も<strong>自動通知の対象外</strong>です。当面は運用でカバーしてください: <strong>データベースの容量枯渇</strong>(Supabase の通知設定で補う)/ <strong>予約データの不整合</strong>(日々の台帳確認)/ <strong>不審なアクセスの急増</strong>(A-2 の緩和策と台帳確認)。</p></div>
 </section>
 
 <section><h2>以前の課題と現在(すべて解消済み・対応不要)</h2>
@@ -239,10 +249,10 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 <section><h2>B. 今回のリリースに含まれない機能・使わない機能</h2>
 <p>次は<strong>『現状こういう扱い』</strong>という前提で運用してください。使えると誤解しないための一覧です。</p>
 <div class="tablewrap"><table><thead><tr><th>機能</th><th>現状の扱い</th><th>補足</th></tr></thead><tbody>
-<tr><td><strong>患者向け公開Web予約</strong></td><td><strong>使います(オンにします)。</strong>承認モードは<strong>「院内で確認してから確定」(手動承認)</strong></td><td>以前挙げていた露出の問題(退職者・施術不可スタッフ・本名)は<strong>すべて解消済み</strong>です。オンにする前に <strong>A-1(法定ページの法務確認)</strong> を必ず終えてください。「メール確認後に自動確定」は A-3 のため当面使いません</td></tr>
+<tr><td><strong>患者向け公開Web予約</strong></td><td><strong>使います(オンにします)。</strong>承認モードは<strong>「院内で確認してから確定」(手動承認)</strong></td><td>以前挙げていた露出の問題(退職者・施術不可スタッフ・本名)は<strong>すべて解消済み</strong>です。オンにする前に <strong>A-1(法定ページの法務確認)</strong> を必ず終えてください。「メール確認後に自動確定」は A-3 のため選択肢から削除済みです</td></tr>
 <tr><td><strong>オンライン問診</strong></td><td><strong>紙で運用します</strong>(今回のリリースの方針として決定)</td><td>「未実装だから仕方なく紙」ではなく、<strong>最初のリリースの範囲を絞る判断として紙運用に決めた</strong>ものです(仕様書 v2-18 に明記)。侵襲的な施術の<strong>既往歴・アレルギー・妊娠の確認は患者安全に直結するため、紙の問診で必ず取得</strong>してください。オンライン化は次の開発段階(Phase 2)の候補です</td></tr>
 <tr><td><strong>患者どうしの統合(重複患者のマージ)</strong></td><td>未実装</td><td><strong>A-4</strong> 参照。ゲスト予約を患者マスタに結び付ける「名寄せ」は実装済みです</td></tr>
-<tr><td><strong>公開予約の「メール確認後に自動確定」</strong></td><td>設定では選べますが<strong>仕組みが未完成</strong></td><td><strong>A-3</strong> 参照。「院内で確認してから確定」で運用します</td></tr>
+<tr><td><strong>公開予約の「メール確認後に自動確定」</strong></td><td><strong>仕組みが未完成</strong>のため<strong>選択肢から削除済み</strong></td><td><strong>A-3</strong> 参照。「院内で確認してから確定」で運用します</td></tr>
 <tr><td><strong>不正アクセス対策(レート制限)</strong></td><td>未実装</td><td><strong>A-2</strong> 参照。手動承認と日々の台帳確認で補います</td></tr>
 <tr><td>週ビュー(スタッフ別のレーン表示) / 承認待ち専用の一覧画面 / Google ログイン / 患者タグ</td><td>今回のスコープ外</td><td>仕様として除外済みです。<strong>日ビューの台帳</strong>で運用します。次の開発段階の候補です</td></tr>
 <tr><td>クレジットカード決済</td><td>機能はありません</td><td>会計は院内の既存の方法で行ってください</td></tr>
@@ -270,7 +280,7 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 <li><span class="st-title">公開予約をオンにする</span>設定 → オンライン予約 で「患者向けオンライン予約」をオンにし、「Web 予約の確定方法」を<strong>「院内で確認してから確定(推奨)」</strong>に、「患者キャンセル期限(時間前まで)」をクリニックの方針に合わせて決めます。</li>
 <li><span class="st-title">STEP 7 で通しの確認をする</span>とくに「公開ページから申し込む → 院内に通知が届く → 『確定にする』→ 患者に確定メールが届く」までを実際に確認します。</li>
 <li><span class="st-title">上の『必ず片付ける 3 つ』が済んでから案内を始める</span>クリニックの Web サイトや SNS への予約リンク掲載は、ここまで終わってからにします。</li>
-<li><span class="st-title">STEP 8 の定期チェックを運用に組み込む</span>通知の送信状況・承認待ちの放置がないか・バックアップを、週次で確認します。</li>
+<li><span class="st-title">STEP 8 の定期チェックを運用に組み込む</span>承認待ちの放置がないか・Sentry の新規エラー(A-5)を<strong>日次</strong>で、通知の送信状況・バックアップを<strong>週次</strong>で確認します。</li>
 </ol>
 
 <div class="callout info"><p class="ct"><span class="ic">&#9432;</span>もっと詳しい記録を見たいとき</p><p>実装の全体像・残タスクの判断理由は <a href="../50_次セッション引き継ぎ_2026-07-22.md">引き継ぎメモ</a> の <strong>§13(最終の残タスク)</strong> と <strong>§14(2026-07-23 の反映内容)</strong>、要約は <a href="../70_作業報告_2026-07-23.md">作業報告(2026-07-23)</a> にあります。リリース判定に使う受け入れテストは <a href="../20_受け入れテスト/00_最優先MVPパス.md">最優先 MVP パス</a>(全 219 ケース・最優先 86 件)から始めてください。</p></div>

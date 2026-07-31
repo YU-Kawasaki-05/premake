@@ -8,6 +8,7 @@ import { generateBookingToken } from "@/features/public-booking/token";
 import { parseRange } from "@/features/schedule/week";
 import { TIME_ZONE } from "@/lib/datetime";
 import { sendEmail } from "@/lib/email";
+import { finishReminderCronCheckIn, startReminderCronCheckIn } from "@/lib/monitoring";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // @implements v2-24 リマインダー + v2-23 通知送信(Vercel Cron から定期実行)
@@ -37,11 +38,22 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
-  const recovered = await recoverStaleSending();
-  const reminded = await scanReminders();
-  const sent = await processQueue();
 
-  return NextResponse.json({ ok: true, recovered, reminded, sent });
+  // 死活監視(Issue #16)。SENTRY_DSN 未設定なら null が返り、以降は何もしない。
+  // 認可を通った実行だけをチェックインするため、認可判定より後に置く。
+  const checkIn = await startReminderCronCheckIn();
+  try {
+    const recovered = await recoverStaleSending();
+    const reminded = await scanReminders();
+    const sent = await processQueue();
+
+    await finishReminderCronCheckIn(checkIn, "ok");
+    return NextResponse.json({ ok: true, recovered, reminded, sent });
+  } catch (error) {
+    // 例外自体は onRequestError(instrumentation)が拾う。ここでは cron の失敗を記録して再送出する
+    await finishReminderCronCheckIn(checkIn, "error");
+    throw error;
+  }
 
   // --- 送信中のまま落ちた通知の回収(ROB-03) ---
   // クレーム(status='sending')後にプロセスが落ちると誰も再処理しないため、

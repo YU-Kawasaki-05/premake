@@ -99,7 +99,9 @@ export async function updateBusinessHours(
 
 const publicSettingsSchema = z.object({
   public_booking_enabled: z.boolean(),
-  booking_approval_mode: z.enum(["auto", "manual"]),
+  // auto(メール確認後に自動確定)は確認リンクのステップが未実装のため受け付けない。
+  // DB の check 制約は 'auto' を許すので、改ざん送信をここで弾く必要がある。
+  booking_approval_mode: z.literal("manual"),
   cancel_deadline_hours: z.coerce.number().int().min(0).max(720),
 });
 

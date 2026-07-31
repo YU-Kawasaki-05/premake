@@ -210,7 +210,7 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 <p>2026-07-23 に、次の形で運用を始めることが決まりました。<strong>手順書はすべてこの前提で書かれています。</strong></p>
 <div class="tablewrap"><table><thead><tr><th>項目</th><th>今回の方針</th><th>補足</th></tr></thead><tbody>
 <tr><td>患者向けの公開Web予約</td><td><strong>使います(オンにします)</strong></td><td>患者さんが Web から申し込めます。申し込みは「承認待ち」で入り、<strong>院内が確認して確定するまで予約は成立しません</strong></td></tr>
-<tr><td>Web 予約の確定方法</td><td><strong>院内で確認してから確定(手動承認)</strong></td><td>もう一つの選択肢「メール確認後に自動確定」は仕組みが未完成のため使いません(<a href="09_未対応事項と注意点.html">未対応事項 A-3</a>)</td></tr>
+<tr><td>Web 予約の確定方法</td><td><strong>院内で確認してから確定(手動承認)</strong></td><td>これが唯一の選択肢です。かつてあった「メール確認後に自動確定」は仕組みが未完成のため選択肢から削除しました(<a href="09_未対応事項と注意点.html">未対応事項 A-3</a>)</td></tr>
 <tr><td>施術前の問診</td><td><strong>紙で運用します</strong></td><td>最初のリリースの範囲を絞る判断として決めたものです(仕様書に明記済み)。<strong>既往歴・アレルギー・妊娠の確認は、患者安全に直結するため紙の問診で必ず取得</strong>してください</td></tr>
 <tr><td>利用規約・プライバシーポリシー</td><td>暫定版が入っています。<strong>公開前に本文確定+弁護士確認が必要</strong></td><td><a href="09_未対応事項と注意点.html">未対応事項 A-1</a>。これが終わるまで患者さんへの案内(予約ページの公開)を始めないでください</td></tr>
 <tr><td>クレジットカード決済</td><td>機能はありません</td><td>会計は院内の既存の方法で行ってください</td></tr>
@@ -227,7 +227,7 @@ footer.foot{color:var(--ink-faint);font-size:13px;padding:26px 0 50px;text-align
 <section><h2>この手順書の更新履歴</h2>
 <div class="tablewrap"><table><thead><tr><th>版</th><th>日付</th><th>主な変更</th></tr></thead><tbody>
 <tr><td>第 1 版</td><td>2026-07-22</td><td>初版作成(STEP 1〜8 と「未対応事項と注意点」)。当時の前提は「公開Web予約はオフ・院内運用のみ」でした</td></tr>
-<tr><td><strong>第 2 版</strong></td><td><strong>2026-07-26</strong></td><td>その後の開発内容と運用方針の決定を反映して改訂しました。<strong>要点は次の4つ</strong>です。<br>① <strong>運用方針の変更</strong>: 患者向け公開Web予約を<strong>使う(手動承認)</strong>前提に。問診は「未実装だから紙」ではなく<strong>方針としての紙運用</strong>に。<br>② <strong>未対応事項が大幅に減少</strong>: 初版で挙げた 12 項目のうち <strong>8 項目が解消</strong>(メール送信元・スタッフ権限の抜け道・メール本文の安全対策・送信失敗の自動再送・テストデータの混入ガード・公開予約でのスタッフ情報の露出・予約変更(リスケ)・院内通知/手動承認時の確定メール)。残るのは 4 件です。<br>③ <strong>新機能の追記</strong>: 予約変更(リスケ)、患者マスタへの紐付け(名寄せ)、設定画面の「通知の送信状況」。<br>④ <strong>本番設定の重要な変更</strong>: <code>CRON_SECRET</code> は未設定だとリマインダーが動かず、<code>APP_URL</code> は未設定だとアプリが起動しません。<code>EMAIL_FROM_ADDRESS</code> が追加されました。</td></tr>
+<tr><td><strong>第 2 版</strong></td><td><strong>2026-07-26</strong></td><td>その後の開発内容と運用方針の決定を反映して改訂しました。<strong>要点は次の4つ</strong>です。<br>① <strong>運用方針の変更</strong>: 患者向け公開Web予約を<strong>使う(手動承認)</strong>前提に。問診は「未実装だから紙」ではなく<strong>方針としての紙運用</strong>に。<br>② <strong>未対応事項が大幅に減少</strong>: 初版で挙げた 12 項目のうち <strong>8 項目が解消</strong>(メール送信元・スタッフ権限の抜け道・メール本文の安全対策・送信失敗の自動再送・テストデータの混入ガード・公開予約でのスタッフ情報の露出・予約変更(リスケ)・院内通知/手動承認時の確定メール)。残るのは 5 件です(うち 1 件 = 異常検知は<strong>プログラムは対応済みで、設定を 1 つ入れるだけ</strong>)。<br>③ <strong>新機能の追記</strong>: 予約変更(リスケ)、患者マスタへの紐付け(名寄せ)、設定画面の「通知の送信状況」。<br>④ <strong>本番設定の重要な変更</strong>: <code>CRON_SECRET</code> は未設定だとリマインダーが動かず、<code>APP_URL</code> は未設定だとアプリが起動しません。<code>EMAIL_FROM_ADDRESS</code> が追加されました。</td></tr>
 </tbody></table></div>
 <p class="small muted">改訂の根拠となった記録: <a href="../50_次セッション引き継ぎ_2026-07-22.md">引き継ぎメモ(§13〜§14)</a> / <a href="../70_作業報告_2026-07-23.md">作業報告(2026-07-23)</a>。</p>
 </section>

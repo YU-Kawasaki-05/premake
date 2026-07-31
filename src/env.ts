@@ -14,6 +14,9 @@ export const env = createEnv({
       process.env.NODE_ENV === "production" ? z.url() : z.url().default("http://localhost:3000"),
     // Vercel Cron の認証
     CRON_SECRET: z.string().min(1).optional(),
+    // エラー監視・cron 死活監視(Sentry)。任意 — 未設定なら監視は完全に不活性(Issue #16)。
+    // 本番では設定を推奨(未設定だと 500 エラーやリマインダー停止に誰も気づけない)。
+    SENTRY_DSN: z.url().optional(),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.url(),
@@ -25,6 +28,7 @@ export const env = createEnv({
     EMAIL_FROM_ADDRESS: process.env.EMAIL_FROM_ADDRESS,
     APP_URL: process.env.APP_URL,
     CRON_SECRET: process.env.CRON_SECRET,
+    SENTRY_DSN: process.env.SENTRY_DSN,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },

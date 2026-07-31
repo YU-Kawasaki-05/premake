@@ -14,7 +14,7 @@ export type GuestBookingState = {
   error?: string;
   // BC-NEW-06: manageToken はトークン発行に失敗しても予約自体は成立するため optional。
   // 未発行時は UI が「リンクはメールで届きます」を表示する。
-  done?: { bookingNo: string; manageToken?: string; pending: boolean };
+  done?: { bookingNo: string; manageToken?: string };
 };
 
 const guestSchema = z.object({
@@ -57,7 +57,7 @@ export async function createGuestBooking(
   // クリニック(公開中)+ サービス(公開中)+ member/room の検証
   const { data: clinic } = await admin
     .from("clinics")
-    .select("id, booking_approval_mode, public_booking_enabled")
+    .select("id, public_booking_enabled")
     .eq("slug", d.slug)
     .maybeSingle();
   if (!clinic?.public_booking_enabled) {
@@ -132,15 +132,14 @@ export async function createGuestBooking(
     return { error: "選択された時間は予約できません。別の枠をお選びください" };
   }
 
-  const autoConfirm = clinic.booking_approval_mode === "auto";
-
   // 予約ヘッダ(patient_id は null。院内で名寄せ)
   const { data: booking, error: bErr } = await admin
     .from("bookings")
     .insert({
       clinic_id: clinic.id,
       service_id: d.serviceId,
-      status: autoConfirm ? "confirmed" : "requested",
+      // 承認モードは manual のみ(auto は確認リンク未実装のため設定画面から削除済み)。
+      status: "requested",
       source: "web",
       // BC-NEW-07: 「指定なし」は指名を記録しない(null)。指名ありの経路では
       // 空き枠が指名スタッフに限定されるため nominatedMemberId は memberId と一致する。
@@ -197,20 +196,19 @@ export async function createGuestBooking(
     action: "booking.guest_create",
     targetType: "booking",
     targetId: booking.id,
-    diff: { auto: autoConfirm },
   });
 
-  // 受付/確定メールをキューへ(Cron が送信)
+  // 受付メールをキューへ(Cron が送信)
   await enqueueNotification({
     clinicId: clinic.id,
     bookingId: booking.id,
     recipientEmail: d.email,
     recipientType: "patient",
-    kind: autoConfirm ? "booking_confirmed" : "booking_requested",
+    kind: "booking_requested",
   });
 
-  // @implements v2-23 院内(スタッフ)向け通知。manual/auto を問わず常に enqueue し、
-  // 承認漏れ=予約喪失(台帳 No.18)を防ぐ。宛先が解決できなければ enqueue 側でスキップ。
+  // @implements v2-23 院内(スタッフ)向け通知。承認漏れ=予約喪失(台帳 No.18)を防ぐ。
+  // 宛先が解決できなければ enqueue 側でスキップ。
   const internalEmail = await resolveClinicInternalEmail(clinic.id);
   await enqueueNotification({
     clinicId: clinic.id,
@@ -224,7 +222,6 @@ export async function createGuestBooking(
     done: {
       bookingNo: booking.booking_no,
       manageToken: tokErr ? undefined : token,
-      pending: !autoConfirm,
     },
   };
 }

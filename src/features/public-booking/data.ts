@@ -13,7 +13,6 @@ export type PublicClinic = {
   address: string | null;
   phone: string | null;
   business_hours: { dow: number; open: string; close: string }[];
-  booking_approval_mode: "auto" | "manual";
   cancel_deadline_hours: number;
 };
 
@@ -37,7 +36,7 @@ export const getPublicClinic = cache(async (slug: string): Promise<PublicClinic 
   const { data } = await admin
     .from("clinics")
     .select(
-      "id, slug, name, director_name, postal_code, address, phone, business_hours, booking_approval_mode, cancel_deadline_hours, public_booking_enabled",
+      "id, slug, name, director_name, postal_code, address, phone, business_hours, cancel_deadline_hours, public_booking_enabled",
     )
     .eq("slug", slug)
     .maybeSingle();

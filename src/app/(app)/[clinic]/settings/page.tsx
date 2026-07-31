@@ -61,7 +61,6 @@ export default async function SettingsPage(props: PageProps<"/[clinic]/settings"
           slug={slug}
           defaults={{
             public_booking_enabled: clinic.public_booking_enabled,
-            booking_approval_mode: clinic.booking_approval_mode as "auto" | "manual",
             cancel_deadline_hours: clinic.cancel_deadline_hours,
           }}
         />
